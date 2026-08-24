@@ -87,6 +87,11 @@ const oldProduction = release(1_000_006, "completed");
   });
   assert.equal(completed.desired.status, "completed");
   assert.equal(completed.desired.userFraction, undefined);
+  assert.deepEqual(
+    completed.track.releases.map((item) => item.versionCodes),
+    [["1000007"]],
+    "Completing a rollout must remove the superseded completed release",
+  );
 
   const halted = planProductionTrack({
     internalTrack: completedInternal,
