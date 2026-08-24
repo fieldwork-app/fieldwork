@@ -30,7 +30,7 @@
     "test:relay-tls": "scripts/smoke-relay-tls-loopback.sh"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^2.29.7"
   }
 }
