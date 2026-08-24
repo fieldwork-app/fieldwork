@@ -191,9 +191,17 @@ export function planProductionTrack({ internalTrack, productionTrack, versionCod
     };
   }
 
-  const releases = [...productionReleases];
+  const releases = productionReleases.filter(
+    (release, index) =>
+      desiredRelease.status !== "completed" ||
+      index === productionIndex ||
+      release.status !== "completed",
+  );
   if (productionIndex >= 0) {
-    releases[productionIndex] = desiredRelease;
+    const desiredIndex = releases.findIndex((release) =>
+      releaseContainsVersion(release, versionCode),
+    );
+    releases[desiredIndex] = desiredRelease;
   } else {
     releases.unshift(desiredRelease);
   }
