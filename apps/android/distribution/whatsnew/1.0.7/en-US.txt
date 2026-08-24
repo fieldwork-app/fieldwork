@@ -1,0 +1,1 @@
+More reliable pairing and terminal handoff, safer session replay, improved mobile reconnects, and stronger security across the app, daemon, and relay.

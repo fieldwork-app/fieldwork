@@ -5,6 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 out_dir="$repo_root/apps/android/generated"
 jni_libs_dir="$repo_root/apps/android/app/src/main/jniLibs"
 cargo_target_dir="${CARGO_TARGET_DIR:-$repo_root/target}"
+required_ndk_revision="${SHELLY_ANDROID_NDK_VERSION:-27.1.12297006}"
 if [[ "$cargo_target_dir" != /* ]]; then
   cargo_target_dir="$repo_root/$cargo_target_dir"
 fi
@@ -19,10 +20,10 @@ if [[ -z "${ANDROID_HOME:-}" ]]; then
   fi
 fi
 
-if [[ -z "${ANDROID_NDK_HOME:-}" && -n "${ANDROID_HOME:-}" && -d "$ANDROID_HOME/ndk" ]]; then
-  latest_ndk="$(find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
-  if [[ -n "$latest_ndk" ]]; then
-    export ANDROID_NDK_HOME="$latest_ndk"
+if [[ -z "${ANDROID_NDK_HOME:-}" && -n "${ANDROID_HOME:-}" ]]; then
+  pinned_ndk="$ANDROID_HOME/ndk/$required_ndk_revision"
+  if [[ -d "$pinned_ndk" ]]; then
+    export ANDROID_NDK_HOME="$pinned_ndk"
   fi
 fi
 
@@ -42,8 +43,8 @@ if [[ -f "$ndk_source_properties" ]]; then
   ndk_revision="$(sed -n 's/^Pkg\.Revision[[:space:]]*=[[:space:]]*//p' "$ndk_source_properties" | head -n 1)"
 fi
 ndk_major="${ndk_revision%%.*}"
-if [[ -z "$ndk_revision" || ! "$ndk_major" =~ ^[0-9]+$ || "$ndk_major" -lt 27 ]]; then
-  echo "Android NDK r27 or newer is required; found '${ndk_revision:-unknown}' at $ANDROID_NDK_HOME." >&2
+if [[ "$ndk_revision" != "$required_ndk_revision" ]]; then
+  echo "Android NDK $required_ndk_revision is required; found '${ndk_revision:-unknown}' at $ANDROID_NDK_HOME." >&2
   exit 1
 fi
 

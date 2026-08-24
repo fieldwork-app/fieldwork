@@ -1,12 +1,14 @@
 {
   "name": "shelly-workspace",
   "private": true,
-  "version": "1.0.7",
+  "version": "1.0.8",
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "build:local-npm-artifacts": "scripts/build-local-npm-artifacts.sh",
     "build:site": "pnpm --dir site build",
+    "check:android-release-optimization": "node scripts/check-android-release-optimization.mjs",
     "check:infra-terraform": "scripts/check-infra-terraform.sh",
+    "check:play-release-notes": "node scripts/prepare-play-release-notes.mjs",
     "check:site": "pnpm --dir site check",
     "generate:oss-notices": "node scripts/generate-oss-notices.mjs",
     "publish:npm": "node scripts/publish-npm-packages.mjs",
@@ -23,6 +25,7 @@
     "test:npm-dispatcher": "node scripts/test-npm-dispatcher.mjs",
     "test:npm-local-install": "node scripts/smoke-npm-local-install.mjs",
     "test:npm-publish-plan": "node scripts/test-npm-publish-plan.mjs",
+    "test:play-rollout": "node scripts/test-play-rollout.mjs",
     "test:relay-otlp": "node scripts/smoke-relay-otlp-loopback.mjs",
     "test:relay-tls": "scripts/smoke-relay-tls-loopback.sh"
   },

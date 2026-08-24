@@ -2,8 +2,8 @@
 set -euo pipefail
 
 android_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-gradle_version="8.14.3"
-gradle_sha256="bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531"
+gradle_version="9.1.0"
+gradle_sha256="a17ddd85a26b6a7f5ddb71ff8b05fc5104c0202c6e64782429790c933686c806"
 cache_root="${SHELLY_GRADLE_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/shelly/gradle}"
 gradle_dir="$cache_root/gradle-$gradle_version"
 gradle_zip="$cache_root/gradle-$gradle_version-bin.zip"
@@ -91,4 +91,4 @@ if [[ ! -x "$gradle_dir/bin/gradle" ]]; then
 fi
 
 cd "$android_root"
-exec "$gradle_dir/bin/gradle" "$@"
+exec "$gradle_dir/bin/gradle" -Dorg.gradle.java.home="$JAVA_HOME" "$@"

@@ -2,7 +2,7 @@
 
 Current implemented behavior includes local IPC plus iroh pairing/listing for paired remote clients.
 
-Store-submission privacy labels are tracked separately in `docs/STORE_PRIVACY.md`. That file is the current Google Play Data safety answer sheet; console submission remains a release gate until real signed Android builds and account access are available.
+Store-submission privacy labels are tracked separately in `docs/STORE_PRIVACY.md`. That file is the current Google Play Data safety answer sheet and must be rechecked before approving each production rollout.
 
 - Terminal input and output stay on the host unless a paired remote iroh client attaches to a session.
 - Over iroh, terminal/session protocol frames are carried inside encrypted QUIC connections. The iroh relay path can see endpoint IPs, timing, and byte counts, but not PTY content, keystrokes, commands, paths, or session metadata. Shelly uses only a self-hosted iroh relay — no n0 relays and no n0 DNS publish — so even that connection metadata stays on Shelly-operated infrastructure.

@@ -7,16 +7,16 @@ behavior.
 ## CI and delivery
 
 Every pull request runs the `CI` workflow and reports one stable required check:
-`CI Gate`. A small selector runs only the Core, macOS package, supply-chain,
-package metadata, site, Terraform, and workflow checks affected by the changed
-paths. The gate itself always runs, so documentation-only changes do not get
-stuck waiting for a skipped required workflow.
+`CI Gate`. A small selector runs only the Core, Android, macOS package,
+supply-chain, package metadata, site, Terraform, and workflow checks affected by
+the changed paths. The gate itself always runs, so documentation-only changes do
+not get stuck waiting for a skipped required workflow.
 
-Android is intentionally excluded from pull-request CI. The `Release Android`
-workflow runs lint, unit tests, the release bundle build, signature verification,
-and Play internal-track upload for `android-v*.*.*` tags (or a manual run from
-`main`). Restore an Android-path-only PR job if Android development becomes
-frequent enough that release-time feedback is too late.
+Android, mobile-core, protocol, dependency-lock, and Android release-workflow
+changes select the Android job. It validates versioned Play notes and rollout
+planning, runs lint and unit tests, and builds the same minified release bundle
+used for delivery. An `android-v*.*.*` tag performs the signed internal-track
+upload; production promotion is a separate protected manual workflow.
 
 A green `main` CI run automatically deploys the exact revision to the relay.
 The site source remains CI-only until Shelly has a public website; package
@@ -148,6 +148,9 @@ SHELLY_HOSTED_RELAY_CONTROL_URL=https://relay.example.com scripts/smoke-hosted-r
 ```sh
 apps/android/gradlew --no-daemon bundleRelease
 apps/android/gradlew --no-daemon :app:testDebugUnitTest
+pnpm check:android-release-optimization
+node scripts/prepare-play-release-notes.mjs
+node scripts/test-play-rollout.mjs
 ```
 
 Gradle app tasks depend on `buildRustMobileCore`, which runs
@@ -156,14 +159,21 @@ native-library merge. `bundleRelease` exercises the release-oriented Android
 build path used by the Android release workflow; run the script directly only
 when you want an explicit Rust/UniFFI preflight.
 
+The release build uses AGP 9 built-in Kotlin and full-mode R8 with code shrinking,
+optimized resource shrinking, and the optimizing Android keep rules. Run
+`pnpm check:android-release-optimization` after build-tool or release-config
+changes; CI runs the same assertion before it builds an AAB.
+
 The Gradle version-catalog (`libs.versions.toml`) migration is intentionally
 deferred; the build keeps explicit dependency coordinates to avoid high-risk,
 low-value churn during the v1 release hardening pass.
 
 Emulator handoff testing is direct manual adb work: install the debug APK,
 capture screenshots/UI dumps/logcat, pair through the relay or local daemon, and
-verify terminal input/output with a second client. Physical-device release
-testing is manual and deferred until release signing and device access are ready.
+verify terminal input/output with a second client. The signed internal-track
+candidate still requires a physical-device release pass before production
+approval; record that sign-off in the production workflow run or its linked
+release issue.
 
 ## Site
 

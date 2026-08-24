@@ -39,8 +39,9 @@ cargo build --release --workspace
 target/release/shelly daemon install
 ```
 
-The Android app lives in [`apps/android`](apps/android) and builds with the
-bundled Gradle wrapper while Play Store submission is pending.
+The Android app lives in [`apps/android`](apps/android), builds with the bundled
+Gradle wrapper, and is delivered through Play internal testing before a protected
+production rollout.
 
 ## Quick start
 
@@ -151,9 +152,10 @@ when updating the Android app and desktop at different times.
 
 Shelly 1.0.x is released: the desktop CLI and daemon ship on npm as
 `shellykit`, and releases are cut from tags on `main`. The Android client is
-active with Play Store submission in progress; the iOS client is parked
-source, deferred until after v1 ([`FUTURE.md`](FUTURE.md) tracks what comes
-later). The v1 scope contract lives in [`PLAN.md`](PLAN.md) and the release
+active with signed internal delivery and a guarded Play production rollout; the
+iOS client is parked source, deferred until after v1
+([`FUTURE.md`](FUTURE.md) tracks what comes later). The v1 scope contract lives
+in [`PLAN.md`](PLAN.md) and the release
 and relay operations surface in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Development
