@@ -1,16 +1,16 @@
 {
   "name": "shellykit",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Your terminal sessions, from anywhere.",
   "bin": {
     "shelly": "bin/shelly",
     "shellyd": "bin/shellyd"
   },
   "optionalDependencies": {
-    "shellykit-darwin-arm64": "1.0.7",
-    "shellykit-darwin-x64": "1.0.7",
-    "shellykit-linux-arm64": "1.0.7",
-    "shellykit-linux-x64": "1.0.7"
+    "shellykit-darwin-arm64": "1.0.8",
+    "shellykit-darwin-x64": "1.0.8",
+    "shellykit-linux-arm64": "1.0.8",
+    "shellykit-linux-x64": "1.0.8"
   },
   "engines": {
     "node": ">=18"

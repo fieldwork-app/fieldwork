@@ -1,0 +1,102 @@
+name: Roll out Android Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer currently committed on main (for example, 1.0.7)
+        required: true
+        type: string
+      target:
+        description: First production release must use 100; later updates may be staged
+        required: true
+        default: "10"
+        type: choice
+        options:
+          - "10"
+          - "25"
+          - "50"
+          - "100"
+          - halt
+      confirmation:
+        description: Enter app.shelly.android@VERSION:TARGET
+        required: true
+        type: string
+
+concurrency:
+  group: android-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rollout:
+    name: Roll out Android ${{ inputs.version }} to ${{ inputs.target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: android-production
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require main and resolve the version code
+        id: android-version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          TARGET: ${{ inputs.target }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Production rollouts must run from main." >&2
+            exit 1
+          fi
+
+          version=$(node -p "require('./packages/cli/package.json').version")
+          if [[ "$REQUESTED_VERSION" != "$version" ]]; then
+            echo "Requested version $REQUESTED_VERSION does not match main version $version." >&2
+            exit 1
+          fi
+          if [[ ! "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Android production versions must be plain SemVer: $version" >&2
+            exit 1
+          fi
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[2]}
+          patch=${BASH_REMATCH[3]}
+          if (( minor > 999 || patch > 999 )); then
+            echo "Android version components must be below 1000: $version" >&2
+            exit 1
+          fi
+          version_code=$((major * 1000000 + minor * 1000 + patch))
+          if (( version_code > 2100000000 )); then
+            echo "Android version code exceeds the Play limit: $version_code" >&2
+            exit 1
+          fi
+
+          expected="app.shelly.android@${version}:${TARGET}"
+          if [[ "$CONFIRMATION" != "$expected" ]]; then
+            echo "Confirmation mismatch. Enter exactly: $expected" >&2
+            exit 1
+          fi
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+      - name: Verify production credentials
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [[ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]]; then
+            echo "PLAY_SERVICE_ACCOUNT_JSON must be configured on the android-production environment." >&2
+            exit 1
+          fi
+      - name: Update the Play production rollout
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          node scripts/manage-play-rollout.mjs \
+            --package-name app.shelly.android \
+            --version-code "${{ steps.android-version.outputs.version_code }}" \
+            --target "${{ inputs.target }}"

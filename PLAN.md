@@ -2,8 +2,8 @@
 
 **Status**: shipped — 1.0.x is released on npm; this file is the maintained v1
 scope contract
-**Current boundary**: iOS implementation is deferred; Play Store submission and
-physical Android release-device testing remain operator-owned.
+**Current boundary**: iOS implementation is deferred; production rollout approval
+and physical Android release-device testing remain operator-owned.
 
 This file is the v1 implementation contract. `FUTURE.md` is the boundary for
 deferred work. If source behavior and this plan diverge, update the code or this
@@ -291,6 +291,8 @@ pnpm test:local-handoff
 pnpm test:macos-daemon-launchd
 pnpm test:relay-tls
 pnpm test:relay-otlp
+pnpm check:play-release-notes
+pnpm test:play-rollout
 pnpm check:site
 apps/android/scripts/build-rust.sh
 apps/android/gradlew --no-daemon bundleRelease
@@ -322,8 +324,8 @@ Each release still involves deliberate maintainer steps outside CI:
 - GitHub release finalization
 - production relay credential deployment
 - FCM real-device delivery
-- physical Android release-device pass
-- Android release signing and Play upload
+- signed Android internal-track device pass
+- protected Play production rollout approval and post-rollout monitoring
 
-The codebase should make these steps straightforward, but the final account,
-credential, and physical-device steps are operator-owned.
+The codebase should make these steps straightforward, but the final approval,
+account, credential, and physical-device steps are operator-owned.

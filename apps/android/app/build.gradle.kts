@@ -1,10 +1,8 @@
 import java.util.Properties
 import org.gradle.api.tasks.Exec
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -76,7 +74,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            kotlin.srcDir("../generated")
+            kotlin.directories += "../generated"
         }
     }
 
@@ -133,11 +131,6 @@ android {
         }
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
 }
 
 dependencies {

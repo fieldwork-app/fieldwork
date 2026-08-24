@@ -137,7 +137,15 @@ defaults do — when the relay sits behind a trusted proxy that overwrites
 
 ## Android Release
 
-`.github/workflows/release-android.yml` expects these GitHub Secrets:
+Android delivery is split deliberately:
+
+- `.github/workflows/release-android.yml` builds one signed artifact and uploads
+  an `android-v*.*.*` tag to Play internal testing.
+- `.github/workflows/rollout-android.yml` promotes that exact version code to
+  production, increases its staged percentage, completes it, or halts it. It
+  never rebuilds or re-uploads the AAB.
+
+Configure the `android-internal` GitHub environment with these secrets:
 
 - `ANDROID_GOOGLE_SERVICES_JSON`
 - `ANDROID_KEYSTORE_BASE64`
@@ -145,16 +153,61 @@ defaults do — when the relay sits behind a trusted proxy that overwrites
 - `SHELLY_RELAY_CONTROL_URL`
 - `PLAY_SERVICE_ACCOUNT_JSON`
 
-The workflow builds mobile Rust libraries, decodes Firebase/signing config,
-runs Android lint and unit tests, builds the release AAB, verifies the JAR
-signature with `jarsigner`, uploads it to Play, and removes generated
-Firebase/signing files in cleanup. A manual run creates an unsubmitted
-production-track draft; an `android-v*.*.*` tag keeps the existing completed
-internal-track behavior. Android is intentionally not part of normal
-pull-request CI, so this workflow is the mandatory Android release gate.
+Configure the separate `android-production` environment with only:
 
-Physical Android testing remains manual. Use direct `adb` screenshots, UI dumps,
-logcat, crash-buffer checks, and app behavior checks on the signed release build.
+- `PLAY_SERVICE_ACCOUNT_JSON`
+
+Use distinct app-scoped Play service accounts for internal upload and production
+promotion when possible, even though both environment secrets use the same name.
+The internal account needs testing-track release access; the production account
+needs production-release access. Neither needs account administration or
+financial permissions.
+
+Do not leave these as repository-level secrets after copying them into their
+environments. The repository environments are configured so `android-internal`
+accepts only `android-v*.*.*` tags and `android-production` accepts only `main`.
+Production requires approval plus a five-minute wait, and administrator bypass
+is disabled on both environments. This single-maintainer repository allows
+self-approval, but the typed confirmation still protects against an accidental
+click.
+
+The internal workflow builds mobile Rust libraries, decodes Firebase/signing
+config, verifies that AGP 9 full-mode R8 and optimized resource shrinking remain
+enabled, validates versioned Play release notes, runs Android lint and unit tests,
+builds the minified release AAB, verifies the JAR signature, checks that the AAB
+contains its ProGuard mapping and Rust native debug symbols, uploads it to Play
+internal testing, retains the AAB/mapping/notes as a 90-day Actions artifact, and
+removes generated secrets in cleanup. Pull requests touching Android or its Rust
+dependencies run the corresponding unsigned release build before merge.
+
+For every version, add at least
+`apps/android/distribution/whatsnew/VERSION/en-US.txt`. The note validator
+enforces BCP-47 locale filenames and Play's 500-Unicode-character limit.
+
+Release sequence:
+
+1. Merge a green revision to `main` and add versioned Play notes.
+2. Push the matching `android-vVERSION` tag. Confirm the internal upload and its
+   Play pre-launch report.
+3. Install from internal testing and complete the physical-device release pass:
+   pairing, reconnect, terminal I/O, background/foreground behavior,
+   notifications, crash buffer, and upgrade from the prior production version.
+4. Run `Roll out Android Production` from `main`. Enter the committed version,
+   select the target, and enter `app.shelly.android@VERSION:TARGET` exactly.
+5. Monitor Android vitals and product telemetry between stages. Advance later
+   updates through `10` → `25` → `50` → `100`; select `halt` if a staged release
+   regresses. Google Play requires the first production release to use `100`.
+
+An API commit can still wait for Google review or for an operator to publish it
+when Managed Publishing is enabled. Confirm the release is actually serving in
+Play Console's Publishing overview and production-track rollout history; a green
+Actions job proves the requested edit was committed, not that review has
+finished.
+
+The production script refuses percentage decreases, a version older than one
+already on production, promotion before a completed internal release, a second
+outstanding production release, or a commit that would cancel changes already
+under Play review. Re-running an already-applied target is a no-op.
 
 ## Website deployment
 

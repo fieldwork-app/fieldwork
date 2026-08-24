@@ -1,0 +1,1 @@
+Improves memory use, startup, and app size with optimized R8 resource shrinking, plus safer staged Play releases and stronger release checks.

@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "android-v*.*.*"
-  workflow_dispatch:
 
 concurrency:
   group: android-release
@@ -15,7 +14,7 @@ permissions:
 
 jobs:
   play-upload:
-    name: ${{ github.event_name == 'workflow_dispatch' && 'Build and upload Play production draft' || 'Build and upload Play internal track' }}
+    name: Build and upload Play internal track
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment: android-internal
@@ -26,10 +25,11 @@ jobs:
           persist-credentials: false
       - name: Require a main-branch release revision
         run: |
+          set -euo pipefail
           git fetch --no-tags origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
-          if [[ "$GITHUB_REF_TYPE" != "tag" && "$GITHUB_REF" != "refs/heads/main" ]]; then
-            echo "Manual Android releases must run from main." >&2
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
+            echo "Android artifact releases require an android-v*.*.* tag." >&2
             exit 1
           fi
       - name: Verify Android release credentials
@@ -97,17 +97,23 @@ jobs:
         run: |
           set -euo pipefail
           version=$(node -p "require('./packages/cli/package.json').version")
-          if [ "${GITHUB_REF_TYPE:-}" = "tag" ] && [ "${GITHUB_REF_NAME#android-v}" != "$version" ]; then
+          if [ "${GITHUB_REF_NAME#android-v}" != "$version" ]; then
             echo "Android tag $GITHUB_REF_NAME does not match package version $version" >&2
             exit 1
           fi
-          IFS=. read -r major minor patch <<< "$version"
-          if [ "$minor" -gt 999 ] || [ "$patch" -gt 999 ]; then
+          if [[ ! "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Android release versions must be plain SemVer: $version" >&2
+            exit 1
+          fi
+          major=${BASH_REMATCH[1]}
+          minor=${BASH_REMATCH[2]}
+          patch=${BASH_REMATCH[3]}
+          if (( minor > 999 || patch > 999 )); then
             echo "Android version components must be below 1000: $version" >&2
             exit 1
           fi
           version_code=$((major * 1000000 + minor * 1000 + patch))
-          if [ "$version_code" -gt 2100000000 ]; then
+          if (( version_code > 2100000000 )); then
             echo "Android version code exceeds the Play limit: $version_code" >&2
             exit 1
           fi
@@ -119,13 +125,35 @@ jobs:
           SHELLY_ANDROID_VERSION_NAME: ${{ steps.android-version.outputs.version_name }}
           SHELLY_RELAY_CONTROL_URL: ${{ secrets.SHELLY_RELAY_CONTROL_URL }}
         run: |
+          node scripts/check-android-release-optimization.mjs
           node scripts/sync-release-version.mjs --check
+          node scripts/prepare-play-release-notes.mjs
+          node scripts/test-play-rollout.mjs
           apps/android/gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest bundleRelease
       - name: Verify release AAB signature
         run: |
           set -euo pipefail
           jarsigner -verify -certs apps/android/app/build/outputs/bundle/release/app-release.aab | tee /tmp/shelly-aab-jarsigner.txt
           grep -q "jar verified" /tmp/shelly-aab-jarsigner.txt
+      - name: Verify crash-symbol metadata
+        run: |
+          set -euo pipefail
+          aab=apps/android/app/build/outputs/bundle/release/app-release.aab
+          unzip -Z1 "$aab" > "$RUNNER_TEMP/shelly-aab-entries.txt"
+          grep -qx 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map' "$RUNNER_TEMP/shelly-aab-entries.txt"
+          grep -Eq '^BUNDLE-METADATA/com.android.tools.build.debugsymbols/[^/]+/libshelly_mobile_core\.so\.dbg$' "$RUNNER_TEMP/shelly-aab-entries.txt"
+      - name: Prepare Play release notes
+        run: node scripts/prepare-play-release-notes.mjs --output "$RUNNER_TEMP/play-whats-new"
+      - name: Retain signed release evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: shelly-android-${{ steps.android-version.outputs.version_name }}
+          path: |
+            apps/android/app/build/outputs/bundle/release/app-release.aab
+            apps/android/app/build/outputs/mapping/release/mapping.txt
+            ${{ runner.temp }}/play-whats-new/whatsnew-en-US
+          if-no-files-found: error
+          retention-days: 90
       - name: Verify Play upload credentials
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -133,20 +161,6 @@ jobs:
           if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
             echo "PLAY_SERVICE_ACCOUNT_JSON is required for Play upload."
             exit 1
-          fi
-      - name: Resolve Play destination
-        id: play-destination
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            {
-              echo "track=production"
-              echo "status=draft"
-            } >> "$GITHUB_OUTPUT"
-          else
-            {
-              echo "track=internal"
-              echo "status=completed"
-            } >> "$GITHUB_OUTPUT"
           fi
       - name: Upload signed AAB to Play
         env:
@@ -156,8 +170,10 @@ jobs:
           serviceAccountJsonPlainText: ${{ env.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.shelly.android
           releaseFiles: apps/android/app/build/outputs/bundle/release/app-release.aab
-          tracks: ${{ steps.play-destination.outputs.track }}
-          status: ${{ steps.play-destination.outputs.status }}
+          releaseName: Shelly ${{ steps.android-version.outputs.version_name }}
+          tracks: internal
+          status: completed
+          whatsNewDirectory: ${{ runner.temp }}/play-whats-new
       - name: Clean Android release secrets
         if: always()
         run: rm -f apps/android/app/google-services.json apps/android/app/release.keystore apps/android/keystore.properties
