@@ -9,6 +9,7 @@ const projectBuild = read("apps/android/build.gradle.kts");
 const appBuild = read("apps/android/app/build.gradle.kts");
 const gradleProperties = read("apps/android/gradle.properties");
 const gradleWrapper = read("apps/android/gradlew");
+const rustBuild = read("apps/android/scripts/build-rust.sh");
 
 const agpVersion = matchVersion(
   projectBuild,
@@ -16,9 +17,19 @@ const agpVersion = matchVersion(
   "Android Gradle plugin",
 );
 const gradleVersion = matchVersion(gradleWrapper, /gradle_version="([^"]+)"/, "Gradle");
+const gradleNdkVersion = matchVersion(appBuild, /ndkVersion = "([^"]+)"/, "Gradle Android NDK");
+const rustNdkVersion = matchVersion(
+  rustBuild,
+  /required_ndk_revision="\$\{SHELLY_ANDROID_NDK_VERSION:-([^}]+)\}"/,
+  "Rust Android NDK",
+);
 
 assert(versionAtLeast(agpVersion, 9, 0), `AGP ${agpVersion} does not enable optimized resource shrinking by default`);
 assert(versionAtLeast(gradleVersion, 9, 1), `Gradle ${gradleVersion} is too old for AGP ${agpVersion}`);
+assert(
+  gradleNdkVersion === rustNdkVersion,
+  `Gradle uses Android NDK ${gradleNdkVersion}, but the Rust build uses ${rustNdkVersion}`,
+);
 assert(!projectBuild.includes('id("org.jetbrains.kotlin.android")'), "top-level build still declares kotlin-android");
 assert(!appBuild.includes('id("org.jetbrains.kotlin.android")'), "app build still applies kotlin-android instead of AGP built-in Kotlin");
 assert(appBuild.includes("isMinifyEnabled = true"), "release code shrinking is not enabled");
@@ -33,7 +44,7 @@ assert(
 );
 
 console.log(
-  `Android release optimization verified: AGP ${agpVersion}, Gradle ${gradleVersion}, full R8 code and optimized resource shrinking`,
+  `Android release optimization verified: AGP ${agpVersion}, Gradle ${gradleVersion}, NDK ${gradleNdkVersion}, full R8 code and optimized resource shrinking`,
 );
 
 function read(relativePath) {

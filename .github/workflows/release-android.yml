@@ -63,6 +63,10 @@ jobs:
         with:
           node-version: 26
       - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - name: Install pinned Android NDK
+        run: |
+          sdkmanager --install "ndk;27.1.12297006"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.94.0
@@ -140,8 +144,15 @@ jobs:
           set -euo pipefail
           aab=apps/android/app/build/outputs/bundle/release/app-release.aab
           unzip -Z1 "$aab" > "$RUNNER_TEMP/shelly-aab-entries.txt"
-          grep -qx 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map' "$RUNNER_TEMP/shelly-aab-entries.txt"
-          grep -Eq '^BUNDLE-METADATA/com.android.tools.build.debugsymbols/[^/]+/libshelly_mobile_core\.so\.dbg$' "$RUNNER_TEMP/shelly-aab-entries.txt"
+          if ! grep -qx 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map' "$RUNNER_TEMP/shelly-aab-entries.txt"; then
+            echo "The release AAB is missing its R8 mapping." >&2
+            exit 1
+          fi
+          if ! grep -Eq '^BUNDLE-METADATA/com.android.tools.build.debugsymbols/[^/]+/libshelly_mobile_core\.so\.dbg$' "$RUNNER_TEMP/shelly-aab-entries.txt"; then
+            echo "The release AAB is missing Shelly native debug symbols. Embedded metadata:" >&2
+            grep '^BUNDLE-METADATA/' "$RUNNER_TEMP/shelly-aab-entries.txt" >&2 || true
+            exit 1
+          fi
       - name: Prepare Play release notes
         run: node scripts/prepare-play-release-notes.mjs --output "$RUNNER_TEMP/play-whats-new"
       - name: Retain signed release evidence
