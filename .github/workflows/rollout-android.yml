@@ -8,15 +8,15 @@ on:
         required: true
         type: string
       target:
-        description: First production release must use 100; later updates may be staged
+        description: Production defaults to 100; choose a staged target only intentionally
         required: true
-        default: "10"
+        default: "100"
         type: choice
         options:
+          - "100"
           - "10"
           - "25"
           - "50"
-          - "100"
           - halt
       confirmation:
         description: Enter app.shelly.android@VERSION:TARGET

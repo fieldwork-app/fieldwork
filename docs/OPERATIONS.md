@@ -193,10 +193,12 @@ Release sequence:
    pairing, reconnect, terminal I/O, background/foreground behavior,
    notifications, crash buffer, and upgrade from the prior production version.
 4. Run `Roll out Android Production` from `main`. Enter the committed version,
-   select the target, and enter `app.shelly.android@VERSION:TARGET` exactly.
-5. Monitor Android vitals and product telemetry between stages. Advance later
-   updates through `10` → `25` → `50` → `100`; select `halt` if a staged release
-   regresses. Google Play requires the first production release to use `100`.
+   leave the default target at `100`, and enter
+   `app.shelly.android@VERSION:100` exactly. Full rollout is the default for every
+   production release.
+5. Monitor Android vitals and product telemetry after release. Use `10`, `25`, or
+   `50` only when an operator deliberately chooses a staged rollout; advance that
+   release to `100` when ready, or select `halt` if it regresses.
 
 An API commit can still wait for Google review or for an operator to publish it
 when Managed Publishing is enabled. Confirm the release is actually serving in

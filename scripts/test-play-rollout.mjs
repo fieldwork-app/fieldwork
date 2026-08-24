@@ -2,7 +2,18 @@
 
 import assert from "node:assert/strict";
 import { createVerify, generateKeyPairSync } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { getAccessToken, parseRolloutTarget, planProductionTrack } from "./manage-play-rollout.mjs";
+
+const rolloutWorkflow = readFileSync(
+  new URL("../.github/workflows/rollout-android.yml", import.meta.url),
+  "utf8",
+);
+assert.match(
+  rolloutWorkflow,
+  /target:\n(?:[ \t].*\n)*?[ \t]+default: "100"\n(?:[ \t].*\n)*?[ \t]+options:\n[ \t]+- "100"/,
+  "Android production rollout must default to 100%",
+);
 
 function release(versionCode, status, userFraction) {
   return {
