@@ -39,7 +39,7 @@ interprocess = { version = "2.2", features = ["tokio"] }
 # Exact to keep the validated daemon, mobile, and relay API surface reproducible.
 iroh = { version = "=1.0.3", features = ["platform-verifier"] }
 # Keep the relay crate on the same tested stable release as iroh's endpoint APIs.
-iroh-relay = { version = "=1.0.3", features = ["server", "platform-verifier"] }
+iroh-relay = { version = "=1.1.0", features = ["server", "platform-verifier"] }
 jni = "0.22.4"
 # Exact because keyring patch releases can change native backend behavior and persistence semantics.
 keyring = { version = "=3.6.2", features = ["apple-native", "linux-native-sync-persistent", "vendored"] }
