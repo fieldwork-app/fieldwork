@@ -26,7 +26,7 @@ export function coverage(){
 }
 
 const escape=value=>JSON.stringify(String(value));
-const MANUAL_BASE='https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/';
+const MANUAL_BASE='https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/';
 export function turtle(){
   const {live,documented}=coverage();
   // The title a practitioner sees, read from each widget's current release rather than invented

@@ -20,7 +20,7 @@ test('every value is placed by its path, and a valid ruleset passes the checks a
   assert.equal(positions.get('rules.0.any.0.all.0.comparator').line,text.split('\n').findIndex(l=>l.includes('"comparator"'))+1);
   const {ruleset,problems}=checkRulesetJson(text);
   assert.deepEqual(problems,[]);assert.equal(ruleset.title,'Syndromes');
-  assert.match(text,/^\{\n  "\$schema": "https:\/\/raw.githubusercontent.com\/digital-twin-ph\/fieldwork\/main\/schemas\/authored-ruleset.schema.json",\n  "schema": "fieldwork\/authored-ruleset\/1",/);
+  assert.match(text,/^\{\n  "\$schema": "https:\/\/raw.githubusercontent.com\/fieldwork-app\/fieldwork\/main\/schemas\/authored-ruleset.schema.json",\n  "schema": "fieldwork\/authored-ruleset\/1",/);
 });
 test('what a ruleset means is checked and placed: an undeclared field, an unknown comparator, no words',()=>{
   const bad=structuredClone(GOOD);

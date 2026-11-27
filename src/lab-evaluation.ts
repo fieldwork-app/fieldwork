@@ -93,7 +93,7 @@ export function fileStem(pass:EvaluationPass):string{
  *  populate GitHub Issues"*, and *"let's make sure we have a standard format for submitting GitHub Issues."* The link
  *  opens GitHub's new-issue page with the form filled; the person reads it and submits it. Nothing is posted for them,
  *  and no token is needed. */
-export const ISSUE_REPOSITORY='digital-twin-ph/fieldwork';
+export const ISSUE_REPOSITORY='fieldwork-app/fieldwork';
 export function findingIssueUrl(pass:EvaluationPass,finding:Finding,environment=''):string{
   const h=HEURISTICS.find(x=>x.id===finding.heuristic);
   const params=new URLSearchParams({template:'lab-evaluation.yml',

@@ -4,7 +4,7 @@
 import {toHTML} from './prose.js';
 
 interface Release {version:string; date:string; markdown:string}
-const SOURCE='https://github.com/digital-twin-ph/fieldwork/blob/main/CHANGELOG.md';
+const SOURCE='https://github.com/fieldwork-app/fieldwork/blob/main/CHANGELOG.md';
 
 export async function openChangelog(version:string,esc:(v:string)=>string):Promise<void>{
   document.getElementById('changelog-dialog')?.remove();

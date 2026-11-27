@@ -9,7 +9,7 @@ import {authoredUnitProblems,otherwiseProblems,computesValues,evaluatedDirectly,
 
 export const RULESET_SCHEMA='fieldwork/authored-ruleset/1';
 /** WHERE AN EDITOR FINDS THE SCHEMA: VS Code reads a file's "$schema" and offers names, kinds and comparisons as it is typed. */
-export const RULESET_SCHEMA_URL='https://raw.githubusercontent.com/digital-twin-ph/fieldwork/main/schemas/authored-ruleset.schema.json';
+export const RULESET_SCHEMA_URL='https://raw.githubusercontent.com/fieldwork-app/fieldwork/main/schemas/authored-ruleset.schema.json';
 export interface JsonProblem {line:number;column?:number;says:string;path?:string}
 /** Where each value starts, by its path: `rules.0.any.0.all.1.field`. */
 export type Positions=Map<string,{line:number;column:number}>;

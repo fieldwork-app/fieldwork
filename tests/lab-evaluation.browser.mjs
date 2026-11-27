@@ -39,7 +39,7 @@ test('switched on in the footer, it evaluates the open screen, saves two files a
   const issue=d.locator('[data-h="H8"] [data-issue]');
   await issue.click({modifiers:[]}).catch(()=>{});
   const href=new URL(await issue.getAttribute('href'));
-  expect(href.origin+href.pathname).toBe('https://github.com/digital-twin-ph/fieldwork/issues/new');
+  expect(href.origin+href.pathname).toBe('https://github.com/fieldwork-app/fieldwork/issues/new');
   expect(href.searchParams.get('template')).toBe('lab-evaluation.yml');
   expect(href.searchParams.get('heuristic')).toBe('H8 Aesthetic and minimalist design');
   expect(href.searchParams.get('happens')).toBe('The subtitle explains the method.');

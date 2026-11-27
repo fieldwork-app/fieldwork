@@ -16,7 +16,7 @@ eo: a owl:Ontology ;
   rdfs:comment "Original editorial vocabulary. Potential relevance is not scientific validation, data acquisition or proof of surface exposure. This is not an official STAC ontology or a FieldWork importer." ;
   rdfs:seeAlso <https://www.w3.org/TR/vocab-ssn/>,
     <https://www.w3.org/TR/skos-reference/>, <https://www.w3.org/TR/vocab-dcat-3/>,
-    <https://github.com/digital-twin-ph/fieldwork/blob/main/ontology/stac.ttl> .
+    <https://github.com/fieldwork-app/fieldwork/blob/main/ontology/stac.ttl> .
 
 eo:ResearchQuestion a owl:Class ; rdfs:subClassOf schema:Question ;
   rdfs:label "Research question" .

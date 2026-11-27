@@ -117,7 +117,7 @@ platform, not for basemaps, so do not use it.
    work count. That allows 5 million requests a month.
 3. Copy the key from the email.
 4. To limit the key to Fieldwork, sign in at [dashboard.basemaps.carto.com](https://dashboard.basemaps.carto.com/)
-   with the link CARTO emails you, and add the website `digital-twin-ph.github.io`. Type the host only: no `https://`,
+   with the link CARTO emails you, and add the website `fieldwork-app.github.io`. Type the host only: no `https://`,
    no path. A key limited this way does not work on your own computer's test server (`localhost`).
 
 ## Fill in the form for a CARTO key
@@ -158,7 +158,7 @@ Esri's pages do not say whether signing up asks for a card. If it does, you can 
    it, and not *Static maps*. **Next**.
 7. **Settings**:
    - **Expiration date**: the latest the calendar allows, a year from today. Put the date in your calendar.
-   - **Referrer URLs**: `https://digital-twin-ph.github.io`, with no path and no slash at the end.
+   - **Referrer URLs**: `https://fieldwork-app.github.io`, with no path and no slash at the end.
    **Next**.
 8. Give it a title, such as `Fieldwork basemaps`, and finish.
 9. The page then shows a **client ID** and a **client secret**. Fieldwork needs neither: do not copy them anywhere.

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/digital-twin-ph/fieldwork/main/schemas/authored-ruleset.schema.json",
+  "$id": "https://raw.githubusercontent.com/fieldwork-app/fieldwork/main/schemas/authored-ruleset.schema.json",
   "title": "A Fieldwork ruleset, as Apply ruleset stores it",
   "description": "Rules that give each record a value: a category, a band, a verdict or a computed number. See the guide in docs/widgets/apply_ruleset.md, \"Writing rules as JSON\".",
   "type": "object",

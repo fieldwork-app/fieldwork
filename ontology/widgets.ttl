@@ -11,129 +11,129 @@
 <urn:fieldwork:widget:access> a fw:WidgetDefinition; fw:nodeType "access"; rdfs:label "Facility access".
 <urn:fieldwork:widget:access_policy> a fw:WidgetDefinition; fw:nodeType "access_policy"; rdfs:label "Access review".
 <urn:fieldwork:widget:aggregate_points_to_h3_cell> a fw:WidgetDefinition; fw:nodeType "aggregate_points_to_h3_cell"; rdfs:label "Aggregate points to H3 cells";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/aggregate_points_to_h3_cell.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/aggregate_points_to_h3_cell.md>.
 <urn:fieldwork:widget:alert> a fw:WidgetDefinition; fw:nodeType "alert"; rdfs:label "Heat alert".
 <urn:fieldwork:widget:apply_ruleset> a fw:WidgetDefinition; fw:nodeType "apply_ruleset"; rdfs:label "Apply ruleset";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/apply_ruleset.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/apply_ruleset.md>.
 <urn:fieldwork:widget:buffer_area> a fw:WidgetDefinition; fw:nodeType "buffer_area"; rdfs:label "Buffer study area".
 <urn:fieldwork:widget:buffer_point> a fw:WidgetDefinition; fw:nodeType "buffer_point"; rdfs:label "Geometry buffer";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/buffer_point.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/buffer_point.md>.
 <urn:fieldwork:widget:case_series> a fw:WidgetDefinition; fw:nodeType "case_series"; rdfs:label "Cases by period";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/case_series.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/case_series.md>.
 <urn:fieldwork:widget:centers> a fw:WidgetDefinition; fw:nodeType "centers"; rdfs:label "Cooling centers".
 <urn:fieldwork:widget:chart_output> a fw:WidgetDefinition; fw:nodeType "chart_output"; rdfs:label "Chart";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/chart_output.md>;
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/chart_output.md>;
   fw:defaultFigureSection "Results".
 <urn:fieldwork:widget:clip_points_to_area> a fw:WidgetDefinition; fw:nodeType "clip_points_to_area"; rdfs:label "Keep points inside the area";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/clip_points_to_area.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/clip_points_to_area.md>.
 <urn:fieldwork:widget:clip_polygons> a fw:WidgetDefinition; fw:nodeType "clip_polygons"; rdfs:label "Clip polygons";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/clip_polygons.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/clip_polygons.md>.
 <urn:fieldwork:widget:clip_raster> a fw:WidgetDefinition; fw:nodeType "clip_raster"; rdfs:label "Clip raster";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/clip_raster.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/clip_raster.md>.
 <urn:fieldwork:widget:compare_point_sets> a fw:WidgetDefinition; fw:nodeType "compare_point_sets"; rdfs:label "Compare point sets";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/compare_point_sets.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/compare_point_sets.md>.
 <urn:fieldwork:widget:comparison_map> a fw:WidgetDefinition; fw:nodeType "comparison_map"; rdfs:label "Comparison map".
 <urn:fieldwork:widget:coverage_check> a fw:WidgetDefinition; fw:nodeType "coverage_check"; rdfs:label "Check spatial coverage".
 <urn:fieldwork:widget:deduplicate_points> a fw:WidgetDefinition; fw:nodeType "deduplicate_points"; rdfs:label "Deduplicate records";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/deduplicate_points.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/deduplicate_points.md>.
 <urn:fieldwork:widget:derive_value> a fw:WidgetDefinition; fw:nodeType "derive_value"; rdfs:label "Derive a value";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/derive_value.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/derive_value.md>.
 <urn:fieldwork:widget:donut_geomask> a fw:WidgetDefinition; fw:nodeType "donut_geomask"; rdfs:label "Move points in a donut";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/donut_geomask.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/donut_geomask.md>.
 <urn:fieldwork:widget:facilities> a fw:WidgetDefinition; fw:nodeType "facilities"; rdfs:label "Select nearby facilities".
 <urn:fieldwork:widget:facility_audit> a fw:WidgetDefinition; fw:nodeType "facility_audit"; rdfs:label "Evidence register".
 <urn:fieldwork:widget:fill_interior_gaps> a fw:WidgetDefinition; fw:nodeType "fill_interior_gaps"; rdfs:label "Fill interior gaps".
 <urn:fieldwork:widget:find_health_facilities> a fw:WidgetDefinition; fw:nodeType "find_health_facilities"; rdfs:label "Find health facilities";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/find_health_facilities.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/find_health_facilities.md>.
 <urn:fieldwork:widget:space_time_scan> a fw:WidgetDefinition; fw:nodeType "space_time_scan"; rdfs:label "Space-time scan";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/space_time_scan.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/space_time_scan.md>.
 <urn:fieldwork:widget:group_table> a fw:WidgetDefinition; fw:nodeType "group_table"; rdfs:label "Total within groups";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/group_table.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/group_table.md>.
 <urn:fieldwork:widget:isochrone> a fw:WidgetDefinition; fw:nodeType "isochrone"; rdfs:label "Network isochrone";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/isochrone.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/isochrone.md>.
 <urn:fieldwork:widget:join_table_to_area> a fw:WidgetDefinition; fw:nodeType "join_table_to_area"; rdfs:label "Join a table to the study area";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/join_table_to_area.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/join_table_to_area.md>.
 <urn:fieldwork:widget:map_image_input> a fw:WidgetDefinition; fw:nodeType "map_image_input"; rdfs:label "Georeferenced map image";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/map_image_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/map_image_input.md>.
 <urn:fieldwork:widget:map_output> a fw:WidgetDefinition; fw:nodeType "map_output"; rdfs:label "Map";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/map_output.md>;
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/map_output.md>;
   fw:defaultFigureSection "Results".
 <urn:fieldwork:widget:mean_center> a fw:WidgetDefinition; fw:nodeType "mean_center"; rdfs:label "Mean center";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/mean_center.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/mean_center.md>.
 <urn:fieldwork:widget:measure_area> a fw:WidgetDefinition; fw:nodeType "measure_area"; rdfs:label "Calculate area";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/measure_area.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/measure_area.md>.
 <urn:fieldwork:widget:measure_distance> a fw:WidgetDefinition; fw:nodeType "measure_distance"; rdfs:label "Measure distance";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/measure_distance.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/measure_distance.md>.
 <urn:fieldwork:widget:micro_workflow> a fw:WidgetDefinition; fw:nodeType "micro_workflow"; rdfs:label "Micro-workflow".
 <urn:fieldwork:widget:network_input> a fw:WidgetDefinition; fw:nodeType "network_input"; rdfs:label "Street network";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/network_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/network_input.md>.
 <urn:fieldwork:widget:output> a fw:WidgetDefinition; fw:nodeType "output"; rdfs:label "Visual output".
 <urn:fieldwork:widget:places> a fw:WidgetDefinition; fw:nodeType "places"; rdfs:label "Neighborhoods".
 <urn:fieldwork:widget:point_grid> a fw:WidgetDefinition; fw:nodeType "point_grid"; rdfs:label "Point grid".
 <urn:fieldwork:widget:point_input> a fw:WidgetDefinition; fw:nodeType "point_input"; rdfs:label "Point data";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/point_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/point_input.md>.
 <urn:fieldwork:widget:policy> a fw:WidgetDefinition; fw:nodeType "policy"; rdfs:label "Outreach criteria".
 <urn:fieldwork:widget:polygon_input> a fw:WidgetDefinition; fw:nodeType "polygon_input"; rdfs:label "Polygon layer";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/polygon_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/polygon_input.md>.
 <urn:fieldwork:widget:raster_input> a fw:WidgetDefinition; fw:nodeType "raster_input"; rdfs:label "Raster input";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/raster_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/raster_input.md>.
 <urn:fieldwork:widget:rate> a fw:WidgetDefinition; fw:nodeType "rate"; rdfs:label "Rate with a denominator";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/rate.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/rate.md>.
 <urn:fieldwork:widget:rate_ratio> a fw:WidgetDefinition; fw:nodeType "rate_ratio"; rdfs:label "Rate ratio with an interval".
 <urn:fieldwork:widget:reachable_corridor> a fw:WidgetDefinition; fw:nodeType "reachable_corridor"; rdfs:label "Reachable corridor".
 <urn:fieldwork:widget:reachable_nodes> a fw:WidgetDefinition; fw:nodeType "reachable_nodes"; rdfs:label "Reachable junctions";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/reachable_nodes.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/reachable_nodes.md>.
 <urn:fieldwork:widget:relate_table> a fw:WidgetDefinition; fw:nodeType "relate_table"; rdfs:label "Relate a column from another table";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/relate_table.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/relate_table.md>.
 <urn:fieldwork:widget:reproject> a fw:WidgetDefinition; fw:nodeType "reproject"; rdfs:label "Reproject points".
 <urn:fieldwork:widget:sample_raster> a fw:WidgetDefinition; fw:nodeType "sample_raster"; rdfs:label "Sample a raster at points or over areas";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/sample_raster.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/sample_raster.md>.
 <urn:fieldwork:widget:append_rows> a fw:WidgetDefinition; fw:nodeType "append_rows"; rdfs:label "Append rows";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/append_rows.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/append_rows.md>.
 <urn:fieldwork:widget:select_rows> a fw:WidgetDefinition; fw:nodeType "select_rows"; rdfs:label "Select rows by value";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/select_rows.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/select_rows.md>.
 <urn:fieldwork:widget:slr_extract_import> a fw:WidgetDefinition; fw:nodeType "slr_extract_import"; rdfs:label "Sea-level projection extract".
 <urn:fieldwork:widget:slr_site_assignment> a fw:WidgetDefinition; fw:nodeType "slr_site_assignment"; rdfs:label "Assign projection site".
 <urn:fieldwork:widget:slr_threshold_comparison> a fw:WidgetDefinition; fw:nodeType "slr_threshold_comparison"; rdfs:label "Compare level to elevation".
 <urn:fieldwork:widget:snap_to_network> a fw:WidgetDefinition; fw:nodeType "snap_to_network"; rdfs:label "Snap to street network";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/snap_to_network.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/snap_to_network.md>.
 <urn:fieldwork:widget:stack_polygons> a fw:WidgetDefinition; fw:nodeType "stack_polygons"; rdfs:label "Collect polygon layers".
 <urn:fieldwork:widget:study_area> a fw:WidgetDefinition; fw:nodeType "study_area"; rdfs:label "Study area";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/study_area.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/study_area.md>.
 <urn:fieldwork:widget:summarize_combined_area> a fw:WidgetDefinition; fw:nodeType "summarize_combined_area"; rdfs:label "Combined area";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/summarize_combined_area.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/summarize_combined_area.md>.
 <urn:fieldwork:widget:summarize_hull> a fw:WidgetDefinition; fw:nodeType "summarize_hull"; rdfs:label "Convex hull";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/summarize_hull.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/summarize_hull.md>.
 <urn:fieldwork:widget:summarize_points_to_polygon> a fw:WidgetDefinition; fw:nodeType "summarize_points_to_polygon"; rdfs:label "Summarize points to polygons";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/summarize_points_to_polygon.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/summarize_points_to_polygon.md>.
 <urn:fieldwork:widget:table_input> a fw:WidgetDefinition; fw:nodeType "table_input"; rdfs:label "Tabular data";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/table_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/table_input.md>.
 <urn:fieldwork:widget:table_output> a fw:WidgetDefinition; fw:nodeType "table_output"; rdfs:label "Table";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/table_output.md>;
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/table_output.md>;
   fw:defaultFigureSection "Results".
 <urn:fieldwork:widget:travel_time> a fw:WidgetDefinition; fw:nodeType "travel_time"; rdfs:label "Travel time from distance".
 <urn:fieldwork:widget:travel_time_band> a fw:WidgetDefinition; fw:nodeType "travel_time_band"; rdfs:label "Travel time band".
 <urn:fieldwork:widget:study_design> a fw:WidgetDefinition; fw:nodeType "study_design"; rdfs:label "Study design";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/study_design.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/study_design.md>.
 <urn:fieldwork:widget:two_by_two> a fw:WidgetDefinition; fw:nodeType "two_by_two"; rdfs:label "Two-by-two table";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/two_by_two.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/two_by_two.md>.
 <urn:fieldwork:widget:voronoi> a fw:WidgetDefinition; fw:nodeType "voronoi"; rdfs:label "Voronoi catchments";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/voronoi.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/voronoi.md>.
 <urn:fieldwork:widget:xpert> a fw:WidgetDefinition; fw:nodeType "xpert"; rdfs:label "Diagnostic evidence".
 <urn:fieldwork:widget:regression> a fw:WidgetDefinition; fw:nodeType "regression"; rdfs:label "Regression";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/regression.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/regression.md>.
 <urn:fieldwork:widget:find_satellite_products> a fw:WidgetDefinition; fw:nodeType "find_satellite_products"; rdfs:label "Find satellite products";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/find_satellite_products.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/find_satellite_products.md>.
 <urn:fieldwork:widget:search_satellite_catalog> a fw:WidgetDefinition; fw:nodeType "search_satellite_catalog"; rdfs:label "Search a satellite catalog";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/search_satellite_catalog.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/search_satellite_catalog.md>.
 <urn:fieldwork:widget:sample_satellite_files_at_points> a fw:WidgetDefinition; fw:nodeType "sample_satellite_files_at_points"; rdfs:label "Sample satellite files at points or over areas".
 <urn:fieldwork:widget:transmission_chains> a fw:WidgetDefinition; fw:nodeType "transmission_chains"; rdfs:label "Transmission chains";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/transmission_chains.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/transmission_chains.md>.
 <urn:fieldwork:widget:detect_unusual_counts> a fw:WidgetDefinition; fw:nodeType "detect_unusual_counts"; rdfs:label "Detect unusual counts";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/detect_unusual_counts.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/detect_unusual_counts.md>.
 <urn:fieldwork:widget:line_input> a fw:WidgetDefinition; fw:nodeType "line_input"; rdfs:label "Line layer";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/line_input.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/line_input.md>.
 <urn:fieldwork:widget:travel_over_ground> a fw:WidgetDefinition; fw:nodeType "travel_over_ground"; rdfs:label "Travel time over ground";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/travel_over_ground.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/travel_over_ground.md>.
 <urn:fieldwork:widget:map_terms_to_vocabulary> a fw:WidgetDefinition; fw:nodeType "map_terms_to_vocabulary"; rdfs:label "Map a column’s terms to a vocabulary";
-  fw:userManual <https://github.com/digital-twin-ph/fieldwork/blob/main/docs/widgets/map_terms_to_vocabulary.md>.
+  fw:userManual <https://github.com/fieldwork-app/fieldwork/blob/main/docs/widgets/map_terms_to_vocabulary.md>.
