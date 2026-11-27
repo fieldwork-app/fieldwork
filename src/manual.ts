@@ -14,7 +14,7 @@ export const hasManual=(nodeType:string):boolean=>Object.hasOwn(MANUAL_PAGES,nod
 const surfaceOf=(key:string):string|undefined=>key.startsWith('surface:')?key.slice('surface:'.length):undefined;
 const sourcePath=(key:string):string=>surfaceOf(key)?`docs/surfaces/${surfaceOf(key)}.md`:`docs/widgets/${key}.md`;
 export const manualSource=(nodeType:string):string=>
-  `https://github.com/digital-twin-ph/fieldwork/blob/main/${sourcePath(nodeType)}`;
+  `https://github.com/fieldwork-app/fieldwork/blob/main/${sourcePath(nodeType)}`;
 
 
 export function openManual(nodeType:string,title:string,esc:(v:string)=>string):void{

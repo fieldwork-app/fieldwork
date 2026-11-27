@@ -13,12 +13,12 @@ or privacy control.
 
 | Site | What it is |
 | --- | --- |
-| [Fieldwork](https://digital-twin-ph.github.io/fieldwork/) | The application. Also on [GitLab Pages](https://fieldwork-47c2e8.gitpages.cdc.gov/), which may require a sign-in |
+| [Fieldwork](https://fieldwork-app.github.io/fieldwork/) | The application. Also on [GitLab Pages](https://fieldwork-47c2e8.gitpages.cdc.gov/), which may require a sign-in |
 | [Validation Lab](https://digital-twin-ph.github.io/validation-lab/) | JupyterLite notebooks that independently recompute Fieldwork's spatial results in Python and report agreement with a stated tolerance |
 | [Ontology viewer](https://digital-twin-ph.github.io/fieldwork-ontology/) | A reading view of this project's vocabulary, its shapes and its competency questions, with the schema-level questions as a build gate |
 
-Worked examples: [blank canvas](https://digital-twin-ph.github.io/fieldwork/?example=blank),
-[Measles in Hagelloch, 1861](https://digital-twin-ph.github.io/fieldwork/?example=hagelloch). Worked examples kept in
+Worked examples: [blank canvas](https://fieldwork-app.github.io/fieldwork/?example=blank),
+[Measles in Hagelloch, 1861](https://fieldwork-app.github.io/fieldwork/?example=hagelloch). Worked examples kept in
 their own repositories, such as [rules on synthetic data](https://github.com/digital-twin-ph/example-workflows-rulesets),
 open from the Catalog.
 The version beside the header mark is the released application version; see the

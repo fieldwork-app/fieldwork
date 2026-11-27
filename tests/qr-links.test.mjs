@@ -20,22 +20,22 @@ test('a catalog example: Fieldwork with it opened, and its repository at the pin
 test('a built-in example: its files on main, said to be the latest and not pinned; a project of its own gets none',()=>{
   const links=builtInLinks({id:'hagelloch-1861',name:'Measles in Hagelloch, 1861',workflows:['hagelloch']},'hagelloch');
   assert.equal(links.app,`${FIELDWORK_URL}?example=hagelloch`);
-  assert.equal(links.files,'https://github.com/digital-twin-ph/fieldwork/tree/main/examples/hagelloch-1861');
+  assert.equal(links.files,'https://github.com/fieldwork-app/fieldwork/tree/main/examples/hagelloch-1861');
   assert.equal(links.pinned,false);
   assert.equal(builtInLinks({id:'heat-outreach',name:'Heat',workflows:['heat']},'heat'),null);
   const html=exampleLinksBlock([links],s=>s);
   assert.equal((html.match(/<svg class="qr-code"/g)||[]).length,2);
   assert.match(html,/the latest version, not pinned/);
-  assert.match(html,/<a href="https:\/\/digital-twin-ph\.github\.io\/fieldwork\/\?example=hagelloch">/);
+  assert.match(html,/<a href="https:\/\/fieldwork-app\.github\.io\/fieldwork\/\?example=hagelloch">/);
   assert.equal(exampleLinksBlock([],s=>s),'');
 });
 
 test('the code holds one https address in plain ASCII, black on white, with its quiet zone',()=>{
-  const m=qrMatrix('https://digital-twin-ph.github.io/fieldwork/');
+  const m=qrMatrix('https://fieldwork-app.github.io/fieldwork/');
   assert.equal(m.length%4,1,'a QR code is 4n+17 modules a side');
   assert.throws(()=>qrMatrix('http://example.org'),/one https address/);
   assert.throws(()=>qrMatrix('https://example.org/ü'),/plain ASCII/);
-  const svg=qrSvg('https://digital-twin-ph.github.io/fieldwork/');
+  const svg=qrSvg('https://fieldwork-app.github.io/fieldwork/');
   assert.match(svg,new RegExp(`viewBox="0 0 ${m.length+8} ${m.length+8}"`));
   assert.match(svg,/fill="#ffffff".*fill="#000000"/);
 });

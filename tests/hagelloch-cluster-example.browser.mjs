@@ -83,7 +83,7 @@ test('Hagelloch: the space-time scan runs with a progress bar, and its clusters 
   await expect(page.locator('.notes-part[data-section="References"]')).toContainText('Kulldorff M, Heffernan R, Hartman J');
   // Where this worked example lives online: two QR codes and their addresses (experiment 203).
   await expect(page.locator('.notes-part[data-section="References"] .example-links svg.qr-code')).toHaveCount(2);
-  await expect(page.locator('.notes-part[data-section="References"] .example-links')).toContainText('https://digital-twin-ph.github.io/fieldwork/?example=hagelloch-cluster');
+  await expect(page.locator('.notes-part[data-section="References"] .example-links')).toContainText('https://fieldwork-app.github.io/fieldwork/?example=hagelloch-cluster');
   await page.screenshot({path:'test-results/hagelloch-cluster-example.png',fullPage:true});
   expect(errors).toEqual([]);
 });

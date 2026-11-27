@@ -3,7 +3,16 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
-## 0.204.0 — In development
+## 0.204.1 — In development
+
+- **Fieldwork moved to `fieldwork-app/fieldwork`**, with the site at `fieldwork-app.github.io/fieldwork`. The repository
+  was started from main's history alone, which names no co-author: the old repository kept a pull request whose
+  commits did, and only GitHub could remove them. The address the application shares, its links to the manual, the
+  changelog and issue reports, the ruleset schema's identifier and each widget's manual link in the ontology all name
+  the new one; the CARTO and Esri key instructions name the new host. The old repository is archived with a notice.
+  Saved work stays at the old address until backed up there and imported here.
+
+
 
 - **One blank port, bound by what arrives** (settled 2026-10-15 for the Map, by experiment 116 for every widget; the
   practitioner, 2026-11-27: *"Nodes should automatically detect the shape of the incoming input on an unconnected input
