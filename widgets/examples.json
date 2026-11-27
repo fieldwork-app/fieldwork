@@ -16,7 +16,7 @@
       "id": "urn:fieldwork:example:south-london-1854",
       "title": "Snow's South London water supply study, 1854",
       "repository": "https://github.com/digital-twin-ph/example-1855-cholera-south-london",
-      "commit": "09da2794bf2af7d69ad29113f211d67aaa633233",
+      "commit": "f7d7451ba8055965dd81c9167574e522c30dc599",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-1855-cholera-south-london",
       "licence": {
         "data": "CC0-1.0, except geo/sub-districts-csds.geojson which is BSD-2-Clause and geo/thames-reaches.geojson and geo/thames-tidal-limit.geojson which are ODbL-1.0",
@@ -38,8 +38,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "c263a4346a7016da455a801be22574e34160c248d34311a948cd9b7f343408f0",
-          "bytes": 41699
+          "sha256": "779226531e8074db819f1ee6fc01dde9e2a53cd0eb1b431a5a57eda6fdc8c1a4",
+          "bytes": 41695
         },
         {
           "path": "NOTICE.txt",
@@ -165,7 +165,7 @@
       "id": "urn:fieldwork:example:oswego-1940",
       "title": "The Oswego church supper, 1940",
       "repository": "https://github.com/digital-twin-ph/example-1940-oswego-church-supper",
-      "commit": "97d7d43c76a3f0ce0fe6700fb7dba94ee74ffa38",
+      "commit": "a0e306a9b5da1fd260045b153e68bc73390fa430",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-1940-oswego-church-supper",
       "licence": {
         "data": "Stated as unconfirmed public domain for the line list; geo/lycoming-church.geojson is ODbL-1.0; the arrangement is CC0-1.0",
@@ -215,8 +215,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "21a7484e19a7da5e22bd97cc53f99a810a3f90e05d7ef52d474e1ee34cf8ca58",
-          "bytes": 7608
+          "sha256": "887a403f310623730bb6cfc0af826af43541d76e70ad05aae95a86e545008c73",
+          "bytes": 7606
         },
         {
           "path": "NOTICE.txt",
@@ -235,7 +235,7 @@
       "id": "urn:fieldwork:example:nigeria-immunization-2024",
       "title": "DTP coverage and zero-dose children in Nigeria, 2024",
       "repository": "https://github.com/digital-twin-ph/example-2024-nigeria-immunization",
-      "commit": "ba688ef87755fade63e770f63285b9f29b43400b",
+      "commit": "e814f3dc79ae4835e7b190065ad4835d1542cf48",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2024-nigeria-immunization",
       "licence": {
         "data": "CC-BY-4.0",
@@ -286,8 +286,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "d1330bcb064b0970e2a5caf2342907805d0576241a1bc27335c2c8baa515f526",
-          "bytes": 7465
+          "sha256": "3f17f733ca3ab7d75553054060595107f85315389aa5118eafc13e2d73f308f8",
+          "bytes": 7463
         },
         {
           "path": "NOTICE.txt",
@@ -310,7 +310,7 @@
       "id": "urn:fieldwork:example:salmonella-germany-2021",
       "title": "Salmonella Braenderup and melons, Germany 2021",
       "repository": "https://github.com/digital-twin-ph/example-2021-salmonella-germany",
-      "commit": "780837930fb75aa7f53614143bb9cc33a44f19e3",
+      "commit": "0eddfc63cd7f9c9ce69d10bf14309357114211c4",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2021-salmonella-germany",
       "licence": {
         "data": "CC-BY-4.0",
@@ -366,8 +366,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "332148c17bb485e66e59b8253a8ac996629c31b1d59bb9481751494faa96f242",
-          "bytes": 9228
+          "sha256": "c531e548efa0843428ae9f725a7ac8a1e833dddbb3b54e4ea1b7abe597868caf",
+          "bytes": 9226
         },
         {
           "path": "NOTICE.txt",
@@ -396,7 +396,7 @@
       "id": "urn:fieldwork:example:nyc-asthma-ozone-2016-2025",
       "title": "Ozone and child asthma emergency visits, New York City, 2016–2025",
       "repository": "https://github.com/digital-twin-ph/example-2025-nyc-ozone",
-      "commit": "f7800f961d2f3f8602fa099ef85594099cb42bd5",
+      "commit": "736430322c29fb7425ae8d3947ddb8173aafc008",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2025-nyc-ozone",
       "licence": {
         "data": "Not redistributed",
@@ -437,8 +437,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "da05dab5833e2d4c9521e30e3340bf5f46bc9e7c279ca63deae777ceaa6335fe",
-          "bytes": 6707
+          "sha256": "8d2fea4dde37f7cf86af1b995f28cd6d33bf6de543e40763ad485435057b90db",
+          "bytes": 6705
         },
         {
           "path": "NOTICE.txt",
@@ -457,7 +457,7 @@
       "id": "urn:fieldwork:example:brazil-dengue-rj-2024",
       "title": "Dengue in Rio de Janeiro state, Brazil, 2024",
       "repository": "https://github.com/digital-twin-ph/example-2024-brazil-dengue",
-      "commit": "a5d9c40b74e5ffd0b567060db7ee4383b9686185",
+      "commit": "b7b1f1fa4afb0342c94e977a56bef6c0b26e145e",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2024-brazil-dengue",
       "licence": {
         "data": "CC-BY-4.0",
@@ -517,8 +517,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "ebacde5bf300b53b526cb4b4c4b4bead5a0ffaaccd2c1702c78d1b060c6707ef",
-          "bytes": 6961
+          "sha256": "0278b11f2fd0597c6de9c2825b66ee1a72e58e9a41a8d54ff5813fd941398b0a",
+          "bytes": 6959
         },
         {
           "path": "NOTICE.txt",
@@ -547,7 +547,7 @@
       "id": "urn:fieldwork:example:workflows-rulesets",
       "title": "Rules on synthetic data",
       "repository": "https://github.com/digital-twin-ph/example-workflows-rulesets",
-      "commit": "2362c940edc41ff28d8e9ca92f25aefe6046eb71",
+      "commit": "2173c0c1f2de6bcfbd85fa1aad5cf718ccadfe2b",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-workflows-rulesets",
       "licence": {
         "data": "CC0-1.0",
@@ -612,8 +612,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "6167ec29bd1ff4ffebb7872d322e9d4fd9ecc1f3da769fa25b680a41206f7a42",
-          "bytes": 6974
+          "sha256": "8dd81678beaebaa3f86b1962d56e50613f32abc5fac05a61ec78da414ecfe75f",
+          "bytes": 6970
         },
         {
           "path": "LICENSE",
@@ -643,7 +643,7 @@
       "id": "urn:fieldwork:example:sierra-leone-measles",
       "title": "Measles in Sierra Leone, 2019 to 2023",
       "repository": "https://github.com/digital-twin-ph/example-2019-sierra-leone-measles",
-      "commit": "25bf86277baca4a93da2b047ac3022b48bc17207",
+      "commit": "06298fe7c87fefcfa6e5b394d1cb47e1786f9ec4",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2019-sierra-leone-measles",
       "licence": {
         "data": "Used with the Sierra Leone FETP’s agreement for distributable training materials; modified for a public teaching repository",
@@ -689,8 +689,8 @@
         },
         {
           "path": "README.md",
-          "sha256": "66550d8e4a2edf6021d7b788e7c6dad92dd9ad1f86a41cd7f16c8e853acfaa0d",
-          "bytes": 9365
+          "sha256": "887c6ec7ed068476dba5b60f16785785e76a1fb68b46dcc9ce36e5e5bc47abad",
+          "bytes": 9363
         },
         {
           "path": "CITATION.cff",
@@ -927,7 +927,7 @@
       "id": "urn:fieldwork:example:population-models-census",
       "title": "Population models beside a census",
       "repository": "https://github.com/digital-twin-ph/example-population-models-census",
-      "commit": "04fae268e4e1732c854aa75ccc727a7ed6f23f75",
+      "commit": "e8b3aa969e17e3d943f9e66fdd7c197b181c5e5a",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-population-models-census",
       "licence": {
         "data": "Census counts: Statistics Botswana (free to use, acknowledged, as the user's own processing) and NISR (no terms found, used credited). Boundaries: geoBoundaries, CC BY 3.0 IGO (Botswana) and CC BY 4.0 (Rwanda). Rasters, read where published: WorldPop, GRID3 and GHS-POP, CC BY 4.0. The repository's own files are CC0-1.0.",
@@ -974,8 +974,8 @@
         },
         {
           "path": "provenance.json",
-          "sha256": "a3d054d4f5ae0437ae2b47c39fec8066326c1f11e0fa42925d400507b486765b",
-          "bytes": 3679
+          "sha256": "dce2bfea47a8d2d0c06ff732f5a6e7737a33d840dbe2ae72916853a5b85e75cb",
+          "bytes": 3677
         },
         {
           "path": "README.md",
@@ -999,7 +999,7 @@
       "id": "urn:fieldwork:example:syndromic-surveillance-2026",
       "title": "Syndromic surveillance, 2026: a made-up district's emergency departments",
       "repository": "https://github.com/digital-twin-ph/example-2026-syndromic-surveillance",
-      "commit": "3e99e673f320f5b5d840fbc7db0efa623e04e25f",
+      "commit": "9c09950378258992c7ee910047e6aca56b726b6b",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-2026-syndromic-surveillance",
       "licence": {
         "data": "CC-BY-4.0",
