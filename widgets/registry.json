@@ -625,7 +625,7 @@
   {
    "id": "urn:fieldwork:widget:clip_polygons",
    "nodeType": "clip_polygons",
-   "currentVersion": "0.6.0",
+   "currentVersion": "0.7.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -656,6 +656,11 @@
      "version": "0.6.0",
      "path": "widgets/releases/clip_polygons/0.6.0.json",
      "sha256": "e815442eceb9f3dc971e7a442cf5e2e844aab5d0f757f2fd35981eb1630ad8d2"
+    },
+    {
+     "version": "0.7.0",
+     "path": "widgets/releases/clip_polygons/0.7.0.json",
+     "sha256": "a27dd30ad3f279ae49873df6eba51a3d5a7b8b1003eb58c34897d492c9a0ee44"
     }
    ]
   },
@@ -1093,7 +1098,7 @@
   {
    "id": "urn:fieldwork:widget:isochrone",
    "nodeType": "isochrone",
-   "currentVersion": "0.7.0",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -1129,6 +1134,11 @@
      "version": "0.7.0",
      "path": "widgets/releases/isochrone/0.7.0.json",
      "sha256": "77e55cde363dee87babf5c86e398b8ca09d1c9d8ebb2eb2f1b26a4e2b36d24e2"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/isochrone/0.8.0.json",
+     "sha256": "d0f1f0ca895107ee75c6a3b34f49a5ac157ef8f3037e31ff72c97f6eb7461e2a"
     }
    ]
   },
@@ -1249,7 +1259,7 @@
   {
    "id": "urn:fieldwork:widget:map_output",
    "nodeType": "map_output",
-   "currentVersion": "0.50.0",
+   "currentVersion": "0.51.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -1635,6 +1645,11 @@
      "version": "0.50.0",
      "path": "widgets/releases/map_output/0.50.0.json",
      "sha256": "cc68a457d69194350349fdbb71c624716b56e753159a6fc4b15c09ec76ec56b1"
+    },
+    {
+     "version": "0.51.0",
+     "path": "widgets/releases/map_output/0.51.0.json",
+     "sha256": "48db5659ef87b6fb27734a755ca62585dd2eee5e374a5df1b8f989a7cc8ae763"
     }
    ]
   },
@@ -2966,7 +2981,7 @@
   {
    "id": "urn:fieldwork:widget:summarize_points_to_polygon",
    "nodeType": "summarize_points_to_polygon",
-   "currentVersion": "0.7.0",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -3002,6 +3017,11 @@
      "version": "0.7.0",
      "path": "widgets/releases/summarize_points_to_polygon/0.7.0.json",
      "sha256": "b9661e07047ebec3fa08a4d2cc84b7ff2269b7857a1e6384b0dfac4b4dadfd52"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/summarize_points_to_polygon/0.8.0.json",
+     "sha256": "e9a2e5bf135cceed6de12e8a9bf456553a5e757652a554931e892dd73720c16e"
     }
    ],
    "previousNodeTypes": [
@@ -3443,7 +3463,7 @@
   {
    "id": "urn:fieldwork:widget:voronoi",
    "nodeType": "voronoi",
-   "currentVersion": "0.7.0",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -3479,6 +3499,11 @@
      "version": "0.7.0",
      "path": "widgets/releases/voronoi/0.7.0.json",
      "sha256": "432586297ed6493ce5635e8c9ad92b4da7b824676596e423d329534df87326e9"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/voronoi/0.8.0.json",
+     "sha256": "f056e7b133bd6dc5c06543f76e676675ad4b76adea8b10df176ece8b8ca9c4f7"
     }
    ]
   },

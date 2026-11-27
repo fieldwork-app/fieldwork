@@ -1,0 +1,72 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:summarize_points_to_polygon",
+ "nodeType": "summarize_points_to_polygon",
+ "version": "0.8.0",
+ "title": "Summarize points to polygons",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['summarize_points_to_polygon']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "polygons",
+    "type": "polygons"
+   },
+   {
+    "name": "points",
+    "type": "points"
+   }
+  ],
+  "output": "polygons"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:PolygonPointSummary",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "GeoSPARQL geometry, PROV activity and QUDT buffer units. Configuration SHACL is future work.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/catchments.ts",
+   "src/street-network.ts",
+   "src/core.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/metric-steps-ui.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws the polygons shaded by what the step gives each, on Map's scale with its key, and the points that fall in none drawn faint. It also reads the points with their values: it had read the picker's names and locations, so a number to add up, such as DEATHS, was missing from every point in the Preview."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Synthetic numerical contracts and pinned source regression cases; no independent scientific certification. 0.4.0: three points against two overlapping polygons, one in each, one in both and one in neither, with the overlap named. Chromium, 2026-11-23: tests/area-step-previews.browser.mjs.\n\nTHE COMPUTED LAYER (2026-11-25). Browser tested on Chromium.\n\nSHOWN ON THE SCALE (2026-11-26). Browser tested on Chromium: tests/spatial-walkthroughs.browser.mjs checks that the last step keys the scale by class range and fills each shape with a colour the key holds, and that no label runs outside the drawing at any step. 0.7.0: tests/walkthrough-scale-is-maps.test.mjs (the walkthrough’s scale, ranges and each fill equal to Map’s static figure of the same polygons, with a field named Confirmed case count and with the default); tests/spatial-walkthroughs.browser.mjs (a field named Confirmed case count: every label inside the drawing, North and South left on the right); Chromium, 2026-11-26. NOT established: WebKit, which CI runs; how existing workflows’ figures read now they are shaded.\n\nTHE PREVIEW DRAWS, AND HAS THE VALUES (2026-11-27). tests/snow-previews.browser.mjs, on the John Snow Voronoi example: 'Total DEATHS' keyed, and more than one shade among the catchments. That last check was run against the code before the fix and failed with one shade (every total nothing), then passed after it; Chromium, 2026-11-27. NOT established: WebKit, which CI runs; points that fall in none drawn faint is checked only where there are none."
+ }
+}

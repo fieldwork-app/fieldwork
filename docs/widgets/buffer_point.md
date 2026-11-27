@@ -1,6 +1,6 @@
 # Geometry buffer
 
-_Created 2026-11-20 · Updated 2026-11-24_
+_Created 2026-11-20 · Updated 2026-11-27_
 
 **A study area drawn around one place.** Everything within a stated distance of a well, a clinic or a city centre.
 

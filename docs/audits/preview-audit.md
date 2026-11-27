@@ -1,6 +1,6 @@
 # Audit — what a Configure dialog's Preview shows
 
-_Created 2026-11-25 · Updated 2026-11-25_
+_Created 2026-11-25 · Updated 2026-11-27_
 
 The practitioner, opening one Configure dialog after another in the John Snow example: *"for this voronoi catchment
 dialog there is no preview"*, then the same of Clip polygons, Summarize points to polygons, Move points in a donut,
@@ -125,7 +125,7 @@ displays, reads in or configures.
 | Calculate area | area-steps-ui.ts:364 | Numbers + WT | when a boundary is reachable | T | area-steps-ui.ts:294, "The measurement IS this step's result" |
 | Clip polygons | area-steps-ui.ts:389 | Drawing + numbers + WT (drawn since 2026-11-27) | when the area and polygons are reachable | T | — |
 | Keep points inside the area | area-steps-ui.ts:457 | Numbers + WT | when the area and points are on the device | T | area-steps-ui.ts:402, "The counts ARE this step's result" |
-| Summarize points to polygons | area-steps-ui.ts:498 | Numbers + WT | when polygons and points are reachable | T | area-steps-ui.ts:329, "which is the whole of this step" |
+| Summarize points to polygons | area-steps-ui.ts:498 | Drawing + numbers + WT (since 0.204.6; was Numbers + WT) | when polygons and points are reachable | T | — (the reason recorded at area-steps-ui.ts:329 was overruled, below) |
 | Chart | chart-ui.ts:286 | Drawing (the chart) | after a run, or when a table has arrived | D | — |
 | Deduplicate records | deduplicate-step-ui.ts:88 | Sentence | always | T | deduplicate-step-ui.ts:79, what a run found "stay[s] in the Inspector's Result" |
 | Detect unusual counts | detect-ui.ts:186 | Drawing + table | after a run; nothing before | T | — |
@@ -139,8 +139,8 @@ displays, reads in or configures.
 | Line layer | line-input-ui.ts:114, :236, :255 | Drawing + table | file read, or two areas connected | D | — |
 | Map | map-ui.ts:128 | Drawing (the map) | after a run | D | — |
 | Convex hull | metric-steps-ui.ts:208 | Numbers + WT | when points are reachable | T | none found |
-| Voronoi catchments | metric-steps-ui.ts:229 | Numbers + WT | when sites and area are reachable | T | none found |
-| Network isochrone | metric-steps-ui.ts:280 | Sentence + WT | always | T | this audit, below: its network is kept outside the page, and a Preview is built synchronously |
+| Voronoi catchments | metric-steps-ui.ts:229 | Drawing + numbers + WT (since 0.204.6; was Numbers + WT) | when sites and area are reachable | T | — |
+| Network isochrone | metric-steps-ui.ts:280 | Drawing + numbers + WT (since 0.204.6; was Sentence + WT) | when the network is held in the page | T | for a network kept outside the page only; the reason as first recorded did not hold for Snow, below |
 | Mean center | metric-steps-ui.ts:320 | Numbers + WT | when points are reachable | T | none found |
 | Reachable junctions | metric-steps-ui.ts:387 | Sentence; numbers if the network is held in the page | — | T | metric-steps-ui.ts:113 and this audit, as Network isochrone |
 | Street network | network-input-ui.ts:172 | None (its drawing is in the Inspector's Result) | — | D | none found |
@@ -166,7 +166,7 @@ displays, reads in or configures.
 | Two-by-two table | two-by-two-ui.ts:107 | Table, the four cells | once a table is there | T | — |
 | Map a column's terms to a vocabulary | vocabulary-map-ui.ts:85 | Table | after a run | T | — |
 
-**Counts, by the most each dialog can show:** drawing 7, table 11, numbers 14, sentence 8, none 7 (47 dialogs).
+**Counts, by the most each dialog can show:** drawing 10, table 11, numbers 12, sentence 7, none 7 (47 dialogs). _Corrected 2026-11-27 for 0.204.6, when Voronoi catchments, Summarize points to polygons and Network isochrone began to draw; the re-review counted drawing 7, numbers 14 and sentence 8._
 
 **Steps that change data or shapes and do not draw or show rows: 21 dialogs, 20 widgets.** Calculate area, Keep points
 inside the area, Summarize points to polygons, Deduplicate records, Measure distance, Move points in a donut,
@@ -183,7 +183,25 @@ belongs in the Inspector; Regression, that a fit belongs in the run.
 area's countries, Georeferenced map image, Point data's editor, Street network and Study design have no Preview
 section; Raster input shows numbers. (The inventory first counted 13 transforms without a reason; its own table gives
 11, and the six display steps are a separate list.) Only Geometry
-buffer and Clip polygons draw what they make; Detect unusual counts draws a chart.
+buffer and Clip polygons draw what they make; Detect unusual counts draws a chart. _Since 0.204.6, Voronoi catchments
+and Summarize points to polygons draw too; the lists above are as the re-review found them._
+
+**Later on 2026-11-27: two drawn, and one recorded reason overruled.** The practitioner, on the Snow Voronoi example
+after this re-review: *"Voronoi still with no preview"*, then *"Summarize points to polygon for Voronoi catchment still
+with no preview"*. Summarize's was one of the ten with a reason recorded, that the number is the result. A recorded
+reason is therefore not, by itself, a settled one. Drawing Summarize's Preview then found a fault the number had hidden:
+it read the points without their values, so with DEATHS chosen every total was nothing. Its sentence counts points and
+showed no sign. Remaining after both: 18 transforms that neither draw nor show rows, 10 of them with no reason
+recorded.
+
+**And a recorded reason that did not hold.** Then, of Network isochrone on the Snow isochrone example: *"This one is
+isochrone, still no preview. We are supposed to have addressed this gap already and it remains a gap even after
+supposed repair."* The reason recorded above for it, a network kept outside the page, was carried over from Reachable
+junctions' repair of 2026-11-25 without checking the example. It holds for a downloaded network, which is kept in
+IndexedDB, and not for Snow's, which the workflow holds whole: 738 junctions. Its Preview was `minutes × speed`, the
+fault that repair named and fixed for Reachable junctions only. It now draws, computed in the run's own worker; in place
+it held the page for 3.4 s. Remaining: 17 transforms that neither draw nor show rows. _Counts above corrected for
+0.204.6: drawing 10, sentence 7._
 
 **Corrections to this audit's earlier sections.** Table's Preview is no longer a fixed sentence: it shows the table
 (0.204.0). Four of those listed under *Shows the data* do not: Compare point sets has no Preview, Find health

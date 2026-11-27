@@ -1,2 +1,2 @@
-import{a}from"./chunks/chunk-QPEDRGJB.js";import"./chunks/chunk-DROZE7GQ.js";import"./chunks/chunk-EEXHZHWW.js";import"./chunks/chunk-6M7EN4KM.js";import"./chunks/chunk-WWKXR2II.js";import"./chunks/chunk-KVMUXFPB.js";export{a as openChangelog};
+import{a}from"./chunks/chunk-4PX3ELQF.js";import"./chunks/chunk-DROZE7GQ.js";import"./chunks/chunk-VQMHWVV4.js";import"./chunks/chunk-GHOKGYX5.js";import"./chunks/chunk-WWKXR2II.js";import"./chunks/chunk-KVMUXFPB.js";export{a as openChangelog};
 //# sourceMappingURL=changelog-ui.js.map

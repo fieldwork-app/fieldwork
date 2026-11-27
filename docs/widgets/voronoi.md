@@ -1,6 +1,6 @@
 # Voronoi catchments
 
-_Created 2026-11-22 · Updated 2026-11-26_
+_Created 2026-11-22 · Updated 2026-11-27_
 
 **A spatial operation.** It takes a study area and a set of sites, and gives back one polygon per site: the part of
 the area closer to that site than to any other, in a straight line.
@@ -51,6 +51,11 @@ The lab's [Voronoi notebook](https://digital-twin-ph.github.io/validation-lab/la
 to this widget's.
 
 ## History
+
+### 2026-11-27 · The Preview draws the catchments (0.8.0)
+
+**Configure…**'s Preview draws the catchments it counts: one fill, the study area dashed, the sites as points, as
+**Show me how** draws them, with their number and sizes beneath. It had given only the number and sizes.
 
 ### 2026-11-27 · No house in Show me how (0.7.0)
 

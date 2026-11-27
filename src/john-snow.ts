@@ -22,6 +22,8 @@ export function johnSnowExample(kind:'snow-voronoi'|'snow-isochrone'):Workflow{
     // looking at and what it does not claim, and a source note that credits the data and names the
     // method. The scale bar, north arrow and ODbL credit are derived.
     {id:'map',type:'map_output',x:1210,y:0,params:{label:iso?'Isochrone plot':'Voronoi catchment map',inputMode:'polygons',presentation:'plot',contextPoints:iso,
+      // THE DEATHS SIZED BY THEIR COUNT, chosen here, on the example's map, and not in the map's code (2026-11-27).
+      layerSymbols:{locations:{sizeBy:'DEATHS'}},
       mapTitle:iso
         ?'Five-minute walk from the Broad Street pump, Soho, London, 1854'
         :'Nearest-pump catchments and cholera deaths, Soho, London, 1854',
@@ -57,7 +59,7 @@ export function johnSnowExample(kind:'snow-voronoi'|'snow-isochrone'):Workflow{
   if(iso){
     const study=nodes.find(n=>n.id==='study')!;if(study.type==='study_area')study.params={source:'drawn',label:'Soho isochrone reporting extent (illustrative)',selectionMode:'bbox',geometry:{type:'Polygon',coordinates:[[[-.155,51.502],[-.119,51.502],[-.119,51.525],[-.155,51.525],[-.155,51.502]]]}};
     nodes.push({id:'context-pumps',type:'point_input',x:910,y:450,params:{label:'All eight pumps (map context)',data:{type:'FeatureCollection',features:pumps}},references:structuredClone(nodes.find(n=>n.id==='pumps')!.references)});
-    nodes.push({id:'interactive',type:'map_output',x:1210,y:870,params:{label:'Interactive isochrone map',inputMode:'polygons',presentation:'interactive',contextPoints:true}});
+    nodes.push({id:'interactive',type:'map_output',x:1210,y:870,params:{label:'Interactive isochrone map',inputMode:'polygons',presentation:'interactive',contextPoints:true,layerSymbols:{locations:{sizeBy:'DEATHS'}}}});
     nodes.find(n=>n.id==='catchments')!.references!.push(reference('nb04-visual','NB04 Cell 15 plot and Folium map','https://github.com/PHI-Case-Studies/1854-Cholera-Outbreak-London-Advanced-1/blob/97a1d13dfb23032387ed23804e3d6f4dbc99aec7/NB04-Cholera-Case-Study-Isochrone-Map.ipynb','method','Visual target: executed Cell 15 and Cell 18. Fieldwork retains its independent computational method; cumulative counts are not notebook band counts.'));
   }
   const edges=[{id:'sites-catchments',from:'pumps',to:'catchments',port:'sites'},{id:'area-clip',from:'study',to:'clip',port:'area'},{id:'catchments-clip',from:'catchments',to:'clip',port:'polygons'},{id:'clip-summary',from:'clip',to:'summary',port:'polygons'},{id:'points-summary',from:'locations',to:'summary',port:'points'},...['map','table','chart'].map(id=>({id:'summary-'+id,from:'summary',to:id,port:'polygons'})),iso?{id:'network-catchments',from:'network',to:'catchments',port:'network'}:{id:'area-catchments',from:'study',to:'catchments',port:'area'}];

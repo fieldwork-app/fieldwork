@@ -3,7 +3,7 @@ import {fillWords,figureWords} from './figure-words.js';
 import {lineLayersOf} from './map-lines.js';
 import {rampFor} from './raster-image.js';
 import type {Output,Receipt} from './results.js';
-import {generationColours} from './presentation.js';
+import {generationColours,bandColour,bandTimes,BAND_OPACITY,CARRIED_POINT_COLOUR} from './presentation.js';
 import type {WorkflowNode,Workflow} from './types.js';
 import {basemapAvailable,basemapOf,keyedProvider} from './basemaps.js';
 import {attributionsFor,provenanceOf} from './input-provenance.js';
@@ -11,7 +11,7 @@ import type {LayerShape} from './presentation.js';
 import {groupedKey,polygonShading,shadedValues,classRanges,markPath,resolveLayerSymbol,SPATIAL_RELATION_FILL,FIGURE_PALETTE_NAME,FIGURE_PALETTE_AUTHORITY,MARK_VOCABULARY,FIGURE_ROLE,FIGURE_TYPE,FIGURE_PALETTE,scaleBarSvg,northArrowSvg,classifyValues,categoricalSteps} from './presentation.js';
 import {applyDesignRules,figureDesign,designRuleFacts,designRuleDeclarations,designChoiceFacts} from './map-conformance.js';
 
-export interface MapPresentation {title:string; subtitle:string; sourceNote:string; legend:boolean; items:{label:string;color:string;shape?:LayerShape;hollow?:boolean;line?:boolean}[]; presentation:'plot'|'interactive'; basemap:import('./types.js').BasemapChoice;
+export interface MapPresentation {title:string; subtitle:string; sourceNote:string; legend:boolean; items:{label:string;color:string;shape?:LayerShape;hollow?:boolean;line?:boolean;opacity?:number}[]; presentation:'plot'|'interactive'; basemap:import('./types.js').BasemapChoice;
   /** Licence and attribution for the data shown. Separate from the source note because a note is
    *  editorial and this is an obligation: an OSM-derived layer must say ODbL and credit
    *  contributors wherever the figure ends up, and a figure that travels without it is not
@@ -82,8 +82,10 @@ export function mapPresentation(node:WorkflowNode<'map_output'>,output:Output,wo
   let items:MapPresentation['items']=[];
   if(output.polygons){
     items=output.polygons.kind==='hexbin'&&!polygonShading(output.polygons.features).classed?[{label:'Released H3 cell',color:R.primary},{label:'Sparse cells omitted',color:R.background}]:output.polygons.features.some(f=>f.minutes!==undefined)?[
-      {label:'Cumulative travel-time region',color:R.primary},
-      {label:'Observations',color:R.secondary},
+      // ONE ENTRY PER TRAVEL TIME, in the band's own see-through colour, and the carried points in their layer's symbol
+      // (2026-11-27): the key named one "travel-time region" in a hue no band was drawn in once the bands took tab10.
+      ...bandTimes(output.polygons.features).map(t=>({label:`Within ${t} min`,color:bandColour(t,bandTimes(output.polygons!.features)),opacity:BAND_OPACITY})),
+      {label:output.polygons.observationsFrom?.label??'Observations',color:output.polygons.observationSymbol?.colour??CARRIED_POINT_COLOUR},
       {label:'Sites / context',color:R.site,shape:'square'}
     ]:classedItems(output.polygons)
       // THE KEY AND THE PLOT HAVE TO AGREE. A choropleth landed in this default and was given a
@@ -302,7 +304,7 @@ export function standaloneMapSvg(content:string,viewBox:string,spec:MapPresentat
   const footer=38+legendRows*22+(noteLines.length+creditLines.length)*19,total=base+height+footer;
   const legend=spec.legend?spec.items.map((item,i)=>{const x=placed[i]!.x,y=base+height+24+placed[i]!.row*22;
     return (item.line?`<path d="M${x-2} ${y-4}H${x+8}" stroke="${item.color}" stroke-width="1.6"/><path d="M${x+7} ${y-8}L${x+13} ${y-4}L${x+7} ${y}z" fill="${item.color}"/>`
-      :`<path d="${markPath(item.shape||'circle',x+5,y-4,5)}" fill="${item.hollow?'none':item.color}" stroke="${item.hollow?item.color:FIGURE_ROLE.quietInk}" stroke-width="1.4"/>`)
+      :`<path d="${markPath(item.shape||'circle',x+5,y-4,5)}" fill="${item.hollow?'none':item.color}"${item.opacity===undefined?'':` fill-opacity="${item.opacity}"`} stroke="${item.hollow?item.color:FIGURE_ROLE.quietInk}" stroke-width="1.4"/>`)
       +`<text x="${x+17}" y="${y}" font-size="${t.legend}" fill="${FIGURE_ROLE.ink}">${escape(item.label)}</text>`;}).join(''):'';
   const noteY=base+height+30+legendRows*22;
   // Placed over the plot's lower-left, inside the mapped frame rather than in the footer, which is

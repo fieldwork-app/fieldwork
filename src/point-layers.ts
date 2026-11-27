@@ -257,3 +257,12 @@ export function recordAttributesHtml(attributes:Record<string,unknown>|undefined
     +(said.length>shown.length?`<br><span class="muted">and ${said.length-shown.length} more column${said.length-shown.length===1?'':'s'}</span>`:'');
 }
 
+
+/** A CARRIED POINT'S RADIUS, one rule for the plot and the interactive map (2026-11-27): its layer's size, or, sized by a
+ *  column, the area of each mark in proportion, as every point layer is drawn. */
+export function observationRadius(p:import('./catchments.js').Polygons,properties:Record<string,unknown>|null|undefined):number{
+  const symbol=p.observationSymbol;if(!symbol)return 3;
+  if(!symbol.sizeBy)return symbol.size;
+  const largest=Math.max(0,...(p.observations?.features??[]).map(f=>Number(f.properties?.[symbol.sizeBy!])).filter(Number.isFinite));
+  return largest>0?proportionalRadius(properties?.[symbol.sizeBy],largest,symbol.size):symbol.size;
+}

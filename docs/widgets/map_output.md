@@ -383,6 +383,10 @@ Methods as a limitation, by itself. Natural Earth is bundled and writes no such 
 
 ## History
 
+### 2026-11-27 · Carried points drawn as their own layer, alike in the preview and the result (0.51.0)
+
+Points that arrive inside a polygon layer, such as the deaths a **Summarize points to polygons** step counted, are a layer of the map, named for the step they came from. **Configure…** offers their size, colour and shape like any point layer, and the preview and the result draw them with that one setting, on top of the polygons. Before, the interactive map sized them by a column named DEATHS written into its code, and the static figure drew them at one small size, under-read against the shading: the two disagreed on Snow's Voronoi map. Snow's maps now choose *size by DEATHS* themselves.
+
 ### 2026-11-26 · H3 cells and Summarize's polygons shaded by class (0.50.0)
 
 H3 cells carrying a count are shaded by class and keyed by range, on the figure and on the key beside the interactive

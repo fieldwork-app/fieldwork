@@ -1,0 +1,98 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:isochrone",
+ "nodeType": "isochrone",
+ "version": "0.8.0",
+ "title": "Network isochrone",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['isochrone']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "sites",
+    "type": "points"
+   },
+   {
+    "name": "network",
+    "type": "network"
+   }
+  ],
+  "output": "polygons"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:NetworkIsochrone",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "GeoSPARQL geometry, PROV activity and QUDT buffer units. Also asserts fw:unconnectedSiteCount and fw:unconnectedSites for sites that reach nothing, fw:offNetworkSiteCount and fw:offNetworkSites for sites routed across unmapped ground, and fw:offNetworkMetres on each catchment that was. Configuration SHACL is future work. The emits list is computed per module, and src/catchments.ts also implements voronoi, clip_polygons and summarize_polygons, so it is the module's vocabulary rather than this widget's alone. The definition moved from src/core.ts#TYPES, where the widget is declared, to src/catchments.ts, where it computes and emits.",
+  "emits": {
+   "classes": [],
+   "properties": [
+    "caveats",
+    "hullAreaSquareMetres",
+    "member",
+    "method",
+    "metricCRS",
+    "missingValueCount",
+    "networkEdgeCount",
+    "networkMetadata",
+    "networkNodeCount",
+    "networkSnaps",
+    "numericTotal",
+    "offNetworkMetres",
+    "offNetworkSiteCount",
+    "offNetworkSites",
+    "parameters",
+    "recordCount",
+    "siteId",
+    "sourceDescription",
+    "summary",
+    "travelMode",
+    "travelTimeMinutes",
+    "unconnectedSiteCount",
+    "unconnectedSites"
+   ]
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/catchments.ts",
+   "src/street-network.ts",
+   "src/core.ts",
+   "src/metric-steps-ui.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/table-walkthrough.ts",
+   "src/catchment-executor.ts"
+  ],
+  "definition": "src/catchments.ts"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws where each site reaches along the streets, each time a band in its matplotlib tab10 colour, see-through, as Map draws it, computed by the run's own worker so the page is never held. It had given minutes times speed, the same number whatever the streets."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Synthetic numerical contracts and pinned source regression cases; no independent scientific certification. 0.6.0: tests/spatial-walkthroughs.browser.mjs, Show me how stepped to its last sentence; Chromium, 2026-11-23.\n\nTHE WALKED STREETS (2026-11-25). Browser tested on Chromium.\n\nTHE PREVIEW DRAWS (2026-11-27). tests/snow-previews.browser.mjs, on the John Snow isochrone example: four bands and one site, keyed 1, 5, 10 and 15 minutes; a change of times redraws two bands, and blocks the page under 500 ms. Measured the same day: computed in place it held the page 3.4 s on opening and on each change; through the worker, the dialog opened in 63 ms and the drawing came in about 4 s. Chromium only. NOT established: WebKit, which CI runs; a network kept outside the page, which still says so rather than drawing."
+ }
+}

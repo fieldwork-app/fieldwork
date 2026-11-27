@@ -44,11 +44,20 @@ test('the isochrone plot draws the colours and shapes its key names',async({page
 
   // And the key names both, in those same hues.
   const key=page.locator('#map-communication-key');
-  await expect(key).toContainText('Observations');
+  // The carried points by their layer's own name, not a generic "Observations" (2026-11-27).
+  await expect(key).toContainText('death locations');
   await expect(key).toContainText('Sites');
   const keyFills=await key.locator('path').evaluateAll(els=>els.map(e=>e.getAttribute('fill')));
   expect(keyFills).toContain(FIGURE_ROLE.secondary);
   expect(keyFills).toContain(FIGURE_ROLE.site);
+  // Every band the plot draws has its entry, in that band's colour and see-through as drawn (2026-11-27): the key named one
+  // "travel-time region" in a hue no band was drawn in once the bands took one colour per time.
+  const bandFills=[...new Set(await page.locator('#map [data-catchment]').evaluateAll(els=>els.map(e=>e.getAttribute('fill'))))];
+  expect(bandFills.length).toBeGreaterThan(1);
+  for(const fill of bandFills)expect(keyFills).toContain(fill);
+  const keyOpacities=await key.locator('path').evaluateAll(els=>els.map(e=>[e.getAttribute('fill'),e.getAttribute('fill-opacity')]));
+  const plotOpacity=await page.locator('#map [data-catchment]').first().getAttribute('fill-opacity');
+  for(const fill of bandFills)expect(keyOpacities.find(([f])=>f===fill)?.[1]).toBe(plotOpacity);
 
   // The caption under the plot described the old colours in words. It now describes the shapes,
   // which a reader who cannot see the hues can still use.

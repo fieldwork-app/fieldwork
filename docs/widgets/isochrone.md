@@ -107,6 +107,13 @@ the stated rule with Shapely.
 
 ## History
 
+### 2026-11-27 · The Preview draws what the sites reach (0.8.0)
+
+**Configure…**'s Preview draws where each site reaches along the streets: each time a band, longest underneath, in its
+own see-through colour as Map draws it, with the site on top and the area the longest time covers. It had given only the time multiplied by the
+speed, which is the same whatever the streets are. It is computed the way the run computes it, off the page, so the
+dialog opens at once and says it is drawing. Where the network is kept outside the page, the Preview still says so.
+
 ### 2026-11-25 · Show me how draws the streets the walk covers (0.7.0)
 
 The walk said it went "along the streets in every direction" and then showed only the finished region — so the thing

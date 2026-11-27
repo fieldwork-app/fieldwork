@@ -548,3 +548,23 @@ export function groupedKey(features:readonly {category?:string;value?:number;fra
       .map(label=>({label:`${label} at one place, a blue ring`,color:RING_BLUE,hollow:true})),
     ...(features.some(f=>!f.category?.trim())?[{label:'No class',color:FIGURE_ROLE.unknown}]:[])];
 }
+
+/** WALKING-TIME BANDS, ONE COLOUR EACH, SEE-THROUGH (2026-11-27). The practitioner: *"If you look at the John Snow Cholera
+ *  notebooks Advanced 1 the isochrone bands have different transparent colors, perhaps we can use the same approach but
+ *  using hues from ... matplotlib"*. NB04's plot draws each band in turn with no colour named, `poly_gdf[interval].plot(
+ *  ax=ax, alpha=0.2)` over `trip_times = [1, 5, 10, 15]`, so each takes the next colour of matplotlib's default cycle,
+ *  tab10: 1 minute blue, 5 orange, 10 green, 15 red. Fieldwork had copied the transparency and not the cycle, so every
+ *  band was the first blue. One rule now for Map's plot, its interactive map and every Preview: tab10 by the band's rank
+ *  in minutes. The opacity is 0.3, not NB04's 0.2, so a band still shows on a dark Preview; the same everywhere. */
+export const MATPLOTLIB_TAB10=['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'] as const;
+export const BAND_OPACITY=0.3;
+export function bandColour(minutes:number,all:readonly number[]):string{
+  const times=[...new Set(all)].sort((a,b)=>a-b);
+  return MATPLOTLIB_TAB10[Math.max(0,times.indexOf(minutes))%MATPLOTLIB_TAB10.length]!;
+}
+
+/** Points carried by a polygon layer, unless their layer's symbol says otherwise: the palette's observation hue, the one the
+ *  figure's key names, so marks and key agree and the colour-blind-safe palette holds. */
+export const CARRIED_POINT_COLOUR:string=FIGURE_ROLE.secondary;
+/** The travel times of banded features, shortest first. */
+export const bandTimes=(features:readonly {minutes?:number}[]):number[]=>[...new Set(features.flatMap(f=>f.minutes===undefined?[]:[f.minutes]))].sort((a,b)=>a-b);
