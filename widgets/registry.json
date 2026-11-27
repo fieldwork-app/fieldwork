@@ -265,7 +265,7 @@
   {
    "id": "urn:fieldwork:widget:buffer_point",
    "nodeType": "buffer_point",
-   "currentVersion": "0.7.0",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -301,6 +301,11 @@
      "version": "0.7.0",
      "path": "widgets/releases/buffer_point/0.7.0.json",
      "sha256": "8662167440f36ef9a3868c3e7d9d786954d997630da5514bce166c59914ea0dd"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/buffer_point/0.8.0.json",
+     "sha256": "3759d20d69be5168fc62b2720e7ca8233bf2bd1553bcf03f13d7b60267f5723c"
     }
    ]
   },
@@ -620,7 +625,7 @@
   {
    "id": "urn:fieldwork:widget:clip_polygons",
    "nodeType": "clip_polygons",
-   "currentVersion": "0.5.0",
+   "currentVersion": "0.6.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -646,6 +651,11 @@
      "version": "0.5.0",
      "path": "widgets/releases/clip_polygons/0.5.0.json",
      "sha256": "b5b8fcb19a734287f988be65de14069731b3be085894a7b8ce1cb9543a1c365a"
+    },
+    {
+     "version": "0.6.0",
+     "path": "widgets/releases/clip_polygons/0.6.0.json",
+     "sha256": "e815442eceb9f3dc971e7a442cf5e2e844aab5d0f757f2fd35981eb1630ad8d2"
     }
    ]
   },
@@ -3433,7 +3443,7 @@
   {
    "id": "urn:fieldwork:widget:voronoi",
    "nodeType": "voronoi",
-   "currentVersion": "0.6.0",
+   "currentVersion": "0.7.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -3464,6 +3474,11 @@
      "version": "0.6.0",
      "path": "widgets/releases/voronoi/0.6.0.json",
      "sha256": "f6162cd9fde2bc619fc6e812624336e911d4ec08984f5c549d49d1a517bbfdd6"
+    },
+    {
+     "version": "0.7.0",
+     "path": "widgets/releases/voronoi/0.7.0.json",
+     "sha256": "432586297ed6493ce5635e8c9ad92b4da7b824676596e423d329534df87326e9"
     }
    ]
   },

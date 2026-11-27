@@ -3,6 +3,21 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.5 — In development
+
+- **Two repairs said done and not done, done.** Voronoi catchments 0.7.0: **Show me how** no longer follows a house
+  to its nearest pump (the practitioner: *"the house has got nothing to do with setting up the catchment areas"*);
+  its manual had said so since 0.5.0, and the step had not gone. Clip polygons 0.6.0: the Preview draws the cut, the
+  area, each polygon as it arrives and what is kept, as Show me how draws (*"the preview does not show the resulting
+  Voronoi polygons, clipped by the study area"*). Each is held by a test.
+- **Geometry buffer 0.8.0:** its manual and Show me how say it draws around several points, as it has since
+  2026-11-23; both still said one only. Its manual gains the History heading its entries sat without.
+- **Every Preview re-audited** (`docs/audits/preview-audit.md`, 2026-11-27): 47 dialogs read for whether each draws or
+  shows rows and, where not, whether a reason is recorded. Drawing 7, table 11, numbers 14, sentence 8, none 7. Of 20
+  widgets that change data or shapes and do not draw or show rows, 11 have no recorded reason; six display steps
+  show no Preview or only numbers, with none either. Five claims in the
+  record the code did not bear out are listed; three are repaired here.
+
 ## 0.204.4 — In development
 
 - **Fieldwork's address is written once**, in `package.json`'s `homepage` and `repository` (the practitioner: *"Why

@@ -1,0 +1,73 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:clip_polygons",
+ "nodeType": "clip_polygons",
+ "version": "0.6.0",
+ "title": "Clip polygons",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['clip_polygons']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "area",
+    "type": "area"
+   },
+   {
+    "name": "polygons",
+    "type": "polygons"
+   }
+  ],
+  "output": "polygons"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:PolygonClipping",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "GeoSPARQL geometry, PROV activity and QUDT buffer units. Configuration SHACL is future work.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/catchments.ts",
+   "src/street-network.ts",
+   "src/core.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/catchment-semantics.ts",
+   "src/inspector-kit.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws the cut: the area, each polygon as it arrives, and what is kept, as Show me how draws; the counts and areas beneath."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Synthetic numerical contracts and pinned source regression cases; no independent scientific certification. 0.4.0: three polygons -- inside, straddling, outside -- counted as kept with the ground before and after. Chromium, 2026-11-23: tests/area-step-previews.browser.mjs.\n\nTHE COMPUTED LAYER (2026-11-25). Browser tested on Chromium. NOT established: that the preview's counts match the run's for a computed input, which would need a test that runs the workflow and then reopens the dialog."
+ }
+}

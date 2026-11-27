@@ -52,6 +52,10 @@ to this widget's.
 
 ## History
 
+### 2026-11-27 · No house in Show me how (0.7.0)
+
+**Show me how** no longer follows a house to its nearest pump. The step is given pumps and an area; houses are put into its cells by Summarize points to polygons. The 0.5.0 entry below says this step had gone; it had not, and was removed now. Four steps: the area and the pumps, two pumps and the line between them, the third pump and where the lines meet, and the cells.
+
 ### 2026-11-26 · Catchments in one fill (0.6.0)
 
 The last step shaded the catchments from light to dark, as if one were more than another. They carry no value, so they

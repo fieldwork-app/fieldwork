@@ -34,10 +34,9 @@ const CASES=[
   ['sample_points',5,'A 40, B no value, C no value. 1 read, 1 with no data, 1 outside.'],
   ['sample_areas',4,'its total, 273, from 7 cells; the cell with no data inside it adds nothing and is counted apart, never as 0.'],
   ['summarize_hull',4,'the outline, 8.61 km² and 4,093 m at its widest, measured in UTM zone 36S'],
-  // FIVE SINCE 2026-11-25: the division is built up two pumps at a time, because showing every dividing line at
-  // once taught the result rather than the construction (the practitioner: "does not really make sense from a
-  // step by step perspective").
-  ['voronoi',5,'3 cells, each the ground nearer its pump than any other'],
+  // FOUR SINCE 2026-11-27: the division is built up two pumps at a time (2026-11-25), and the house that went to its
+  // nearest pump is gone: houses are put into the cells by Summarize points to polygons, not by this step.
+  ['voronoi',4,'3 cells, each the ground nearer its pump than any other'],
   ['isochrone',4,'where the clinic can reach in 10 minutes, 0.31 km²'],
   ['mean_center',4,'one point, each house counted by its deaths'],
   ['donut_geomask',4,'the point moved 57 m, in the direction and by the distance seed 42 picks inside the ring'],
