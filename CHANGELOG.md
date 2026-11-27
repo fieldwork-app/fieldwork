@@ -3,6 +3,12 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.2 — In development
+
+- **The worked examples re-pinned** to their commits naming Fieldwork's new address: ten examples' READMEs and the
+  population models' provenance link. Nothing else in them changed; 124 pinned files verified. The old
+  `digital-twin-ph/fieldwork` is archived, its README saying where Fieldwork moved.
+
 ## 0.204.1 — In development
 
 - **Fieldwork moved to `fieldwork-app/fieldwork`**, with the site at `fieldwork-app.github.io/fieldwork`. The repository
