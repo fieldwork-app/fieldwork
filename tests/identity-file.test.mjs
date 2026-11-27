@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {SITE_URL} from './site.mjs';
 const id=await import('../build/identity-file.js');
 const {readNotes}=await import('../build/notes.js');
 
@@ -113,7 +114,7 @@ test('the key reaches a phone as a link to key.html, the key after #; a QR code 
   const {keyPageUrl}=await import('../build/identity-ui.js');
   const {identity}=await id.createIdentityFile({name:'Zoë'},PASS,FAST);
   const ssh=id.sshPublicKey(identity),url=keyPageUrl(ssh);
-  assert.equal(url,`https://fieldwork-app.github.io/fieldwork/key.html#k=${ssh.split(' ')[1]}`);
+  assert.equal(url,`${SITE_URL}key.html#k=${ssh.split(' ')[1]}`);
   assert.ok(qr.qrMatrix(url).length>20);
   assert.throws(()=>qr.qrMatrix(ssh),/https address/,'never the key as text');
 });

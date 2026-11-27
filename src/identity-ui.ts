@@ -12,6 +12,7 @@ import {validLogin} from './identity.js';
 import {qrSvg} from './qr.js';
 import {keep,restore,extend,drop,UNLOCKED_FOR_MS} from './session-keep.js';
 import {keyText,fingerprint} from './sealed-file.js';
+import {SITE_URL} from './site.js';
 
 const IDLE_MS=UNLOCKED_FOR_MS;
 let open:OpenIdentity|null=null;
@@ -83,7 +84,7 @@ export const credentialsFileName=(name?:string)=>`FWCRED${name&&fileNamePart(nam
  *  anywhere else (a local copy a phone cannot reach), the published one. */
 export function keyPageUrl(ssh:string):string{
   const here=typeof location!=='undefined'&&location.protocol==='https:'?new URL('key.html',location.href).href
-    :'https://fieldwork-app.github.io/fieldwork/key.html';
+    :`${SITE_URL}key.html`;
   return `${here}#k=${ssh.split(' ')[1]}`;
 }
 /** The name as a byline: the name, then the GitHub login and ORCID iD where the file carries them. */

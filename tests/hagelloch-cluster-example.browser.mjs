@@ -1,6 +1,7 @@
 import {test,expect} from './fixtures.mjs';
 import {inChartSettings} from './map-settings.mjs';
 import {collectPageErrors} from './page-errors.mjs';
+import {SITE_URL} from './site.mjs';
 
 // WAS THERE A CLUSTER IN HAGELLOCH? (experiment 200, Detect): the third workflow, as shipped. The scan runs in a worker
 // with a progress panel (the practitioner, 2026-11-10: "That may need a progress bar"), and its clusters are drawn over
@@ -83,7 +84,7 @@ test('Hagelloch: the space-time scan runs with a progress bar, and its clusters 
   await expect(page.locator('.notes-part[data-section="References"]')).toContainText('Kulldorff M, Heffernan R, Hartman J');
   // Where this worked example lives online: two QR codes and their addresses (experiment 203).
   await expect(page.locator('.notes-part[data-section="References"] .example-links svg.qr-code')).toHaveCount(2);
-  await expect(page.locator('.notes-part[data-section="References"] .example-links')).toContainText('https://fieldwork-app.github.io/fieldwork/?example=hagelloch-cluster');
+  await expect(page.locator('.notes-part[data-section="References"] .example-links')).toContainText(`${SITE_URL}?example=hagelloch-cluster`);
   await page.screenshot({path:'test-results/hagelloch-cluster-example.png',fullPage:true});
   expect(errors).toEqual([]);
 });

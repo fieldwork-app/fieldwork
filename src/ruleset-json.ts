@@ -6,10 +6,11 @@
 import {escapeHtml} from './html-escape.js';
 import {authoredUnitProblems,otherwiseProblems,computesValues,evaluatedDirectly,compileAuthoredRuleset,isWordComparator,
   containedWords,bandRules,targetRules,type Comparator} from './authored-rules.js';
+import {rawFile} from './site.js';
 
 export const RULESET_SCHEMA='fieldwork/authored-ruleset/1';
 /** WHERE AN EDITOR FINDS THE SCHEMA: VS Code reads a file's "$schema" and offers names, kinds and comparisons as it is typed. */
-export const RULESET_SCHEMA_URL='https://raw.githubusercontent.com/fieldwork-app/fieldwork/main/schemas/authored-ruleset.schema.json';
+export const RULESET_SCHEMA_URL=rawFile('schemas/authored-ruleset.schema.json');
 export interface JsonProblem {line:number;column?:number;says:string;path?:string}
 /** Where each value starts, by its path: `rules.0.any.0.all.1.field`. */
 export type Positions=Map<string,{line:number;column:number}>;

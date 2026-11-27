@@ -2,9 +2,10 @@
  *  modal dialog that describes the changelog for the version?"). The notes are CHANGELOG.md's, split by version at build
  *  time into build/changelog.json and carried with the application, so they open offline too. */
 import {toHTML} from './prose.js';
+import {repositoryFile} from './site.js';
 
 interface Release {version:string; date:string; markdown:string}
-const SOURCE='https://github.com/fieldwork-app/fieldwork/blob/main/CHANGELOG.md';
+const SOURCE=repositoryFile('CHANGELOG.md');
 
 export async function openChangelog(version:string,esc:(v:string)=>string):Promise<void>{
   document.getElementById('changelog-dialog')?.remove();

@@ -20,7 +20,7 @@ test('every value is placed by its path, and a valid ruleset passes the checks a
   assert.equal(positions.get('rules.0.any.0.all.0.comparator').line,text.split('\n').findIndex(l=>l.includes('"comparator"'))+1);
   const {ruleset,problems}=checkRulesetJson(text);
   assert.deepEqual(problems,[]);assert.equal(ruleset.title,'Syndromes');
-  assert.match(text,/^\{\n  "\$schema": "https:\/\/raw.githubusercontent.com\/fieldwork-app\/fieldwork\/main\/schemas\/authored-ruleset.schema.json",\n  "schema": "fieldwork\/authored-ruleset\/1",/);
+  assert.match(text,new RegExp(`^\\{\\n  "\\$schema": "${literally(rawFile('schemas/authored-ruleset.schema.json'))}",\\n  "schema": "fieldwork/authored-ruleset/1",`));
 });
 test('what a ruleset means is checked and placed: an undeclared field, an unknown comparator, no words',()=>{
   const bad=structuredClone(GOOD);
@@ -81,6 +81,7 @@ test('every example in the guide passes the checks and runs',()=>{
 /** WHAT ARRIVES (2026-11-21): a declared column the input does not carry is said on its line, with the nearest name; a
  *  number declared on a column that arrives as text is said too; nothing is said while nothing is connected. */
 import {arrivingProblems,closestColumn} from '../build/ruleset-json.js';
+import {rawFile,literally} from './site.mjs';
 test('a declared column that does not arrive, or arrives as text, is said on its line, with the nearest name',()=>{
   assert.equal(closestColumn('chief_complain',['visit_id','chief_complaint','date']),'chief_complaint');
   assert.equal(closestColumn('Date',['visit_id','date']),'date');
