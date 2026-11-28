@@ -137,3 +137,13 @@ test('a hidden count hides its percentage too, wherever a pair is drawn',async()
   assert.equal(pairedValue(4,8.7,'Cases','Percent',present,esc).html.includes('8.7'),false);
   assert.doesNotMatch(dataTableMarkup(DISTRICTS,esc,{present}),/8\.7/,'North\'s 8.7% would give its 4 away');
 });
+/** ROUNDED PARTS AND THEIR TOTAL (2026-11-28): shares rounded on their own can add to 99.9 or 100.1; the table says so. */
+test('rounded parts that do not add to the total shown are said so, and only then',async()=>{
+  const {dataTableMarkup}=await import('../build/data-table-ui.js');
+  const T={kind:'data-table',keys:['district','sex'],valueField:'share',rowCount:6,missingValueCount:0,unit:'percent',
+    rows:['North','South','East'].flatMap((d,i)=>[{key:{district:d,sex:'F'},value:[33.33,40.04,20.06][i]},{key:{district:d,sex:'M'},value:[33.33,6.64,0.02][i]}])};
+  const rounded=dataTableMarkup(T,esc,{assertTotals:true,present:{decimals:1}});
+  assert.match(rounded,/Figures may not add up to the totals shown, because each is rounded on its own\./);
+  assert.doesNotMatch(dataTableMarkup(T,esc,{assertTotals:true,present:{}}),/may not add up/,'unrounded, nothing to say');
+  assert.doesNotMatch(dataTableMarkup(T,esc,{assertTotals:true,present:{decimals:2}}),/may not add up/,'to two places they add exactly');
+});

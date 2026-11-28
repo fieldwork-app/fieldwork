@@ -2,7 +2,7 @@ import {editedTitle,type EditedCells} from './cell-edits.js';
 import type {Escape,Workflow,WorkflowNode} from './types.js';
 import {PREVIEW_ROWS,scrollLongTables} from './long-tables.js';
 import {escapeHtml} from './html-escape.js';
-import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,anySuppressed,type TablePresentation} from './table-presentation.js';
+import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,anySuppressed,roundingShows,ROUNDING_NOTE,type TablePresentation} from './table-presentation.js';
 import {type OwnInspector,type StepKit} from './inspector-kit.js';
 import {describableColumns,isDescribed,dictionaryKeyOf} from './column-metadata.js';
 import type {DataTable,DataTableSource,TableSelection} from './data-table.js';
@@ -1434,6 +1434,10 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
     // built, a table hiding any count shows no totals, and says why.
     const withheld=grid.grandTotal!==null&&anySuppressed(grid.rows.flatMap(r=>grid.columns.map((c,i)=>({column:c,value:r.cells[i]}))),present);
     const showTotals=grid.grandTotal!==null&&!withheld;
+    // ROUNDED PARTS THAT DO NOT ADD TO THEIR TOTAL ARE SAID SO, under the table, where a reader checking a margin looks.
+    const numbersIn=(cells:readonly (number|null|undefined)[])=>grid.columns.flatMap((c,i)=>typeof cells[i]==='number'?[{column:c,value:cells[i] as number}]:[]);
+    const roundingOff=showTotals&&(grid.rows.some(r=>r.total!==null&&roundingShows(numbersIn(r.cells),r.total,present))
+      ||grid.columns.some((c,i)=>{const t=grid.columnTotals[i];return t!=null&&roundingShows(grid.rows.flatMap(r=>typeof r.cells[i]==='number'?[{column:c,value:r.cells[i] as number}]:[]),t,present);}));
     const gridCell=(cells:readonly (number|null|undefined)[],c:string)=>{const v=cells[gi(c)],pc=gridPercent.get(c);
       if(v===undefined)return '<td><span class="muted">—</span></td>';
       if(pc===undefined)return value(v,c,'');
@@ -1460,6 +1464,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
       // the table claimed its values count the same thing or a person did, because the two carry
       // different weight -- and because the person can be wrong in a way the file cannot.
       +(withheld?`<p class="table-meta muted">Totals are not shown: with them, a count hidden as small could be worked out.</p>`:'')
+      +(roundingOff?`<p class="table-meta muted">${ROUNDING_NOTE}</p>`:'')
       +(showTotals&&assertTotals&&!table.unit?.trim()
         ?`<p class="table-meta muted">Totals are shown because this step was told these values `
           +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');}

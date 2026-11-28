@@ -148,6 +148,18 @@ export function headingMarks(column:string,p:TablePresentation|undefined,esc:Esc
   const unit=columnUnit(column,p,declaredUnit),marks=[numbers.get(column),pairWith?numbers.get(pairWith):undefined].filter((n):n is number=>!!n);
   return (unit?` (${esc(unit)})`:'')+marks.map(n=>` <span class="table-note-mark">[note ${n}]</span>`).join('');
 }
+/** A VALUE AS ROUNDED FOR SHOWING, or the value itself where nothing rounds it. */
+const shownNumber=(v:number,column:string,p:TablePresentation|undefined):number=>{
+  const d=p?.columns?.[column]?.decimals??p?.decimals;
+  return d===undefined?v:Number(v.toFixed(d));};
+/** WHETHER THE PARTS SHOWN FAIL TO ADD UP TO THE TOTAL SHOWN, because each was rounded on its own (2026-11-28; the
+ *  standards' open item: the ONS and the UK Analysis Function say so in a note rather than force the parts). `parts` are
+ *  each with its column; the total is written as the "Total" column is. */
+export function roundingShows(parts:readonly {column:string;value:number}[],total:number,p:TablePresentation|undefined):boolean{
+  const sum=parts.reduce((a,x)=>a+shownNumber(x.value,x.column,p),0);
+  return Math.abs(sum-shownNumber(total,'Total',p))>1e-9*Math.max(1,Math.abs(total));
+}
+export const ROUNDING_NOTE='Figures may not add up to the totals shown, because each is rounded on its own.';
 /** WHETHER ANY COUNT IN THESE ROWS IS HIDDEN AS SMALL, so the totals that would give it away are not shown. */
 export const anySuppressed=(cells:readonly {column:string;value:unknown}[],p:TablePresentation|undefined):boolean=>
   !!p?.suppress&&cells.some(c=>suppressedMark(c.value,c.column,p)!==undefined);
