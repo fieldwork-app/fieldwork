@@ -267,9 +267,12 @@ Then:
   **Provider identifier** is `esri` and **Allowed HTTPS origin** is exactly `https://static-map-tiles-api.arcgis.com`.
   A key whose **Referrer URLs** list only `https://digital-twin-ph.github.io`, Fieldwork's address before 27 November
   2026, needs `https://fieldwork-app.github.io` added in its settings on Esri's site.
-- **DHIS2 says it could not be reached**: the server does not list this page's address, `https://fieldwork-app.github.io`,
-  in its CORS allowlist. A server set up before 27 November 2026 may list `https://digital-twin-ph.github.io` only. Ask
-  its administrator to add the new one, or export a table from DHIS2 and read it under Your file.
+- **DHIS2 says it could not be reached**: Fieldwork says this whenever the request fails, for any reason, so check in
+  this order. First, the server's address: it is spelled as **Allowed HTTPS origin**, and opens in a browser tab.
+  Second, that this computer is online and can reach the server, which may be on a private network. Then ask the
+  server's administrator to confirm that its CORS allowlist names this page's address, `https://fieldwork-app.github.io`:
+  a server set up before 27 November 2026 may list `https://digital-twin-ph.github.io` only. Meanwhile, a table
+  exported from DHIS2 can be read under Your file.
 - **DHIS2 refuses the token**: it may have expired or been revoked. Make a new one in your DHIS2 profile.
 - **Fieldwork says "This is a Supabase secret key"**: you copied the secret key. Copy the publishable key instead,
   which starts `sb_publishable_`.
