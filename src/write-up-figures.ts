@@ -62,6 +62,7 @@ import type {DataTable} from './data-table.js';
 import type {ChartSummary} from './results.js';
 import type {Escape} from './types.js';
 import {tableViewOf} from './table-viewer.js';
+import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,tableNotesHtml,suppressedMark,type TablePresentation} from './table-presentation.js';
 import {chartMarkup} from './chart-output.js';
 import {twoByTwoMarkup} from './two-by-two-view.js';
 import type {TwoByTwoResult} from './two-by-two.js';
@@ -77,6 +78,9 @@ export const FIGURE_ROW_CEILING=50;
  *  anything a run carries. */
 export interface RunArtifacts {
   tables?:Record<string,DataTable>;
+  /** THE TABLE'S PRESENTATION, as the Table step that published it sets it (2026-11-28), so the write-up and the draft
+   *  print the table Results shows: its title, decimal places, units, notes, small cells and source. */
+  presentationOf?:(nodeId:string)=>TablePresentation|undefined;
   outputs?:readonly {nodeId:string; label?:string; view?:string; chart?:ChartSummary}[];
   /** The standalone SVG for a map node, composed by the caller from this run. Returns null where
    *  the output carries nothing a map can be drawn from -- a map step that ran before its
@@ -102,32 +106,43 @@ export const describedNode=(noteId:string|undefined):string|null=>{
   return cut>0&&cut===id.length-':description'.length?id.slice(0,cut):null;
 };
 
-const cell=(value:unknown,esc:Escape):string=>
-  value===null||value===undefined?`<td class="figure-empty" title="unknown, not zero">—</td>`
-  :typeof value==='number'?`<td class="figure-number">${esc(value.toLocaleString('en-US'))}</td>`
-  :`<td>${esc(value)}</td>`;
+/** A cell as the table's presentation writes it. AN EMPTY CELL IS A DASH THAT SAYS SO on hover, because this application
+ *  refuses to compute a two-by-two over a missing value and a figure that printed nothing there would hand a reader a gap
+ *  that looks like a measured zero. */
+const cell=(shown:{html:string;number:boolean;absent:boolean}):string=>
+  shown.absent?`<td class="figure-empty" title="unknown, not zero">${shown.html||'—'}</td>`
+  :shown.number?`<td class="figure-number">${shown.html}</td>`:`<td>${shown.html}</td>`;
 
-/** A table as a reader of the write-up meets it.
- *
- *  AN EMPTY CELL IS DRAWN AS A DASH AND SAYS SO on hover, because this application refuses to
- *  compute a two-by-two over a missing value and a figure that printed nothing there would hand a
- *  reader a gap that looks like a measured zero. The same distinction the description already
- *  states in words. */
+/** A table as a reader of the write-up meets it, TO THE TABLE STANDARD (2026-11-28): the same rules Results applies, read
+ *  from the Presentation of the Table step that published it. Its title above, real header cells with each column's
+ *  unit and note number, its numbers right-aligned to one precision a column, small counts hidden, a count and its
+ *  percentage in one cell where paired, then the notes and the source. It had drawn its own cells, numbers as the
+ *  locale wrote them and every setting of the Table's Presentation unread. */
 export function tableFigure(table:DataTable|undefined,label:string|undefined,
-  esc:Escape):string|null{
+  esc:Escape,present?:TablePresentation):string|null{
   if(table?.kind!=='data-table')return null;
   const view=tableViewOf(table,label||'');
   if(!view.columns.length)return null;
   const drawn=view.rows.slice(0,FIGURE_ROW_CEILING);
   const over=view.rows.length-drawn.length;
+  const {shown:columns,percentOf}=pairedColumns(view.columns,present);
+  const numbers=noteNumbers(present,columns);
+  const declared=(name:string)=>view.headings?.[name]?undefined:table.columns?.[name]?.confirmed?table.columns[name]!.unit:undefined;
+  const isNumber=(name:string)=>drawn.length>0&&drawn.every(row=>typeof row[name]==='number'||row[name]===null||row[name]===undefined)
+    &&drawn.some(row=>typeof row[name]==='number');
+  const valueOf=(row:Record<string,unknown>,name:string)=>{const pc=percentOf.get(name);
+    return pc?pairedValue(row[name],row[pc],name,pc,present,esc):presentValue(row[name],name,present,esc);};
   return `<figure class="notes-figure" data-figure="table">`
+    +(present?.caption?`<p class="table-caption">${esc(present.caption)}</p>`:'')
     +`<table><thead><tr>`
     // A NUMBER'S HEADING STANDS OVER IT (2026-11-19: "85" sat under "Dead" in MERS's table, headings left and numbers right).
-    +view.columns.map(name=>`<th${drawn.length&&drawn.every(row=>typeof row[name]==='number'||row[name]===null||row[name]===undefined)
-      &&drawn.some(row=>typeof row[name]==='number')?' class="figure-number"':''}>${esc(name)}${view.headings?.[name]?`<span class="meaning">: ${esc(view.headings[name]!)}</span>`:''}</th>`).join('')
+    +columns.map(name=>`<th scope="col"${isNumber(name)?' class="figure-number"':''}>${esc(name)}${percentOf.get(name)?` (${esc(percentOf.get(name)!)})`:''}`
+      +headingMarks(name,present,esc,numbers,declared(name))
+      +`${view.headings?.[name]?`<span class="meaning">: ${esc(view.headings[name]!)}</span>`:''}</th>`).join('')
     +`</tr></thead><tbody>`
-    +drawn.map(row=>`<tr>`+view.columns.map(name=>cell(row[name],esc)).join('')+`</tr>`).join('')
+    +drawn.map(row=>`<tr>`+columns.map(name=>cell(valueOf(row as Record<string,unknown>,name))).join('')+`</tr>`).join('')
     +`</tbody></table>`
+    +tableNotesHtml(present,columns,esc)
     // THE CEILING IS REPORTED WHERE IT BITES. A figure silently showing 50 of 320 rows is a
     // figure that lies about the data, and the number a reader would quote comes from the
     // caption rather than from counting what is drawn.
@@ -208,7 +223,7 @@ export function figureFor(nodeId:string,run:RunArtifacts|undefined,esc:Escape):s
     const svg=run.mapSvg?.(nodeId);
     return svg?mapFigure(svg):mapFigurePlaceholder(nodeId,esc);
   }
-  const asTable=tableFigure(table,output?.label,esc);
+  const asTable=tableFigure(table,output?.label,esc,run.presentationOf?.(nodeId));
   if(asTable)return asTable;
   // A node with no published view still gets its table, which is how an intermediate step -- a
   // relate, a group, a selection -- reaches a reader at all. `run.tables` holds those.
@@ -217,13 +232,16 @@ export function figureFor(nodeId:string,run:RunArtifacts|undefined,esc:Escape):s
 
 /** A TABLE AS CSV, its columns spelled as the table holds them and an unknown cell left empty, never written as zero.
  *  For the files attached to a draft (experiment 202, 2026-11-19), where a table too long to print goes. */
-export function tableCsv(table:DataTable):string{
+export function tableCsv(table:DataTable,present?:TablePresentation):string{
   const view=tableViewOf(table,'');
-  const field=(value:unknown)=>{
+  // A SMALL COUNT HIDDEN ON THE PAGE IS HIDDEN HERE TOO (2026-11-28): otherwise the file beside the draft hands on what the
+  // table withheld. Its mark is written instead, and nothing else of the presentation: a CSV keeps one value a cell.
+  const field=(value:unknown,name='')=>{
+    const hidden=suppressedMark(value,name,present);if(hidden)return hidden;
     if(value===null||value===undefined)return '';
     const text=String(value);
     return /[",\r\n]/.test(text)?`"${text.replace(/"/g,'""')}"`:text;};
-  return [view.columns.map(field).join(','),...view.rows.map(row=>view.columns.map(name=>field(row[name])).join(','))].join('\r\n')+'\r\n';
+  return [view.columns.map(c=>field(c)).join(','),...view.rows.map(row=>view.columns.map(name=>field(row[name],name)).join(','))].join('\r\n')+'\r\n';
 }
 /** How many rows a table holds, as its view counts them. */
 export const tableRowCount=(table:DataTable):number=>tableViewOf(table,'').rows.length;

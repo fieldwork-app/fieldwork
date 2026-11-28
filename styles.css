@@ -1036,14 +1036,17 @@ body.playing-back #node-library{border-left:2px solid var(--accent-muted-1)}
    sideways is a table nobody checks. */
 .notes-figure{margin:0 0 .6rem;padding:.5rem;border:1px solid var(--line);border-radius:6px;
   background:var(--surface-2,rgba(127,127,127,.06));overflow-x:auto}
-.notes-figure table{border-collapse:collapse;width:100%;font-size:0.875rem}
-.notes-figure th,.notes-figure td{border-bottom:1px solid var(--line);padding:.22rem .45rem;
+/* TO THE TABLE STANDARD (2026-11-28): a rule above, one under the header, one below, and none between columns, as
+   Results draws a Table (docs/research/table-presentation-standards-2026-11-27.md). */
+.notes-figure table{border-collapse:collapse;width:100%;font-size:0.875rem;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.notes-figure th,.notes-figure td{border-bottom:1px solid var(--surface-tint-8,var(--line));padding:.3rem .5rem;
   text-align:left;white-space:nowrap}
-.notes-figure th{font-weight:600;position:sticky;top:0;background:inherit}
+.notes-figure tbody tr:last-child td{border-bottom:0}
+.notes-figure th{font-weight:650;position:sticky;top:0;background:inherit;border-bottom:1.5px solid var(--ink);vertical-align:bottom}
 .notes-figure .figure-number{text-align:right;font-variant-numeric:tabular-nums}
 /* An empty cell is unknown and not zero, which the description says in words and this says
    in the figure. Dimmed rather than blank: a blank cell reads as a measured nothing. */
-.notes-figure .figure-empty{text-align:right;opacity:.45}
+.notes-figure .figure-empty{text-align:right;color:var(--muted)}
 .notes-figure figcaption{margin-top:.4rem;font-size:0.875rem}
 .notes-figure.is-absent{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .notes-figure.is-absent p{margin:0}
@@ -1410,8 +1413,13 @@ th .column-label{display:block;font-weight:400;color:var(--muted);font-size:14px
 .publication-page .pub-figure svg{width:100%;height:auto;max-height:200mm}
 .publication-page .pub-caption{font:15px/1.45 system-ui,sans-serif;color:#111;margin:6px 0}
 .publication-page .pub-table{margin:16px 0;break-inside:avoid;overflow-x:auto}
-.publication-page table{border-collapse:collapse;font:14px/1.4 system-ui,sans-serif;color:#111}
-.publication-page td,.publication-page th{border-bottom:1px solid #9a9a9a;padding:3px 8px;text-align:left}
+.publication-page table{border-collapse:collapse;font:14px/1.4 system-ui,sans-serif;color:#111;border-top:2px solid #111;border-bottom:2px solid #111}
+.publication-page td,.publication-page th{border-bottom:1px solid #c8c8c8;padding:3px 8px;text-align:left}
+.publication-page th{border-bottom:1.5px solid #111;vertical-align:bottom}
+.publication-page tbody tr:last-child td{border-bottom:0}
+.publication-page .figure-number{text-align:right;font-variant-numeric:tabular-nums}
+.publication-page .table-caption{font:600 15px/1.4 system-ui,sans-serif;margin:0 0 6px}
+.publication-page .table-notes{font:14px/1.45 system-ui,sans-serif;color:#333;margin:6px 0 0}
 .publication-page .pub-eqref{font-style:italic;color:#333}
 .publication-page .pub-equation{break-inside:avoid;margin:14px 0}
 .publication-page .pub-references li,.publication-page .pub-sources li{margin-bottom:6px}
@@ -1874,5 +1882,5 @@ tr.detect-signal-row td{font-weight:700}
 :root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="contrast"]) .blue{--tone:#0a3a57}:root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="contrast"]) .teal{--tone:#00473a}:root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="contrast"]) .purple{--tone:#4b2770}:root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="contrast"]) .amber{--tone:#5c3a00}:root:not([data-theme="light"]):not([data-theme="dark"]):not([data-theme="contrast"]) .green{--tone:#1f4a12}}
 .port-symbol{flex-shrink:0;margin-right:7px}.port-symbol .f{fill:currentColor}.port-symbol .s{fill:none;stroke:currentColor}.node-icon .port-symbol,.palette-icon .port-symbol{margin:0}
 .react-flow__handle.node-output .node-output-tip{display:none;position:absolute;left:18px;top:50%;transform:translateY(-50%);white-space:nowrap;align-items:center;gap:6px;padding:5px 9px;font-size:14px;color:var(--ink);background:var(--surface-raised-1);border:1px solid var(--line);border-radius:6px;box-shadow:0 2px 6px var(--shadow-3);pointer-events:none;z-index:20}.react-flow__handle.node-output:hover .node-output-tip{display:flex}.node-output-tip .port-symbol{margin:0}
-#table-panel table,.table-standard{border-collapse:collapse;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}#table-panel th,.table-standard th{background:var(--surface-raised-1);color:var(--ink);font-weight:650;border-bottom:1.5px solid var(--ink);padding:9px 12px;vertical-align:bottom}#table-panel td,.table-standard td{color:var(--ink);padding:9px 12px;border-bottom:1px solid var(--surface-tint-8)}#table-panel tbody tr:last-child td,.table-standard tbody tr:last-child td{border-bottom:0}#table-panel td[data-number],#table-panel th.number,.table-standard td.number,.table-standard th.number{text-align:right;font-variant-numeric:tabular-nums}#table-panel th.number .column-sort{justify-content:flex-end;width:100%}#table-panel td.absent-cell,.table-standard td.absent-cell{color:var(--muted)}#table-panel tfoot td,#table-panel tfoot th{border-top:1.5px solid var(--ink);font-weight:650}#table-panel.table-shaded tbody tr:nth-child(even) td,.table-shaded .table-standard tbody tr:nth-child(even) td{background:var(--surface-tint-9)}.table-caption{font-size:16px;font-weight:650;color:var(--ink);margin:4px 0 10px}.table-notes{font-size:14px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+#table-panel table,.table-standard{border-collapse:collapse;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}#table-panel th,.table-standard th{background:var(--surface-raised-1);color:var(--ink);font-weight:650;border-bottom:1.5px solid var(--ink);padding:9px 12px;vertical-align:bottom}#table-panel td,.table-standard td{color:var(--ink);padding:9px 12px;border-bottom:1px solid var(--surface-tint-8)}#table-panel tbody tr:last-child td,.table-standard tbody tr:last-child td{border-bottom:0}#table-panel td[data-number],#table-panel th.number,.table-standard td.number,.table-standard th.number{text-align:right;font-variant-numeric:tabular-nums}#table-panel th.number .column-sort{justify-content:flex-end;width:100%}#table-panel td.absent-cell,.table-standard td.absent-cell{color:var(--muted)}#table-panel tfoot td,#table-panel tfoot th{border-top:1.5px solid var(--ink);font-weight:650}#table-panel.table-shaded tbody tr:nth-child(even) td,.table-shaded .table-standard tbody tr:nth-child(even) td{background:var(--surface-tint-9)}.table-caption{font-size:16px;font-weight:650;color:var(--ink);margin:4px 0 10px}.table-notes{font-size:14px;color:var(--muted);margin:8px 0 0;line-height:1.5}.table-note-mark{font-weight:500;white-space:nowrap}.present-columns,.present-suppress{margin:12px 0}.present-columns summary,.present-suppress summary{font-weight:650;cursor:pointer;padding:6px 0}.present-columns input,.present-columns select{min-width:7rem;font-size:14px}.present-columns tbody th{border-bottom:1px solid var(--surface-tint-8);background:none;vertical-align:middle}
 .preview-drawing{margin:4px 0 10px}.preview-drawing svg{width:100%;max-width:520px;height:auto;display:block}.preview-drawing .walk-key{margin:6px 0 0;padding-left:20px;font-size:14px}

@@ -66,20 +66,20 @@ test('Configure… previews ten rows, more on request, as the coordinates and th
   await page.locator('.react-flow__node[data-id="before-table"]').click();
   await page.locator('#configure-step').click();
   const dialog=page.locator('#table-config');
-  await expect(dialog.locator('thead th')).toHaveText(['Record','Longitude (°)','Latitude (°)','DEATHS','FID']);
+  await expect(dialog.locator('[data-config-section="preview"] thead th')).toHaveText(['Record','Longitude (°)','Latitude (°)','DEATHS','FID']);
   await expect(dialog).toContainText('250 rows, the first 10 shown.');
-  await expect(dialog.locator('tbody tr')).toHaveCount(10);
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr')).toHaveCount(10);
   await dialog.locator('#preview-rows').selectOption('all');
-  await expect(dialog.locator('tbody tr')).toHaveCount(250);
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr')).toHaveCount(250);
   await dialog.locator('#preview-rows').selectOption('20');
-  await expect(dialog.locator('tbody tr')).toHaveCount(20);
-  await expect(dialog.locator('tbody tr').first().locator('td').nth(1)).toHaveText('-0.137930');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr')).toHaveCount(20);
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('td').nth(1)).toHaveText('-0.137930');
   // Numbers right-aligned under right-aligned headings.
-  await expect(dialog.locator('thead th').nth(3)).toHaveCSS('text-align','right');
-  await expect(dialog.locator('tbody tr').first().locator('td').nth(3)).toHaveCSS('text-align','right');
+  await expect(dialog.locator('[data-config-section="preview"] thead th').nth(3)).toHaveCSS('text-align','right');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('td').nth(3)).toHaveCSS('text-align','right');
   await dialog.locator('#output-coordinates').selectOption('metres');
-  await expect(dialog.locator('thead th')).toHaveText(['Record','Easting (m)','Northing (m)','DEATHS','FID']);
-  await expect(dialog.locator('tbody tr').first().locator('td').nth(1)).toHaveText('698587.2');
+  await expect(dialog.locator('[data-config-section="preview"] thead th')).toHaveText(['Record','Easting (m)','Northing (m)','DEATHS','FID']);
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('td').nth(1)).toHaveText('698587.2');
   await dialog.locator('#output-coordinates').selectOption('degrees');
   // THE PRESENTATION, shown in the preview and kept by Apply: a title above, notes below.
   await dialog.locator('#present-caption').fill('Deaths by house, Soho, 1854');await dialog.locator('#present-caption').press('Tab');
@@ -87,7 +87,7 @@ test('Configure… previews ten rows, more on request, as the coordinates and th
   await dialog.locator('#present-decimals').selectOption('1');
   await expect(dialog.locator('.table-caption')).toHaveText('Deaths by house, Soho, 1854');
   await expect(dialog.locator('.table-notes')).toHaveText('One row per house.');
-  await expect(dialog.locator('tbody tr').first().locator('td').nth(3)).toHaveText('3.0');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('td').nth(3)).toHaveText('3.0');
   await dialog.locator('#config-apply').click();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('fieldwork-workflow-v1')).nodes
     .find(n=>n.id==='before-table').params.presentation)).toEqual({caption:'Deaths by house, Soho, 1854',notes:'One row per house.',decimals:1});
@@ -104,13 +104,13 @@ test('a polygon table previews its areas, wide, as Results shows them',async({pa
   await page.locator('.react-flow__node[data-id="table"]').click();
   await page.locator('#inspector-content button',{hasText:'Configure'}).click();
   const dialog=page.locator('#table-config');
-  await expect(dialog.locator('tbody tr')).toHaveCount(8);
-  await expect(dialog.locator('thead th').first()).toHaveText('id');
-  await expect(dialog.locator('thead th').nth(1)).toHaveText('locations');
-  await expect(dialog.locator('thead')).toContainText('Broadwick Street');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr')).toHaveCount(8);
+  await expect(dialog.locator('[data-config-section="preview"] thead th').first()).toHaveText('id');
+  await expect(dialog.locator('[data-config-section="preview"] thead th').nth(1)).toHaveText('locations');
+  await expect(dialog.locator('[data-config-section="preview"] thead')).toContainText('Broadwick Street');
   // Each area named in a row header, as Results names it; its locations the first value.
-  await expect(dialog.locator('tbody tr').first().locator('th')).toHaveText('pump-250');
-  await expect(dialog.locator('tbody tr').first().locator('td').first()).toHaveText('171');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('th')).toHaveText('pump-250');
+  await expect(dialog.locator('[data-config-section="preview"] tbody tr').first().locator('td').first()).toHaveText('171');
   expect(errors).toEqual([]);
 });
 
@@ -128,9 +128,46 @@ test('ticking Show totals adds the totals to the preview before Apply',async({pa
   await page.locator('.react-flow__node[data-id="table"]').click();
   await page.locator('#configure-step').click();
   const dialog=page.locator('#table-config');
-  await expect(dialog.locator('table')).not.toContainText('Total');
+  await expect(dialog.locator('[data-config-section="preview"] table')).not.toContainText('Total');
   await dialog.locator('#output-totals').check();
-  await expect(dialog.locator('table')).toContainText('Total');
+  await expect(dialog.locator('[data-config-section="preview"] table')).toContainText('Total');
   await expect(dialog.locator('table tfoot')).toContainText('10');
+  expect(errors).toEqual([]);
+});
+
+/** EACH COLUMN, AND THE SMALL COUNTS (2026-11-28, the table standard's open items): a column's decimal places, unit and
+ *  note, and counts below a threshold hidden, set in Configure… and drawn alike in its preview and in Results. */
+test('a column\'s unit, note and decimal places, and its small counts hidden, read alike in the preview and in Results',async({page})=>{
+  const errors=collectPageErrors(page);
+  await page.goto('/?example=snow-geoprivacy');
+  await expect(page.locator('#workflow-state')).toHaveText('✓ Run complete',{timeout:60000});
+  await page.locator('[data-view="workflow"]').click();
+  await page.locator('.react-flow__node[data-id="before-table"]').click();
+  await page.locator('#configure-step').click();
+  const dialog=page.locator('#table-config');
+  await dialog.locator('#present-decimals').selectOption('1');
+  await dialog.locator('.present-columns summary').click();
+  const deaths=dialog.locator('.present-columns tr[data-column="DEATHS"]');
+  await deaths.locator('[data-col-decimals]').selectOption('0');
+  await deaths.locator('[data-col-unit]').fill('deaths');await deaths.locator('[data-col-unit]').press('Tab');
+  await deaths.locator('[data-col-note]').fill('Counted by Snow.');await deaths.locator('[data-col-note]').press('Tab');
+  await dialog.locator('.present-suppress summary').click();
+  await dialog.locator('#present-suppress-below').fill('3');await dialog.locator('#present-suppress-below').press('Tab');
+  await dialog.locator('[data-suppress-column="DEATHS"]').check();
+  const heading=dialog.locator('.table-presented thead th').nth(3);
+  await expect(heading).toHaveText('DEATHS (deaths) [note 1]');
+  await expect(dialog.locator('.table-presented .table-notes')).toHaveText(['[note 1] Counted by Snow.','[c] In DEATHS, a count from 1 to 2 is not shown, for confidentiality.']);
+  const cells=await dialog.locator('.table-presented tbody tr td:nth-child(4)').allTextContents();
+  expect(cells.every(c=>c==='[c]'||/^\d+$/.test(c)),`DEATHS to no places or hidden: ${cells.slice(0,5)}`).toBe(true);
+  expect(cells).toContain('[c]');
+  expect(cells.some(c=>c==='1'||c==='2')).toBe(false);
+  await dialog.locator('#config-apply').click();
+  await expect(dialog).toBeHidden();
+  await page.locator('[data-view="results"]').click();
+  await page.locator('#result-tabs [data-output="before-table"]').click();
+  await expect(page.locator('#result-head')).toContainText('DEATHS (deaths) [note 1]');
+  await expect(page.locator('#table-notes')).toContainText('[note 1] Counted by Snow.');
+  await expect(page.locator('#table-notes')).toContainText('[c] In DEATHS, a count from 1 to 2 is not shown');
+  await expect(page.locator('#result-rows')).toContainText('[c]');
   expect(errors).toEqual([]);
 });

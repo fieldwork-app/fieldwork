@@ -82,10 +82,12 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   able to style them according to established table presentation standards"*; *"really look pretty but also vision
   impaired friendly"*. A widget enhancement; [the research](docs/research/table-presentation-standards-2026-11-27.md)).
   **Built in Table 0.15.0:** the agreed rules on every table in Results and in Configure…'s preview, and a Presentation
-  section (title, decimal places, separators, absent values, shaded rows, notes, source). **Left:** decimal places per
-  column; footnote markers; a small-cell threshold and what it means; units and denominators in the headings; the
-  write-up's and the export's tables, not yet checked against the same rules; a count and its percentage in one cell
-  or two. Measure: tables with a title, columns of numbers not right-aligned, columns mixing decimal places.
+  section (title, decimal places, separators, absent values, shaded rows, notes, source). **Built in Table 0.16.0
+  (0.205.0):** decimal places, unit and a numbered note per column; small counts hidden by a declared threshold; a
+  count and its percentage in one cell for a table of rows; the write-up's and the draft's tables to the same rules.
+  **Left:** a count and its percentage in one cell for tables of points and of polygon summaries; whether rounded
+  parts that do not add to their total are said so. Measure: tables with a title, columns of numbers not
+  right-aligned, columns mixing decimal places.
 - **Worked examples as teaching material** ([audit](docs/audits/worked-example-standards-audit.md); the practitioner,
   2026-11-27: *"develop worked example standards or enhance what we have developed already to optimize the
   pedagogical value of worked examples"*). Today 5 of 12 catalogue examples have a manual walkthrough and its playback,
@@ -104,14 +106,12 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   drawing helper Clip polygons now uses (`previewDrawing`) is the way in for the spatial ones. Measure: transforms
   that neither render nor say why.
 - **Next batch, agreed 2026-11-27, in order:** (1) ~~an edit applied during a run~~, done in 0.204.7: Apply waits for the
-  run and then applies; (2) the write-up's and the export's tables to the table standard; (3) the
+  run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a
   second spike: schema, each role's read rules as testable checks, the turn-ending function, every move timestamped
   and attributed, provenance; nothing created in Supabase until the practitioner agrees it; (4)
   `find_literature_for_terms` from [232](docs/experiments/232-terms-looked-up-and-appraised.md)'s design, its two
   syntaxes read against their current documentation first.
-- **Widgets added from the library land on top of one another** (found 2026-11-27, writing the blank-port test): three
-  added in a row overlapped, and a notice covered the third's port. A placement finding for the canvas.
 - **A cooperative, turn-based training mission** ([233](docs/experiments/233-a-cooperative-turn-based-training-mission.md)):
   a research proposal written in a ChatGPT session, given 2026-11-26 to be written up and reviewed later. Nothing
   built. It is one more kind of teaching material, loosely coupled to Dive Deeper. For review: it would add
@@ -128,7 +128,6 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
     and Find health facilities is blocked on a frozen response;
   - the ruleset extract-contract has no check; checks 23 and 25 record rulesets that are retired; check 50 needs its
     rasters laid out as the exporter expects.
-- **0.200.0** merged (pull request 4). **0.201.0**, NSSP's definitions, is pull request 5; its review is answered.
 - **0.202.0, from the practitioner's UI order of 2026-11-26** (high-contrast theme first): the theme, and Show me how
   ending on Map's scale for Summarize points to polygons and Aggregate points to H3 cells, with labels kept inside the
   drawing and Voronoi's catchments in one fill; and the last three inline Inspectors (Chart, Point data, Measure

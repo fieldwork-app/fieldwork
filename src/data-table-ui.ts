@@ -2,7 +2,7 @@ import {editedTitle,type EditedCells} from './cell-edits.js';
 import type {Escape,Workflow,WorkflowNode} from './types.js';
 import {PREVIEW_ROWS,scrollLongTables} from './long-tables.js';
 import {escapeHtml} from './html-escape.js';
-import {presentValue,type TablePresentation} from './table-presentation.js';
+import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,type TablePresentation} from './table-presentation.js';
 import {type OwnInspector,type StepKit} from './inspector-kit.js';
 import {describableColumns,isDescribed,dictionaryKeyOf} from './column-metadata.js';
 import type {DataTable,DataTableSource,TableSelection} from './data-table.js';
@@ -1319,9 +1319,13 @@ const roleAttr=(roles:ColumnRoles|undefined,column:string,also='')=>{const r=rol
 /** A HEADING IS THE COLUMN'S OWN NAME, with its confirmed label beneath (2026-11-14: "Let's make sure we use data
  *  dictionary labels in English"), never in its place: a reader checking the file finds the column it names. */
 let headingLabels:DataTable['columns']|undefined;
-const roleHead=(roles:ColumnRoles|undefined,column:string,esc:Escape,also='',means?:string)=>{const r=roleOf(roles,column);
+/** THE PRESENTATION THE HEADINGS ARE WRITTEN TO (2026-11-28): a column's unit once, and its note's number. */
+let headingPresent:{p?:TablePresentation;numbers:Map<string,number>}={numbers:new Map()};
+const roleHead=(roles:ColumnRoles|undefined,column:string,esc:Escape,also='',means?:string,pairWith?:string)=>{const r=roleOf(roles,column);
   const meta=headingLabels?.[column],label=meta?.confirmed?meta.label?.trim():'';
-  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
+  // The declared unit only where no meaning is written beside the name: a meaning already ends in its unit.
+  const declared=!means&&!label&&meta?.confirmed?meta.unit:undefined;
+  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${pairWith?` (${esc(pairWith)})`:''}${headingMarks(column,headingPresent.p,esc,headingPresent.numbers,declared)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
     +(label&&label!==column?`<span class="column-label">${esc(label)}</span>`:'')
     +(r?`<span class="column-role">${r==='key'?'matched on':'brought across'}</span>`:'')+'</th>';};
 
@@ -1362,7 +1366,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
   // table's words, a number right-aligned. A cell the shape does not have at all keeps its dash.
   const value=(v:string|number|null,column:string,attributes:string)=>{const shown=presentValue(v,column,present,esc);
     return `<td${attributes}${shown.number?' data-number':''}${shown.absent?' data-absent':''}>${shown.html}</td>`;};
-  headingLabels=table.columns;
+  headingLabels=table.columns;headingPresent={p:present,numbers:noteNumbers(present,[...table.keys,table.valueField])};
   const matching=query?table.rows.filter(row=>Object.values(row.key).some(v=>String(v).toLowerCase().includes(query.toLowerCase()))):table.rows;
   const pages=Math.max(1,Math.ceil(matching.length/pageSize)),shown=limit!==undefined?matching.slice(0,limit):matching.slice(page*pageSize,page*pageSize+pageSize);
   const unit=table.unit?esc(table.unit):'<span class="muted">unit unstated</span>';
@@ -1378,7 +1382,16 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
   const framePages=(n:number)=>Math.max(1,Math.ceil(n/FRAME_PAGE_ROWS)),framePage=(n:number)=>Math.min(page,framePages(n)-1);
   const onPage=<T,>(rows:readonly T[])=>{if(limit!==undefined)return rows.slice(0,limit);const at=framePage(rows.length);return rows.slice(at*FRAME_PAGE_ROWS,(at+1)*FRAME_PAGE_ROWS);};
   const pages_=(at:number,n:number)=>limit!==undefined?'':pager(at,n);
-  if(frame)
+  if(frame){
+    // A COUNT AND ITS PERCENTAGE IN ONE CELL, where Presentation pairs them: the percentage column is folded into its count's.
+    const {shown:measures,percentOf}=pairedColumns(frame.columns,present);
+    const at=(c:string)=>frame.columns.indexOf(c);
+    headingPresent={p:present,numbers:noteNumbers(present,[frame.subject,...frame.attributes,...measures])};
+    const cellOf=(r:WideFrame['rows'][number],c:string)=>{const v=r.cells[at(c)],pc=percentOf.get(c);
+      if(v===undefined)return `<td${roleAttr(roles,c)}><span class="muted">\u2014</span></td>`;
+      if(pc===undefined)return value(v,c,roleAttr(roles,c));
+      const shown=pairedValue(v,r.cells[at(pc)]??null,c,pc,present,esc);
+      return `<td${roleAttr(roles,c)}${shown.number?' data-number':''}${shown.absent?' data-absent':''}>${shown.html}</td>`;};
     return `<div class="table-meta muted">${frame.rows.length} rows \u00b7 `
       +`${esc(frame.subject)}${frame.attributes.length?' with '+frame.attributes.map(esc).join(', '):''}`
       +` \u00b7 ${frame.columns.length} variable${frame.columns.length===1?'':'s'} \u00b7 value in ${unit}</div>`
@@ -1387,30 +1400,38 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
       // An attribute is marked, because it describes the subject rather than measuring it and a
       // reader totalling a column needs to know which columns are numbers.
       +frame.attributes.map(a=>roleHead(roles,a,esc,'frame-attribute')).join('')
-      +frame.columns.map(c=>roleHead(roles,c,esc,'',table.headings?.[c])).join('')
+      +measures.map(c=>roleHead(roles,c,esc,'',table.headings?.[c],percentOf.get(c))).join('')
       +'</tr></thead><tbody>'
       +onPage(frame.rows).map(r=>`<tr><th scope="row"${roleAttr(roles,frame.subject)}>${esc(r.label)}</th>`
         +r.attributes.map((a,i)=>`<td${roleAttr(roles,frame.attributes[i]!,'frame-attribute')}>${esc(a)}</td>`).join('')
-        +r.cells.map((v,i)=>v===undefined?`<td${roleAttr(roles,frame.columns[i]!)}><span class="muted">\u2014</span></td>`
-          :value(v,frame.columns[i]!,roleAttr(roles,frame.columns[i]!))).join('')
+        +measures.map(c=>cellOf(r,c)).join('')
         +'</tr>').join('')
-      +'</tbody></table></div>'+pages_(framePage(frame.rows.length),framePages(frame.rows.length));
-  if(grid)
+      +'</tbody></table></div>'+pages_(framePage(frame.rows.length),framePages(frame.rows.length));}
+  if(grid){
+    // A COUNT AND ITS PERCENTAGE IN ONE CELL here too, where the measures are the columns (2026-11-28).
+    const {shown:gridColumns,percentOf:gridPercent}=pairedColumns(grid.columns,present);
+    const gi=(c:string)=>grid.columns.indexOf(c);
+    const gridNotes=noteNumbers(present,gridColumns);
+    const gridCell=(cells:readonly (number|null|undefined)[],c:string)=>{const v=cells[gi(c)],pc=gridPercent.get(c);
+      if(v===undefined)return '<td><span class="muted">—</span></td>';
+      if(pc===undefined)return value(v,c,'');
+      const both=pairedValue(v,cells[gi(pc)]??null,c,pc,present,esc);
+      return `<td${both.number?' data-number':''}${both.absent?' data-absent':''}>${both.html}</td>`;};
     return `<div class="table-meta muted">${table.rowCount} cells · ${esc(grid.rowKey)} by ${esc(grid.colKey)}`
       +` · value in ${unit}</div>`
       +`<table class="crosstab"><thead><tr>${roleHead(roles,grid.rowKey,esc)}`
-      +grid.columns.map(c=>`<th scope="col">${esc(c)}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
+      +gridColumns.map(c=>`<th scope="col">${esc(c)}${gridPercent.get(c)?` (${esc(gridPercent.get(c)!)})`:''}${headingMarks(c,present,esc,gridNotes)}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
       +(grid.grandTotal===null?'':'<th scope="col">Total</th>')
       +`</tr></thead><tbody>`
       // A ROW'S MEANING BESIDE ITS NAME, where the table carries one (a regression's terms, experiment 172).
       +onPage(grid.rows).map(r=>`<tr><th scope="row">${esc(r.label)}${table.meanings?.[r.label]?`<span class="meaning"> · ${esc(table.meanings[r.label]!)}</span>`:''}</th>`
-        +r.cells.map((v,i)=>v===undefined?'<td><span class="muted">—</span></td>':value(v,grid.columns[i]??'','')).join('')
+        +gridColumns.map(c=>gridCell(r.cells,c)).join('')
         +(r.total===null?'':value(r.total,'Total',' class="crosstab-total"'))
         +'</tr>').join('')
       +`</tbody>`
       // The fourth row, where a reader looks for N.
       +(grid.grandTotal===null?'':`<tfoot><tr><th scope="row">Total</th>`
-        +grid.columnTotals.map(v=>v===null?'<td class="crosstab-total"><span class="muted">—</span></td>':value(v,'Total',' class="crosstab-total"')).join('')
+        +gridColumns.map(c=>grid.columnTotals[gi(c)]??null).map(v=>v===null?'<td class="crosstab-total"><span class="muted">—</span></td>':value(v,'Total',' class="crosstab-total"')).join('')
         +value(grid.grandTotal,'Total',' class="crosstab-total"')+'</tr></tfoot>')
       +`</table>`+pages_(framePage(grid.rows.length),framePages(grid.rows.length))
       // WHO SAID THESE COULD BE ADDED. A reader checking a margin is entitled to know whether
@@ -1418,7 +1439,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
       // different weight -- and because the person can be wrong in a way the file cannot.
       +(grid.grandTotal!==null&&assertTotals&&!table.unit?.trim()
         ?`<p class="table-meta muted">Totals are shown because this step was told these values `
-          +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');
+          +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');}
   // A TABLE WITH NO VALUE COLUMN, a layer's attributes, shows none: an empty "unknown" on every row said nothing.
   const valued=!!table.valueField;
   return `<div class="table-meta muted">${matching.length} of ${recordsSaid(table)}${valued&&table.missingValueCount?` · ${table.missingValueCount} values absent and kept as unknown`:''}${valued?` · value in ${unit}`:''}</div>`

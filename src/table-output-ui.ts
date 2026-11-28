@@ -10,10 +10,10 @@ import {nodeInputs,portAccepts,outputOf,shownMode} from './core.js';
 import {MAX_POINT_LAYERS} from './point-layers.js';
 import {zoneFields,wireZone,type ZoneAdvice} from './metric-steps-ui.js';
 import {projectFromCRS84} from './reproject.js';
-import {shownRows,dataTableMarkup} from './data-table-ui.js';
+import {shownRows,dataTableMarkup,wideFrame} from './data-table-ui.js';
 import type {DataTable} from './data-table.js';
 import {isProjectedReference,type PointCollection,type AnySpatialReference} from './types.js';
-import {presentCell,presentedTable,presentationFields,type TablePresentation} from './table-presentation.js';
+import {presentCell,presentedTable,presentationFields,headingMarks,noteNumbers,type TablePresentation,type PresentableColumn,type ColumnPresentation} from './table-presentation.js';
 
 export interface TableOutputKit extends StepKit {
   /** The unit the table's rows state, where they state one, so the totals claim is not offered over it. */
@@ -49,6 +49,35 @@ function wirePresentation(root:ParentNode,p:TablePresentation,redraw:()=>void):v
     if((e.target as HTMLInputElement).checked)p.shade=true;else delete p.shade;redraw();});
 }
 
+/** Connects the column and small-count controls to the draft. Each setting cleared is removed, so an unset table saves
+ *  nothing. */
+function wireColumnPresentation(root:ParentNode,p:TablePresentation,redraw:()=>void):void{
+  const set=(column:string,key:keyof ColumnPresentation,value:string|number|undefined)=>{
+    const columns={...(p.columns??{})},one={...(columns[column]??{})};
+    if(value===undefined||value==='')delete one[key];else (one as Record<string,unknown>)[key]=value;
+    if(Object.keys(one).length)columns[column]=one;else delete columns[column];
+    if(Object.keys(columns).length)p.columns=columns;else delete p.columns;};
+  root.querySelectorAll<HTMLTableRowElement>('.present-columns tr[data-column]').forEach(row=>{
+    const column=row.dataset.column!;
+    row.querySelector<HTMLSelectElement>('[data-col-decimals]')?.addEventListener('change',e=>{const v=(e.target as HTMLSelectElement).value;set(column,'decimals',v===''?undefined:Number(v));redraw();});
+    row.querySelector<HTMLInputElement>('[data-col-unit]')?.addEventListener('change',e=>{set(column,'unit',(e.target as HTMLInputElement).value.trim());redraw();});
+    row.querySelector<HTMLInputElement>('[data-col-note]')?.addEventListener('change',e=>{set(column,'note',(e.target as HTMLInputElement).value.trim());redraw();});
+    row.querySelector<HTMLSelectElement>('[data-col-pair]')?.addEventListener('change',e=>{const v=(e.target as HTMLSelectElement).value;
+      const pairs=(p.pairs??[]).filter(x=>x.count!==column&&x.percent!==column&&(!v||(x.count!==v&&x.percent!==v)));
+      if(v)pairs.push({count:column,percent:v});
+      if(pairs.length)p.pairs=pairs;else delete p.pairs;redraw();});
+  });
+  const below=root.querySelector<HTMLInputElement>('#present-suppress-below');
+  const reason=root.querySelector<HTMLSelectElement>('#present-suppress-reason');
+  const columnsChecked=()=>[...root.querySelectorAll<HTMLInputElement>('[data-suppress-column]')].filter(x=>x.checked).map(x=>x.dataset.suppressColumn!);
+  const update=()=>{const n=Number(below?.value);
+    if(below?.value.trim()&&Number.isInteger(n)&&n>=2&&n<=1000)p.suppress={below:n,columns:columnsChecked(),reason:(reason?.value??'confidentiality') as 'confidentiality'|'reliability'};
+    else delete p.suppress;redraw();};
+  below?.addEventListener('change',update);reason?.addEventListener('change',update);
+  root.querySelectorAll<HTMLInputElement>('[data-suppress-column]').forEach(x=>x.addEventListener('change',update));
+}
+
+
 /** THE TABLE ITSELF, IN THE DIALOG (the practitioner, 2026-11-27: "Table output config dialog should have a preview of the
  *  table", and: "preview should be limited to 10-20 rows (option to display, for review purpose)"): the rows Results will
  *  show, as the Presentation section and the coordinates now set them, before Apply. Ten rows, or twenty, or all of
@@ -60,12 +89,13 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
   const choose=(total:number)=>`<div class="field preview-rows"><label class="field-label" for="preview-rows">Rows in the preview</label>`
     +`<select id="preview-rows">${PREVIEW_CHOICES.map(n=>`<option value="${n}"${rowsShown===n?' selected':''}>${n}</option>`).join('')}`
     +`<option value="all"${rowsShown==='all'?' selected':''}>All ${total.toLocaleString('en')}, to review</option></select></div>`;
-  const table=(head:{label:string;number:boolean}[],rows:string[],total:number)=>
-    choose(total)+`<p class="muted">${total.toLocaleString('en')} ${total===1?'row':'rows'}${total>rows.length?`, the first ${rows.length.toLocaleString('en')} shown`:''}.</p>`
+  const table=(head:{label:string;number:boolean}[],rows:string[],total:number)=>{
+    const names=head.map(h=>h.label),numbers=noteNumbers(present,names);
+    return choose(total)+`<p class="muted">${total.toLocaleString('en')} ${total===1?'row':'rows'}${total>rows.length?`, the first ${rows.length.toLocaleString('en')} shown`:''}.</p>`
     +presentedTable(present,node.params.label||kit.title('table_output'),
       `<div class="table-scroll" tabindex="0" role="region" aria-label="Preview of the table"><table class="table-standard"><thead><tr>`
-      +head.map(h=>`<th scope="col"${h.number?' class="number"':''}>${esc(h.label)}</th>`).join('')+`</tr></thead><tbody>`
-      +rows.join('')+'</tbody></table></div>',esc);
+      +head.map(h=>`<th scope="col"${h.number?' class="number"':''}>${esc(h.label)}${headingMarks(h.label,present,esc,numbers)}</th>`).join('')+`</tr></thead><tbody>`
+      +rows.join('')+'</tbody></table></div>',esc,names);};
   const limit=(n:number)=>rowsShown==='all'?n:Math.min(n,rowsShown);
   // A DATA TABLE DRAWN BY RESULTS' OWN RENDERER (PR 10's review: "Show totals" changed Results and not the preview), with
   // the draft's totals, the presentation and the rows asked for, and no pager.
@@ -75,7 +105,8 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
       .replace(/<table class="/g,'<table class="table-standard ').replace(/<table>/g,'<table class="table-standard">')
       .replace(/<div class="table-scroll/g,'<div tabindex="0" role="region" aria-label="Preview of the table" class="table-scroll');
     return choose(total)+presentedTable(present,node.params.label||kit.title('table_output'),
-      shown.includes('table-scroll')?shown:`<div class="table-scroll" tabindex="0" role="region" aria-label="Preview of the table">${shown}</div>`,esc);
+      shown.includes('table-scroll')?shown:`<div class="table-scroll" tabindex="0" role="region" aria-label="Preview of the table">${shown}</div>`,esc,
+      dataTableColumns(t).map(c=>c.name));
   };
   if(mode==='table'){
     const t=kit.tableOn(node.id,'table');
@@ -116,6 +147,30 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
   return table(head,rows,features.length);
 }
 
+/** A DATA TABLE'S COLUMNS AS RESULTS SHOWS THEM: the wide frame's subject, attributes and measures where it widens, else
+ *  its keys and value; each with its declared unit, where its meaning is not already written beside it. */
+export function dataTableColumns(t:DataTable):PresentableColumn[]{
+  const unitOf=(c:string)=>t.headings?.[c]?undefined:t.columns?.[c]?.confirmed?t.columns[c]!.unit:undefined;
+  const frame=wideFrame(t);
+  const named=(name:string,number:boolean)=>({name,number,...unitOf(name)?{declaredUnit:unitOf(name)!}:{}});
+  if(frame)return [named(frame.subject,false),...frame.attributes.map(a=>named(a,false)),...frame.columns.map(c=>named(c,true))];
+  return [...t.keys.map(k=>named(k,false)),named(t.valueField,true)];
+}
+/** THE COLUMNS CONFIGURE… OFFERS, as the preview draws them. */
+function columnsShown(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:ReturnType<typeof shownMode>):PresentableColumn[]{
+  if(mode==='table'){const t=kit.tableOn(node.id,'table');return t?.rows.length?dataTableColumns(t):[];}
+  if(mode==='polygons'){
+    const ran=kit.ranOutput(node.id);
+    if(ran?.kind==='data-table')return dataTableColumns(ran as unknown as DataTable);
+    const rows=(ran as {rows?:{attributes?:Record<string,unknown>}[]}|undefined)?.rows??[];
+    return [...new Set(rows.flatMap(r=>Object.keys(r.attributes??{})))].filter(k=>k!=='name')
+      .map(k=>({name:k,number:rows.some(r=>typeof r.attributes?.[k]==='number')}));
+  }
+  const features=nodeInputs(node).filter(([,type])=>type==='points').map(([port])=>kit.layerOn(node.id,port)).flatMap(c=>c?.features??[]);
+  return [...new Set(features.flatMap(f=>Object.keys(f.properties??{})))].filter(k=>k!=='name')
+    .map(k=>({name:k,number:features.some(f=>typeof f.properties?.[k]==='number')}));
+}
+
 /** WHAT A TABLE OUTPUT SHOWS, in one sentence, from what is wired. */
 export function tableOutputSentence(kit:TableOutputKit,n:WorkflowNode<'table_output'>,mode:ReturnType<typeof shownMode>):string{
   const workflow=kit.workflow();const from=(port:string)=>{const e=workflow.edges.find(x=>x.to===n.id&&x.port===port);const up=e&&workflow.nodes.find(m=>m.id===e.from);
@@ -150,11 +205,12 @@ function openTableConfig(kit:TableOutputKit,nodeId:string){
         +`<option value="metres"${draft.coord.metres?' selected':''}>In metres: easting and northing in a UTM zone</option></select></div>`
         +(draft.coord.metres?zoneFields(kit,draft.coord,'output'):'');
       if(!settings)settings='<p class="muted">Nothing to set: what you connect decides how it is shown.</p>';
-      return {settings,presentation:presentationFields(draft.present,node.params.label||kit.title('table_output'),esc),
+      return {settings,presentation:presentationFields(draft.present,node.params.label||kit.title('table_output'),esc,columnsShown(kit,node,mode),
+        mode==='table'||(mode==='polygons'&&kit.ranOutput(node.id)?.kind==='data-table')),
         preview:tablePreview(kit,node,mode,draft.coord,draft.present,draft.rowsShown,draft.totalsAsserted===true)};
     },
     wire:(root,draft,redraw)=>{
-      wirePresentation(root,draft.present,redraw);
+      wirePresentation(root,draft.present,redraw);wireColumnPresentation(root,draft.present,redraw);
       root.querySelector<HTMLSelectElement>('#preview-rows')?.addEventListener('change',e=>{const v=(e.target as HTMLSelectElement).value;
         draft.rowsShown=v==='all'?'all':Number(v);redraw();});
       root.querySelector<HTMLSelectElement>('#output-coordinates')?.addEventListener('change',e=>{draft.coord.metres=(e.target as HTMLSelectElement).value==='metres';redraw();});

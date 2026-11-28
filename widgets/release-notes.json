@@ -9,8 +9,7 @@
   "initial",
   "major",
   "minor",
-  "patch",
-  "removed"
+  "patch"
  ],
  "widgets": {
   "access": {
@@ -867,24 +866,28 @@
    "migrationFrom": []
   },
   "table_output": {
-   "version": "0.15.0",
-   "released": "2026-11-27",
+   "version": "0.16.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "removed",
-     "description": "The coverage port, \"Or: Coverage result\". Nothing live makes a coverage check: Check spatial coverage retired on 2026-10-21, and a workflow saved with one opens with Keep points inside the area feeding the points port instead."
+     "kind": "added",
+     "description": "Each column in Configure…'s Presentation: its decimal places over the table's, its unit or denominator once in its heading (the column's declared unit when none is set), and a note, marked [note 1] in the heading and written below the table."
+    },
+    {
+     "kind": "added",
+     "description": "Small counts not shown: in the columns chosen, a count from 1 up to a threshold is written [c], for confidentiality, or [u], too few to be reliable, and a note below says which and where. Zero is shown; the data are not changed."
+    },
+    {
+     "kind": "added",
+     "description": "A count and its percentage in one cell, \"120 (34.5)\", for a pair chosen in Configure…; two cells otherwise. A CSV keeps them apart."
     },
     {
      "kind": "changed",
-     "description": "On the canvas, Table draws what is connected, each with its kind's symbol and the source's name, and one blank port to add another (the buttons-and-ports audit, 2026-11-27)."
+     "description": "The write-up and the printed draft draw a Table's table to the same standard as Results: its title, header cells, each column's precision, unit and note, small counts hidden, notes and source. A draft's attached CSV hides the same small counts."
     },
     {
-     "kind": "added",
-     "description": "Configure… previews the table: ten rows, twenty, or all to review, as Results will show them; a polygon table shows its areas from the last run."
-    },
-    {
-     "kind": "added",
-     "description": "A Presentation section in Configure…: title, decimal places, thousands separators, how an absent value is written, shaded rows, notes and source. Every table follows the rules the table standards agree on: numbers right-aligned in equal-width digits, three horizontal rules and none vertical. An absent value is a dash read as \"no value\" by default."
+     "kind": "fixed",
+     "description": "Results' point table wrote every number as text before presenting it, so the Presentation's decimal places never reached it."
     }
    ],
    "breaking": false,

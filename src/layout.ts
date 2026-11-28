@@ -79,3 +79,26 @@ export const alreadyTidy=(workflow:Workflow,heights?:ReadonlyMap<string,number>)
     return !!at&&at.x===node.x&&Math.abs(at.y-node.y)<=12;
   });
 };
+
+/** A NODE'S BOX ON THE CANVAS, where it has not been drawn yet: the column's width less its gutter, and a row. */
+export const DEFAULT_NODE_SIZE={width:COLUMN_WIDTH-40,height:ROW_HEIGHT};
+
+/** WHERE A NEW NODE CAN GO WITHOUT COVERING ANOTHER (2026-11-28). Found 2026-11-27, writing the blank-port test: three
+ *  widgets added from the library in a row landed on top of one another, because each was placed 80 px from the last by
+ *  a count of the nodes, and a node is about 260 px wide and 150 to 280 px tall. This starts where the node would have
+ *  gone, steps down its column, then across to the next, and takes the first place whose box, with a gap all round,
+ *  touches no node's box. Sizes are measured where the canvas has drawn the node, and the default otherwise. */
+export function freeSpot(nodes:readonly {id:string;x:number;y:number}[],want:{x:number;y:number},
+    sizes:ReadonlyMap<string,{width:number;height:number}>=new Map(),size=DEFAULT_NODE_SIZE):{x:number;y:number}{
+  const boxes=nodes.map(n=>({x:n.x,y:n.y,...(sizes.get(n.id)??DEFAULT_NODE_SIZE)}));
+  const gap=ROW_GAP;
+  const clear=(x:number,y:number)=>boxes.every(b=>x+size.width+gap<=b.x||b.x+b.width+gap<=x||y+size.height+gap<=b.y||b.y+b.height+gap<=y);
+  // Down the column first, as far as twelve rows, then the next column over: a canvas is read left to right.
+  for(let column=0;column<40;column++)
+    for(let row=0;row<12;row++){
+      const x=want.x+column*COLUMN_WIDTH,y=want.y+row*(size.height+gap);
+      if(clear(x,y))return {x,y};
+    }
+  const right=Math.max(want.x,...boxes.map(b=>b.x+b.width+gap));
+  return {x:right,y:want.y};
+}

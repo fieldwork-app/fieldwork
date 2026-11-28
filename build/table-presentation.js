@@ -1,2 +1,2 @@
-import{a,b,c,d,e,f}from"./chunks/chunk-VQG63G7V.js";import"./chunks/chunk-KVMUXFPB.js";export{a as ABSENT_CHOICES,d as presentCell,c as presentValue,f as presentationFields,e as presentedTable,b as validatePresentation};
+import{a,b,c,d,e,f,g,h,i,j,k,l,m,n}from"./chunks/chunk-6LV2VXYX.js";import"./chunks/chunk-KVMUXFPB.js";export{b as ABSENT_CHOICES,a as SUPPRESSION_REASONS,g as columnUnit,i as headingMarks,h as noteNumbers,k as pairedColumns,l as pairedValue,f as presentCell,e as presentValue,n as presentationFields,m as presentedTable,d as suppressedMark,j as tableNotesHtml,c as validatePresentation};
 //# sourceMappingURL=table-presentation.js.map

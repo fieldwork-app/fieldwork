@@ -1,4 +1,4 @@
-import {presentValue,type TablePresentation} from './table-presentation.js';
+import {presentValue,headingMarks,noteNumbers,type TablePresentation} from './table-presentation.js';
 import {crsIRIFromName} from './metric-crs.js';
 import type {NodeSpec,WorkflowNode,PointInput,Escape,Scalar} from './types.js';
 import type {CoverageValue,TableValue,PointRow,CoverageRow,Receipt} from './results.js';
@@ -136,13 +136,14 @@ export function pointTableMarkup(output:TableValue|CoverageValue,esc:Escape,{que
   const pages=Math.max(1,Math.ceil(ordered.length/TABLE_PAGE_SIZE));page=Math.min(page,pages-1);
   const shown=ordered.slice(page*TABLE_PAGE_SIZE,(page+1)*TABLE_PAGE_SIZE);
   const sortedColumn=sort?columns.find(c=>c.key===sort.column):undefined;
+  const noted=noteNumbers(present,columns.map(c=>c.label));
   return {
     head:columns.map(c=>{
       const active=sort&&sort.column===c.key?sort.direction:'none';
       const next=active==='ascending'?'descending':'ascending';
       // A COLUMN OF NUMBERS IS HEADED ON THE RIGHT, over its numbers (Table 0.15.0).
       const numbers=shown.some(r=>{const v=c.read(r);return typeof v==='number';});
-      return `<th scope="col" aria-sort="${active}"${numbers?' class="number"':''}><button type="button" class="column-sort" data-table-sort="${esc(c.key)}" data-table-direction="${next}">${esc(c.label)}<span aria-hidden="true" class="sort-mark">${active==='ascending'?'▲':active==='descending'?'▼':''}</span></button></th>`;
+      return `<th scope="col" aria-sort="${active}"${numbers?' class="number"':''}><button type="button" class="column-sort" data-table-sort="${esc(c.key)}" data-table-direction="${next}">${esc(c.label)}${headingMarks(c.label,present,esc,noted)}<span aria-hidden="true" class="sort-mark">${active==='ascending'?'▲':active==='descending'?'▼':''}</span></button></th>`;
     }).join(''),
     body:shown.length?shown.map((r:PointRow & Partial<CoverageRow>)=>`<tr tabindex="0" data-place="${esc(r.id)}">${columns.map(c=>{
       const shownValue=display(c.read(r));
@@ -154,7 +155,9 @@ export function pointTableMarkup(output:TableValue|CoverageValue,esc:Escape,{que
       // A COORDINATE TO ONE PRECISION DOWN ITS COLUMN: six places in degrees (about 0.1 m), one in metres.
       const raw=c.read(r),coordinate=(c.key==='longitude'||c.key==='latitude')&&typeof raw==='number';
       const v=coordinate?{html:esc((raw as number).toFixed(metres?1:6)),number:true,absent:false}
-        :presentValue(shownValue,c.label,present,esc,{measure:c.key.startsWith('attribute:')});
+        // THE NUMBER ITSELF, where it is one (2026-11-28): `display` writes it as text, and text is shown as written, so
+        // decimal places and small-count hiding never reached Results' point table.
+        :presentValue(typeof raw==='number'?raw:shownValue,c.label,present,esc,{measure:c.key.startsWith('attribute:')});
       return v.absent?`<td data-absent="${absence}" class="absent-cell">${v.html}</td>`:`<td${v.number?' data-number':''}>${v.html}</td>`;
     }).join('')}</tr>`).join(''):`<tr><td colspan="${columns.length}">${output.rows.length?'No matching records.':'No point records in this input.'}</td></tr>`,
     controls:`<div class="table-page-group"><button class="button small" data-table-page="${page-1}" ${page===0?'disabled':''}>Previous rows</button><span role="status">${ordered.length?`${page*TABLE_PAGE_SIZE+1}–${Math.min((page+1)*TABLE_PAGE_SIZE,ordered.length)}`:'0'} of ${ordered.length} records</span><button class="button small" data-table-page="${page+1}" ${page+1>=pages?'disabled':''}>Next rows</button></div>`

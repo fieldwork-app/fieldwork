@@ -3,6 +3,31 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.205.0 — In development
+
+- **Table 0.16.0: each column, small counts, and a count with its percentage** (the table standard's open items, from
+  [the research note](docs/research/table-presentation-standards-2026-11-27.md)). In **Configure…**, under
+  **Presentation**, each column takes its own decimal places; a unit or denominator written once in its heading,
+  "Rate (per 100,000)", the column's unit from **Columns…** when none is set; and a note, marked "[note 1]" in the
+  heading and written below, the UK Analysis Function's way, because a screen reader passes over a superscript.
+  **Small counts not shown** writes a count from 1 up to a declared threshold as [c] (confidentiality) or [u] (too
+  few to be reliable), and a note below says which and where; zero is shown, and the data are not changed. A count
+  and its percentage can share a cell, "120 (34.5)", in a table of rows; a CSV keeps them apart.
+- **The write-up's and the draft's tables to the same standard.** They drew their own cells and read none of a
+  Table's Presentation; they now take its title, header cells, decimal places, units, notes, small counts and source,
+  and are ruled as Results is (above, under the headings, below). An empty cell's dash was drawn at 45% opacity; it is
+  now the muted text colour. A draft's attached CSV hides the same small counts, so what the page withholds is not
+  handed on beside it.
+- **Results' point table now applies decimal places.** It wrote every number as text before presenting it, so the
+  Presentation's decimal places, since Table 0.15.0, never reached it. Found by this release's browser test.
+- **Widgets added from the library land clear of one another.** Each was placed 80 px from the last by a count of the
+  nodes, while a node is about 340 by 230 px on screen, so three added in a row overlapped (found 2026-11-27). A new
+  widget now takes the first place, down its column and then across, that touches no node as the canvas drew it.
+- Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
+  table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
+  alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed
+  on the old placement). Not run on WebKit.
+
 ## 0.204.7 — In development
 
 - **Apply waits for the run, then applies** (the practitioner's choice for an edit applied during a run: *keep the
