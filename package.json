@@ -1,6 +1,11 @@
 {
   "name": "fieldwork-semantic-gis",
-  "version": "0.204.3",
+  "version": "0.204.4",
+  "homepage": "https://fieldwork-app.github.io/fieldwork/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fieldwork-app/fieldwork"
+  },
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -13,7 +18,7 @@
     "test:kernel": "node scripts/test-kernel.mjs",
     "test:browser": "playwright test",
     "test:report": "playwright show-report",
-    "check": "npm run build && npm run validate:kernel && npm run test:kernel && npm run validate:docs && npm run validate:experiments && npm run validate:check-coverage && npm run validate:evidence && npm run validate:rulesets && npm run validate:ruleset-schema && npm run validate:blockers && npm run validate:directions && npm run validate:facility-registers && npm run validate:standardization && npm run validate:naming && npm run validate:names && npm run validate:widget-budget && npm run validate:admission && npm run validate:ontology-coupling && npm run validate:dive-deeper && npm run validate:parity -- --quiet && npm run validate:manual && npm run validate:inspector-prose && npm run validate:caps && npm run validate:extracts && npm run validate:fixtures && npm run validate:examples && npm run validate:example-audit && npm run validate:port-contracts && npm run validate:release-notes && npm run validate:vocabulary && npm run validate:country-names && npm run validate:audit-queue && npm run validate:packs && npm run validate:sentence-numbers && node scripts/test-unit.mjs && npm run test:browser",
+    "check": "npm run build && npm run validate:kernel && npm run test:kernel && npm run validate:docs && npm run validate:addresses && npm run validate:experiments && npm run validate:check-coverage && npm run validate:evidence && npm run validate:rulesets && npm run validate:ruleset-schema && npm run validate:blockers && npm run validate:directions && npm run validate:facility-registers && npm run validate:standardization && npm run validate:naming && npm run validate:names && npm run validate:widget-budget && npm run validate:admission && npm run validate:ontology-coupling && npm run validate:dive-deeper && npm run validate:parity -- --quiet && npm run validate:manual && npm run validate:inspector-prose && npm run validate:caps && npm run validate:extracts && npm run validate:fixtures && npm run validate:examples && npm run validate:example-audit && npm run validate:port-contracts && npm run validate:release-notes && npm run validate:vocabulary && npm run validate:country-names && npm run validate:audit-queue && npm run validate:packs && npm run validate:sentence-numbers && node scripts/test-unit.mjs && npm run test:browser",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.workers.json --noEmit",
     "catalogue:worldpop": "node scripts/refresh-worldpop-catalogue.mjs",
     "validate:ontology": "node scripts/validate-ontology.mjs",
@@ -47,7 +52,7 @@
     "evidence:widgets": "node scripts/widget-evidence.mjs --write",
     "validate:port-contracts": "node scripts/validate-port-contracts.mjs",
     "validate:vocabulary": "node scripts/validate-vocabulary.mjs",
-    "check:fast": "npm run build && npm run validate:kernel && npm run test:kernel && npm run validate:docs && npm run validate:experiments && npm run validate:check-coverage && npm run validate:evidence && npm run validate:rulesets && npm run validate:ruleset-schema && npm run validate:ruleset-sources && npm run validate:blockers && npm run validate:directions && npm run validate:facility-registers && npm run validate:standardization && npm run validate:naming && npm run validate:names && npm run validate:widget-budget && npm run validate:admission && npm run validate:ontology-coupling && npm run validate:dive-deeper && npm run validate:parity -- --quiet && npm run validate:manual && npm run validate:fixtures && npm run validate:examples && npm run validate:example-audit && npm run validate:port-contracts && npm run validate:release-notes && npm run validate:vocabulary && npm run validate:country-names && npm run validate:audit-queue && npm run validate:packs && node scripts/test-unit.mjs",
+    "check:fast": "npm run build && npm run validate:kernel && npm run test:kernel && npm run validate:docs && npm run validate:addresses && npm run validate:experiments && npm run validate:check-coverage && npm run validate:evidence && npm run validate:rulesets && npm run validate:ruleset-schema && npm run validate:ruleset-sources && npm run validate:blockers && npm run validate:directions && npm run validate:facility-registers && npm run validate:standardization && npm run validate:naming && npm run validate:names && npm run validate:widget-budget && npm run validate:admission && npm run validate:ontology-coupling && npm run validate:dive-deeper && npm run validate:parity -- --quiet && npm run validate:manual && npm run validate:fixtures && npm run validate:examples && npm run validate:example-audit && npm run validate:port-contracts && npm run validate:release-notes && npm run validate:vocabulary && npm run validate:country-names && npm run validate:audit-queue && npm run validate:packs && node scripts/test-unit.mjs",
     "test:browser:chromium": "playwright test --project=chromium",
     "hooks:install": "node scripts/install-hooks.mjs",
     "notes:releases": "node scripts/release-notes.mjs --write",
@@ -57,6 +62,7 @@
     "validate:inspector-prose": "node scripts/validate-inspector-prose.mjs",
     "measure:prose": "node scripts/measure-surface-prose.mjs",
     "measure:buttons": "node scripts/measure-buttons.mjs --list",
+    "validate:addresses": "node scripts/validate-addresses.mjs",
     "validate:caps": "node scripts/validate-caps.mjs",
     "notes:extracts": "node scripts/geofabrik-catalogue.mjs --write",
     "validate:extracts": "node scripts/geofabrik-catalogue.mjs",

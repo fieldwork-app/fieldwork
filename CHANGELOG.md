@@ -3,6 +3,15 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.4 — In development
+
+- **Fieldwork's address is written once**, in `package.json`'s `homepage` and `repository` (the practitioner: *"Why
+  don't we make the URLs templated so we can easily change URLs without having to hand edit many files?"*). The
+  application reads it through `src/site.ts`, the tests through `tests/site.mjs`, and the ontology's 50 manual links
+  are written from it. `npm run validate:addresses`, in the gate, fails on a live file naming Fieldwork at another
+  address and on code that types the address rather than reading it; with `--siblings` it lists the other
+  repositories' links. Moving again means two fields, a build, and the few literal copies the check names.
+
 ## 0.204.3 — In development
 
 - **The Credentials manual names the new address where it matters.** DHIS2's CORS allowlist needs

@@ -12,9 +12,10 @@
  *
  *  Assembled from the catalog and the project on every render, like References; never stored as a note. */
 import {qrSvg} from './qr.js';
+import {SITE_URL,REPOSITORY_URL} from './site.js';
 
-export const FIELDWORK_URL='https://fieldwork-app.github.io/fieldwork/';
-const FIELDWORK_REPOSITORY='https://github.com/fieldwork-app/fieldwork';
+export const FIELDWORK_URL=SITE_URL;
+const FIELDWORK_REPOSITORY=REPOSITORY_URL;
 
 export interface ExampleLinks {title:string; app:string; files:string; pinned:boolean}
 

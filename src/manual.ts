@@ -7,6 +7,7 @@
  *  for this?" is a question the graph answers rather than a convention a reader has to know. */
 import {escapeHtml} from './html-escape.js';
 import pages from '../widgets/manual-pages.json';
+import {repositoryFile} from './site.js';
 
 export const MANUAL_PAGES=pages as Record<string,string>;
 export const hasManual=(nodeType:string):boolean=>Object.hasOwn(MANUAL_PAGES,nodeType);
@@ -14,7 +15,7 @@ export const hasManual=(nodeType:string):boolean=>Object.hasOwn(MANUAL_PAGES,nod
 const surfaceOf=(key:string):string|undefined=>key.startsWith('surface:')?key.slice('surface:'.length):undefined;
 const sourcePath=(key:string):string=>surfaceOf(key)?`docs/surfaces/${surfaceOf(key)}.md`:`docs/widgets/${key}.md`;
 export const manualSource=(nodeType:string):string=>
-  `https://github.com/fieldwork-app/fieldwork/blob/main/${sourcePath(nodeType)}`;
+  repositoryFile(sourcePath(nodeType));
 
 
 export function openManual(nodeType:string,title:string,esc:(v:string)=>string):void{

@@ -1,4 +1,5 @@
 import {test,expect} from './fixtures.mjs';
+import {REPOSITORY_URL} from './site.mjs';
 
 /** LAB EVALUATION, IN THE APP (experiment 184): hidden until switched on in the footer, beside Ontology and Validation
  *  Lab (2026-11-15; it was in Help); opened from there or a note being written; saved to the laptop as Markdown and JSON,
@@ -39,7 +40,7 @@ test('switched on in the footer, it evaluates the open screen, saves two files a
   const issue=d.locator('[data-h="H8"] [data-issue]');
   await issue.click({modifiers:[]}).catch(()=>{});
   const href=new URL(await issue.getAttribute('href'));
-  expect(href.origin+href.pathname).toBe('https://github.com/fieldwork-app/fieldwork/issues/new');
+  expect(href.origin+href.pathname).toBe(`${REPOSITORY_URL}/issues/new`);
   expect(href.searchParams.get('template')).toBe('lab-evaluation.yml');
   expect(href.searchParams.get('heuristic')).toBe('H8 Aesthetic and minimalist design');
   expect(href.searchParams.get('happens')).toBe('The subtitle explains the method.');

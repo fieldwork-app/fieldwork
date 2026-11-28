@@ -316,6 +316,16 @@ the stamper, and a generator that writes anywhere else does not care.** If a gat
 in a file you have just rebuilt, check whether something else wrote to it afterwards before
 looking for a defect in the generator.
 
+## Fieldwork's address, written once
+
+Fieldwork's address is `package.json`'s `homepage` (the site) and `repository` (the GitHub repository), and nowhere
+else. Code reads it through `src/site.ts`, tests through `tests/site.mjs`, and `npm run manual:widgets` writes the
+ontology's manual links from it. A file that cannot read it (the README, the ruleset schema's `$id`, slides) names it
+literally and is checked: `npm run validate:addresses`, in the gate and the pre-push check, fails on a live file
+naming Fieldwork at another address and on code that types the address instead of reading it. Dated records keep the
+address they had. `node scripts/validate-addresses.mjs --siblings` also lists the other repositories' links, without
+failing. Moving Fieldwork again means changing those two fields, building, and fixing what the check names.
+
 ## Versioning and release notes
 
 The application version has one source of truth: the root `package.json` version,
