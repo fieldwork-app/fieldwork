@@ -43,7 +43,7 @@ import {readProjectAt,projectDocumentFromFiles,fileDigests,changedPaths,headComm
 import {checkRepository,postDiscussion,repositoryName,GITHUB_API,type RepositoryCheck} from './repository-check.js';
 import type {CredentialAccess} from './credentials-ui.js';
 import {addableTypes,PALETTE_GROUPS,ADDABLE_VIA_RULESET,INPUT_STAGE} from './palette.js';
-import {tidyLayout,alreadyTidy} from './layout.js';
+import {tidyLayout,alreadyTidy,freeSpot} from './layout.js';
 import {openStepViewer,openTableViewer,shapeChange,stepLabels,tableViewOf,type TableView} from './table-viewer.js';
 import {relateInspector,type RelateKit} from './relate-ui.js';
 import {joinInspector,type JoinKit} from './area-join-ui.js';
@@ -123,7 +123,8 @@ import {TABLE_STEP_INSPECTORS,type TableStepKit} from './table-steps-ui.js';
 import {rulesetInspector,type RulesetKit} from './ruleset-ui.js';
 import {OUTBREAK_STEP_INSPECTORS,type OutbreakKit} from './outbreak-steps-ui.js';
 import {dedupInspector,type DedupKit} from './deduplicate-step-ui.js';
-import {tableOutputInspector,type TableOutputKit} from './table-output-ui.js';
+import {tableOutputInspector,dataTableColumns,type TableOutputKit} from './table-output-ui.js';
+import {tableNotesHtml} from './table-presentation.js';
 import {AREA_STEP_INSPECTORS,type AreaStepKit} from './area-steps-ui.js';
 import {zipSync,strToU8} from 'fflate';
 import {referenceList} from './references.js';
@@ -180,7 +181,7 @@ import {syncProjectManifest} from './project-manifest.js';
 import {withDictionary,BUILT_IN_PROJECTS,WORKFLOW_LABELS,projectOfWorkflow,projectById,siblingAreas,newProject,validateProject,siblingInputs,payloadDigest,tableDataKey,dataPayloadKey,INLINE_DATA_LIMIT,areaPayloadKey,searchPayloadKey,payloadsOf,heldPayloadsOf,reconcilePayloadRefs,dehydrateWorkflow,hydrateWorkflow,projectSafety,unexportedWork,exportPredatesWork,type Project,type ProjectWork} from './project.js';
 import {mountPanelLayout} from './panel-layout.js';
 import {newMapOutput,mapEvidence,withoutLeftOutAreas} from './map-output.js';
-import {newTableOutput,pointTableMarkup,pointTableEvidence} from './table-output.js';
+import {newTableOutput,pointTableMarkup,pointTableEvidence,pointTableColumns} from './table-output.js';
 import {pointPort,markedPoints,layerOrigins} from './point-layers.js';
 import {twoByTwoMarkup} from './two-by-two-view.js';
 import {exposureColumnsOffered} from './two-by-two-mapping.js';
@@ -2037,6 +2038,9 @@ function renderLibrary(search=''){
         :`This node holds a reference to the data and "${input.workflowName}" still holds its own `
           +'copy, so the project holds two until that one is read in again. Rename this node freely.'));
   });
+  // EACH NODE'S BOX AS THE CANVAS DREW IT, in canvas units, so a new one is placed clear of it (2026-11-28).
+  const drawnSizes=()=>new Map(workflow.nodes.map(n=>{const el=document.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(n.id)}"]`);
+    return [n.id,{width:el?.offsetWidth||0,height:el?.offsetHeight||0}] as const;}).filter(([,s])=>s.width>0&&s.height>0));
   $('#node-library').querySelectorAll<HTMLButtonElement>('[data-add]').forEach(b=>b.onclick=()=>{
     // Four widgets reached the palette on 2026-10-19 when `addableTypes` stopped consulting a
     // curated list, and none of them had a draft: the fallback at the end of this chain reads the
@@ -2061,7 +2065,16 @@ function renderLibrary(search=''){
       }
     }
     const id=`${type}-${Date.now()}`;
-    const didAdd=change(w=>{const source=['measure_area','raster_input'].includes(type)?w.nodes.find(n=>n.type==='study_area'):type==='clip_raster'?w.nodes.find(n=>n.type==='raster_input'):null;const added={...required(sample),id,x:source?source.x+310:180+(w.nodes.length%4)*80,y:source?source.y:90+(w.nodes.length%3)*80};if(added.type==='output')added.params={view:'bars',label:`Bar chart ${w.nodes.filter(n=>n.type==='output').length+1}`};w.nodes.push(added);if(added.type==='raster_input'||added.type==='clip_raster'){const area=w.nodes.find(n=>n.type==='study_area');if(area)setConnection(w,area.id,id,'area');}selected=id;});if(didAdd===false)return;flow?.fit();toast(type==='study_area'?'Study area added. Select its boundary in the Inspector.':`${TYPES[type].title} added. Connect its ports to the workflow.`);
+    const didAdd=change(w=>{const source=['measure_area','raster_input'].includes(type)?w.nodes.find(n=>n.type==='study_area'):type==='clip_raster'?w.nodes.find(n=>n.type==='raster_input'):null;const sizes=drawnSizes(),largest=[...sizes.values()].reduce((m,v)=>({width:Math.max(m.width,v.width),height:Math.max(m.height,v.height)}),{width:0,height:0});
+      // The new node is not drawn yet: it is given the room of the largest drawn one, or the default.
+      // Beside its source where it has one; otherwise in the part of the canvas on screen.
+      const at=freeSpot(w.nodes,source?{x:source.x+310,y:source.y}:{x:180,y:90},sizes,largest.width?largest:undefined,source?null:flow?.visibleArea());const added={...required(sample),id,x:at.x,y:at.y};if(added.type==='output')added.params={view:'bars',label:`Bar chart ${w.nodes.filter(n=>n.type==='output').length+1}`};w.nodes.push(added);if(added.type==='raster_input'||added.type==='clip_raster'){const area=w.nodes.find(n=>n.type==='study_area');if(area)setConnection(w,area.id,id,'area');}selected=id;});if(didAdd===false)return;
+    // SEEN WHERE IT LANDS (2026-11-28): a node placed in view leaves the practitioner's zoom alone; one that is not wholly
+    // in view is scrolled to. Fitting the whole canvas on every add zoomed a large workflow out until the new node was
+    // too small to read.
+    // The canvas measures the whole node once drawn, and scrolls only where some of it is out of view.
+    if(flow?.visibleArea())flow.reveal(id);else flow?.fit();
+    toast(type==='study_area'?'Study area added. Select its boundary in the Inspector.':`${TYPES[type].title} added. Connect its ports to the workflow.`);
   });
 }
 function title(n:WorkflowNode){const t=TYPES[n.type];return `<div class="inspector-title ${t.color}"><span class="node-icon">${iconMarkup(n.type,t.icon,22)}</span><div><h2>${esc(n.params.label||t.title)}</h2><p>${esc(t.group)}</p></div></div>`;}
@@ -3045,8 +3058,12 @@ function renderPointTable(){
   const present=presenter?.type==='table_output'?presenter.params.presentation:undefined;
   const caption=$('#table-caption'),notes=$('#table-notes');
   caption.textContent=present?.caption??'';caption.hidden=!present?.caption;
-  notes.innerHTML=(present?.notes?`<p class="table-notes">${esc(present.notes)}</p>`:'')+(present?.source?`<p class="table-notes">Source: ${esc(present.source)}</p>`:'');
-  notes.hidden=!present?.notes&&!present?.source;
+  // THE NOTES BELOW IN THE STANDARD'S ORDER (2026-11-28): column notes by number, the small-cell marks, notes, source.
+  const shownColumns=(()=>{const a=activeOutput() as {kind?:string}|undefined;
+    if(a?.kind==='data-table')return dataTableColumns(a as unknown as import('./data-table.js').DataTable).map(c=>c.name);
+    return pointTableColumns(a as unknown as TableValue,{attributePage:tableAttributePage}).columns.map(c=>c.label);})();
+  notes.innerHTML=tableNotesHtml(present,shownColumns,esc);
+  notes.hidden=!notes.innerHTML;
   $('#table-panel').classList.toggle('table-shaded',!!present?.shade);
   if(active.kind==='data-table'){
     // Rendered in its own container: the point-table grid and its controls stay in the DOM,
@@ -5365,6 +5382,18 @@ function renderNotesView(){
   // cholera deaths by water company" states what the table is and shows none of it, and a reader
   // checking a published analysis against its source needs the source. `run.tables` already holds
   // every table a run passed between steps, inputs included, so the table is there to draw.
+  // A TABLE'S PRESENTATION, from the Table step that shows it (2026-11-28): the node itself where it is a Table, or the
+  // Table its output feeds, so a table described by its producer prints as the Table that presents it.
+  // THE PRESENTATION AS LAST APPLIED, not as the run found it (review of #8, 2026-11-28): Table's Apply changes its
+  // presentation without a run, so the run's snapshot still held the raw counts the practitioner had since hidden, and the
+  // draft's attached CSV handed them on. The rows are the run's; how they are shown is the workflow's as it now stands.
+  const appliedWorkflow=(key:string,held:{workflow:Workflow}):Workflow=>key===storageKey(workflow)?workflow
+    :(readSavedWorkflows()[key] as Workflow|undefined)??held.workflow;
+  const presentationIn=(w:Workflow)=>(nodeId:string)=>{
+    const own=w.nodes.find(n=>n.id===nodeId);
+    if(own?.type==='table_output')return (own as WorkflowNode<'table_output'>).params.presentation;
+    const shown=w.edges.filter(e=>e.from===nodeId).map(e=>w.nodes.find(n=>n.id===e.to)).find(n=>n?.type==='table_output');
+    return (shown as WorkflowNode<'table_output'>|undefined)?.params.presentation;};
   const figureOf=(note:Note)=>{
     // A PICTURE SOMEBODY PUT IN THEIR NOTE (experiment 196), shown from the bytes kept by its digest.
     if(note.kind==='authored'&&note.image)
@@ -5375,20 +5404,21 @@ function renderNotesView(){
     if(note.kind!=='machined'&&note.kind!=='derived')return undefined;
     const key='workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow);
     const held=heldFor(key);
-    return figureFor(id,held?{...held.run,mapSvg:mapSvgOf(held),chartSvg:chartSvgOf(held)}:undefined,esc)||undefined;
+    return figureFor(id,held?{...held.run,mapSvg:mapSvgOf(held),chartSvg:chartSvgOf(held),presentationOf:presentationIn(appliedWorkflow(key,held))}:undefined,esc)||undefined;
   };
   // THE ROWS BEHIND A TABLE'S NOTE, for a draft that attaches what it cannot print (experiment 202, 2026-11-19). A workflow
   // whose table was fetched from elsewhere names where, and its rows are never handed on: the project does not carry them.
   const tableOf=(note:Note):AttachableTable|undefined=>{
     const id='nodeId' in note&&note.nodeId?note.nodeId:undefined;
     if(!id||note.kind!=='machined'||!describedNode(note.id))return undefined;
-    const held=heldFor('workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow));
+    const key='workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow);
+    const held=heldFor(key);
     const table=held?.run.tables?.[id];
     if(table?.kind!=='data-table'||(table as {twoByTwo?:unknown}).twoByTwo)return undefined;
     const remote=held!.workflow.nodes.map(n=>n.type==='table_input'?(n as WorkflowNode<'table_input'>).params.remote?.url:undefined).find(Boolean);
     let host:string|undefined;try{host=remote?new URL(remote).hostname:undefined;}catch{host=remote;}
     return {rows:tableRowCount(table),source:held!.workflow.nodes.find(n=>n.id===id)?.type==='table_input',
-      csv:()=>tableCsv(table),...host?{fetchedFrom:host}:{}};
+      csv:()=>tableCsv(table,presentationIn(appliedWorkflow(key,held!))(id)),...host?{fetchedFrom:host}:{}};
   };
   // THE WORKS THIS PROJECT CITES, assembled from the entries rather than stored beside them.
   const references=referenceList(entries.map(e=>

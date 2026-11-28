@@ -18,5 +18,7 @@ test('shownRows counts what dataTableMarkup draws, whichever shape it chooses',(
   for(const [name,t] of [['district by year, kept wide by year',byYear],['three keys',threeKeys],['one key',oneKey]])
     for(const totals of [false,true])
       assert.equal(shownRows(t,totals),bodyRows(dataTableMarkup(t,esc,{assertTotals:totals,limit:10_000})),`${name}, totals ${totals}`);
-  assert.equal(shownRows(byYear),12,'the cross-tab of twelve districts, not the two years');
+  // THE READING DECIDES WHICH KEY GOES ACROSS (review of #8): district is declared the measure, so the cross-tab puts the
+  // twelve districts across and draws the two years as rows, as the wide frame and Configure do.
+  assert.equal(shownRows(byYear),2,'the two years, with the twelve districts across');
 });

@@ -1,0 +1,116 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:table_output",
+ "version": "0.16.0",
+ "nodeType": "table_output",
+ "title": "Table",
+ "released": "2026-11-28",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['table_output']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "shaclShapes": [],
+  "validationStatus": "application-only"
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "points",
+    "type": "points"
+   },
+   {
+    "name": "table",
+    "type": "table"
+   },
+   {
+    "name": "polygons",
+    "type": "polygons"
+   }
+  ],
+  "output": null,
+  "dynamicInputs": {
+   "kind": "point-layers",
+   "minimum": 1,
+   "maximum": 8,
+   "implementation": "src/core.ts#nodeInputs"
+  },
+  "note": "Every port a table can show, on every table, whatever its parameters say. The ports used to vary with an inputMode parameter -- reasoningInput, polygonInput and a table mode were three separate declarations of that -- so the port a connection needed might not exist on the node. Which renderer shows is now read from what is wired: src/core.ts#shownMode. The same change map_output took at 0.15.0."
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:TableView",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "TableView activity is implemented; broader table artifact contracts remain open. `emits` records what the module named in implementation.definition asserts, and this widget is defined in src/core.ts#TYPES, which asserts nothing — the fw:TableView facts are built in the execution case and are gated by validate:ontology-coupling, which holds at zero undeclared. Same shape as map_output 0.15.0.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/artifact-notes.ts",
+   "src/canvas.tsx",
+   "src/catchment-output.ts",
+   "src/core.ts",
+   "src/data-table-ui.ts",
+   "src/notes.ts",
+   "src/output-contract.ts",
+   "src/table-output.ts",
+   "src/publication.ts",
+   "src/table-viewer.ts",
+   "src/write-up-figures.ts",
+   "styles.css",
+   "src/table-output-ui.ts",
+   "src/metric-steps-ui.ts",
+   "src/table-presentation.ts",
+   "src/app.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [
+   {
+    "nodeType": "output",
+    "adapterVersion": "1",
+    "implementation": "src/output-contract.ts#migrateOutputNodes"
+   }
+  ],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "added",
+   "description": "Each column in Configure…'s Presentation: its decimal places over the table's, its unit or denominator once in its heading (the column's declared unit when none is set), and a note, marked [note 1] in the heading and written below the table."
+  },
+  {
+   "kind": "added",
+   "description": "Small counts not shown: in the columns chosen, a count from 1 up to a threshold is written [c], for confidentiality, or [u], too few to be reliable, and a note below says which and where. Zero is shown; the data are not changed."
+  },
+  {
+   "kind": "added",
+   "description": "A count and its percentage in one cell, \"120 (34.5)\", for a pair chosen in Configure…; two cells otherwise. A CSV keeps them apart."
+  },
+  {
+   "kind": "changed",
+   "description": "The write-up and the printed draft draw a Table's table to the same standard as Results: its title, header cells, each column's precision, unit and note, small counts hidden, notes and source. A draft's attached CSV hides the same small counts."
+  },
+  {
+   "kind": "fixed",
+   "description": "Results' point table wrote every number as text before presenting it, so the Presentation's decimal places never reached it."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Repository regression coverage exists; this release entry does not certify a widget independently. The self-description added in 0.6.0 is covered by tests/artifact-notes.test.mjs (13 unit checks, including that nothing machined numbers its own artifact or calls itself a caption, that an unnamed artifact is left unnamed rather than titled, and that a unit is stated once) and by tests/equation-notes.browser.mjs over the South London example on Chromium and WebKit. Both were mutation-checked by reintroducing the behaviour they forbid. 0.8.0: tests/table-output-standard.browser.mjs checks the panel and the totals claim applied in Configure…; tests/crosstab.test.mjs checks that a numeric key with one value leaves the table as rows. 0.10.1: tests/seven-one-seven.browser.mjs (responseWithinTarget shown as a column); Chromium. 0.10.2: tests/mers-from-scratch.browser.mjs (KDCA's 신고 주차 with Week of report beneath); Chromium. 0.11.0: Experiment 202, the publication render; the practitioner, 2026-11-14, of Hagelloch's daily-scan map: \"we can leave it out of the notes\". tests/write-up-shapes.test.mjs, tests/publication.test.mjs. 0.12.0: tests/catchments.browser.mjs on Chromium: John Snow's eight pump catchments read as a plain table with locations 171 and numeric total 340 for pump-250 and no Longitude column. The Hagelloch cluster and replay tables, the notes and write-up tests pass on Chromium. 0.12.1: tests/salmonella-four.browser.mjs on Chromium reads the headings in Results. 0.13.0: tests/measure-point-count.browser.mjs (Chromium, development Mac, 2026-11-19), 250,000 points run in 10 s and shown in 5.5 s; tests/map-output.test.mjs. 0.13.1: the browser tests that count table rows (53 passed, Chromium). 0.13.2: moved out of app.ts; its browser tests in Chromium, 2026-11-22. 0.16.0: tests/table-presentation.test.mjs and tests/write-up-figures.test.mjs (the write-up's table and its CSV, both failing on the old figure); tests/table-output-standard.browser.mjs on Snow's geoprivacy example, the preview and Results alike; Chromium, 2026-11-28."
+ },
+ "description": "Display a keyed table, point coordinates, catchment summaries or review decisions"
+}

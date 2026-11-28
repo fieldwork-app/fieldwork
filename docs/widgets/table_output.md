@@ -59,6 +59,16 @@ In **Configure…**, under **Presentation**:
 - **An absent value is written**: a dash, read aloud as "no value"; the word *unknown*; or left blank.
 - **Shade every other row**, to follow a row across a wide table.
 - **Notes** and **Source**, shown below the table.
+- **Each column**: its decimal places, over the table's; its **unit or denominator**, written once in its heading,
+  "Rate (per 100,000)" (the column's unit from **Columns…** when none is set here); a **note**, marked "[note 1]" in the
+  heading and written below the table, so a screen reader reads it where a superscript letter would be skipped; and,
+  for a column of counts, **its percentage in the same cell**, "120 (34.5)", rather than in a column of its own.
+- **Small counts not shown**: in the columns you tick, a count from 1 up to the number you set is written [c], for
+  confidentiality, or [u], too few to be reliable. Zero is still shown, and a note below the table says which counts
+  are hidden and why. The table's values are not changed.
+
+The write-up and the printed draft show the table with these same settings. A table attached to a draft as CSV keeps
+one value a cell, with full precision, and hides the same small counts.
 
 The **Preview** shows ten rows, or twenty, or all of them to review, as these settings write them.
 
@@ -115,6 +125,22 @@ inherited and is recorded as open in
 [experiment 21](../experiments/21-shared-result-outputs.md).
 
 ## History
+
+### 2026-11-28 · Each column, small counts, and the write-up to the same standard (0.16.0)
+
+What the table standards leave to the author, column by column, set in **Configure…**: decimal places, a unit or
+denominator in the heading, a note numbered "[note 1]" (the UK Analysis Function's way, read aloud where a superscript
+is not), and a count with its percentage in one cell. **Small counts not shown** hides a count from 1 up to a threshold
+as [c] or [u], and says so below the table: thresholds differ by agency (CDC WONDER under 10, United States Cancer
+Statistics under 16), so it is declared, never assumed.
+
+The write-up and the printed draft draw the table as Results does. They had drawn their own cells and read none of the
+Presentation. A draft's attached CSV hides the same small counts, so what the page withholds is not handed on beside
+it. Results' point table had written every number as text before presenting it, so its decimal places were never
+applied; they are now.
+
+A count and its percentage share a cell in a wide table and in the write-up; a table of points or of polygon summaries
+keeps them in two cells.
 
 ### 2026-11-27 · One blank port; the coverage port removed; a preview in Configure… (0.15.0)
 

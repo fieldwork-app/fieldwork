@@ -1,6 +1,6 @@
 # TODO, finished and declined
 
-_Created 2026-11-19 · Updated 2026-11-19_
+_Created 2026-11-19 · Updated 2026-11-27_
 
 This file holds the work moved out of [TODO.md](../TODO.md) on 2026-11-19 because it was done or decided against.
 Each item is word for word as it stood there, under the section it stood in, oldest first within each section.
@@ -796,3 +796,12 @@ review: Table's Presentation, set while Snow's geoprivacy example ran its first 
 dialog already said the workflow was running (since 0.171.0) but did not apply when the run was done. The practitioner
 chose to keep the dialog open and say to wait; Apply now waits for the run and then applies, and Cancel while it waits
 applies nothing. `tests/config-apply-during-run.browser.mjs`.
+
+**DONE 2026-11-28 — widgets added from the library land clear of one another** (0.205.0). Found 2026-11-27 writing the
+blank-port test: three added in a row overlapped, each placed 80 px from the last. `freeSpot` in `src/layout.ts` places a
+new widget where it touches no node as drawn. `tests/added-widgets-clear.browser.mjs`. The notice that covered the third
+one's port was not looked at separately.
+
+**DONE 2026-11-28 — the write-up's and the export's tables to the table standard** (0.205.0, Table 0.16.0), with the
+standard's open items: decimal places, unit and note per column, small counts hidden, a count and its percentage in one
+cell.

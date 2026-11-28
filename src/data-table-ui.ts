@@ -2,7 +2,7 @@ import {editedTitle,type EditedCells} from './cell-edits.js';
 import type {Escape,Workflow,WorkflowNode} from './types.js';
 import {PREVIEW_ROWS,scrollLongTables} from './long-tables.js';
 import {escapeHtml} from './html-escape.js';
-import {presentValue,type TablePresentation} from './table-presentation.js';
+import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,anySuppressed,type TablePresentation} from './table-presentation.js';
 import {type OwnInspector,type StepKit} from './inspector-kit.js';
 import {describableColumns,isDescribed,dictionaryKeyOf} from './column-metadata.js';
 import type {DataTable,DataTableSource,TableSelection} from './data-table.js';
@@ -1262,7 +1262,12 @@ export function crossTab(table:DataTable,{assertCommensurable=false}={}):{rowKey
   rows:{label:string;cells:(number|null|undefined)[];total:number|null}[];
   columnTotals:(number|null)[];grandTotal:number|null}|null{
   if(table.keys.length!==2)return null;
-  const [rowKey,colKey]=table.keys;
+  // THE MEASURES ARE THE COLUMNS where the table says which key holds them (review of #8): a table keyed Measure, District
+  // with a reading of District by Measure was drawn with the districts across, so Configure offered Cases, Results had no
+  // Cases column, and a count hidden under Cases was shown.
+  const reading=table.wide??table.shownWide;
+  const [rowKey,colKey]=reading&&table.keys.includes(reading.measureKey)
+    ?[table.keys.find(k=>k!==reading.measureKey)!,reading.measureKey]:table.keys as [string,string];
   const columns=[...new Set(table.rows.map(r=>String(r.key[colKey])))];
   if(!columns.length||columns.length>CROSSTAB_MAX_COLUMNS)return null;
   const labels=[...new Set(table.rows.map(r=>String(r.key[rowKey])))];
@@ -1319,9 +1324,13 @@ const roleAttr=(roles:ColumnRoles|undefined,column:string,also='')=>{const r=rol
 /** A HEADING IS THE COLUMN'S OWN NAME, with its confirmed label beneath (2026-11-14: "Let's make sure we use data
  *  dictionary labels in English"), never in its place: a reader checking the file finds the column it names. */
 let headingLabels:DataTable['columns']|undefined;
-const roleHead=(roles:ColumnRoles|undefined,column:string,esc:Escape,also='',means?:string)=>{const r=roleOf(roles,column);
+/** THE PRESENTATION THE HEADINGS ARE WRITTEN TO (2026-11-28): a column's unit once, and its note's number. */
+let headingPresent:{p?:TablePresentation;numbers:Map<string,number>}={numbers:new Map()};
+const roleHead=(roles:ColumnRoles|undefined,column:string,esc:Escape,also='',means?:string,pairWith?:string)=>{const r=roleOf(roles,column);
   const meta=headingLabels?.[column],label=meta?.confirmed?meta.label?.trim():'';
-  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
+  // The declared unit only where no meaning is written beside the name: a meaning already ends in its unit.
+  const declared=!means&&!label&&meta?.confirmed?meta.unit:undefined;
+  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${pairWith?` (${esc(pairWith)})`:''}${headingMarks(column,headingPresent.p,esc,headingPresent.numbers,declared,pairWith)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
     +(label&&label!==column?`<span class="column-label">${esc(label)}</span>`:'')
     +(r?`<span class="column-role">${r==='key'?'matched on':'brought across'}</span>`:'')+'</th>';};
 
@@ -1350,6 +1359,18 @@ export const FRAME_PAGE_ROWS=200;
 /** HOW MANY ROWS `dataTableMarkup` DRAWS for a table, by the same choice it makes: a cross-tab where the shape allows,
  *  else the wide frame, else the rows as stored (PR 10's review: a preview counted from the frame offered "All 2" over a
  *  cross-tab of 12). */
+/** THE COLUMNS `dataTableMarkup` DRAWS, unsearched, by the same choice: the cross-tab's row key and its columns, else the
+ *  wide frame's subject, attributes and measures, else the keys and the value. Configure offers these, and the notes and
+ *  the small-count rule are read against them, so a rule is set on a column a reader sees. `measureKey` is the key whose
+ *  values head the measure columns, which a searched row is presented by. */
+export function drawnColumns(table:DataTable):{columns:{name:string;number:boolean}[];measureKey?:string}{
+  const grid=crossTab(table);
+  if(grid)return {columns:[{name:grid.rowKey,number:false},...grid.columns.map(name=>({name,number:true}))],measureKey:grid.colKey};
+  const frame=wideFrame(table);
+  if(frame)return {columns:[{name:frame.subject,number:false},...frame.attributes.map(name=>({name,number:false})),
+    ...frame.columns.map(name=>({name,number:true}))],measureKey:frame.measureKey};
+  return {columns:[...table.keys.map(name=>({name,number:false})),...table.valueField?[{name:table.valueField,number:true}]:[]]};
+}
 export function shownRows(table:DataTable,assertTotals=false):number{
   const grid=crossTab(table,{assertCommensurable:assertTotals});
   if(grid)return grid.rows.length;
@@ -1362,7 +1383,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
   // table's words, a number right-aligned. A cell the shape does not have at all keeps its dash.
   const value=(v:string|number|null,column:string,attributes:string)=>{const shown=presentValue(v,column,present,esc);
     return `<td${attributes}${shown.number?' data-number':''}${shown.absent?' data-absent':''}>${shown.html}</td>`;};
-  headingLabels=table.columns;
+  headingLabels=table.columns;headingPresent={p:present,numbers:noteNumbers(present,[...table.keys,table.valueField])};
   const matching=query?table.rows.filter(row=>Object.values(row.key).some(v=>String(v).toLowerCase().includes(query.toLowerCase()))):table.rows;
   const pages=Math.max(1,Math.ceil(matching.length/pageSize)),shown=limit!==undefined?matching.slice(0,limit):matching.slice(page*pageSize,page*pageSize+pageSize);
   const unit=table.unit?esc(table.unit):'<span class="muted">unit unstated</span>';
@@ -1378,7 +1399,16 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
   const framePages=(n:number)=>Math.max(1,Math.ceil(n/FRAME_PAGE_ROWS)),framePage=(n:number)=>Math.min(page,framePages(n)-1);
   const onPage=<T,>(rows:readonly T[])=>{if(limit!==undefined)return rows.slice(0,limit);const at=framePage(rows.length);return rows.slice(at*FRAME_PAGE_ROWS,(at+1)*FRAME_PAGE_ROWS);};
   const pages_=(at:number,n:number)=>limit!==undefined?'':pager(at,n);
-  if(frame)
+  if(frame){
+    // A COUNT AND ITS PERCENTAGE IN ONE CELL, where Presentation pairs them: the percentage column is folded into its count's.
+    const {shown:measures,percentOf}=pairedColumns(frame.columns,present);
+    const at=(c:string)=>frame.columns.indexOf(c);
+    headingPresent={p:present,numbers:noteNumbers(present,[frame.subject,...frame.attributes,...frame.columns])};
+    const cellOf=(r:WideFrame['rows'][number],c:string)=>{const v=r.cells[at(c)],pc=percentOf.get(c);
+      if(v===undefined)return `<td${roleAttr(roles,c)}><span class="muted">\u2014</span></td>`;
+      if(pc===undefined)return value(v,c,roleAttr(roles,c));
+      const shown=pairedValue(v,r.cells[at(pc)]??null,c,pc,present,esc);
+      return `<td${roleAttr(roles,c)}${shown.number?' data-number':''}${shown.absent?' data-absent':''}>${shown.html}</td>`;};
     return `<div class="table-meta muted">${frame.rows.length} rows \u00b7 `
       +`${esc(frame.subject)}${frame.attributes.length?' with '+frame.attributes.map(esc).join(', '):''}`
       +` \u00b7 ${frame.columns.length} variable${frame.columns.length===1?'':'s'} \u00b7 value in ${unit}</div>`
@@ -1387,46 +1417,64 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
       // An attribute is marked, because it describes the subject rather than measuring it and a
       // reader totalling a column needs to know which columns are numbers.
       +frame.attributes.map(a=>roleHead(roles,a,esc,'frame-attribute')).join('')
-      +frame.columns.map(c=>roleHead(roles,c,esc,'',table.headings?.[c])).join('')
+      +measures.map(c=>roleHead(roles,c,esc,'',table.headings?.[c],percentOf.get(c))).join('')
       +'</tr></thead><tbody>'
       +onPage(frame.rows).map(r=>`<tr><th scope="row"${roleAttr(roles,frame.subject)}>${esc(r.label)}</th>`
         +r.attributes.map((a,i)=>`<td${roleAttr(roles,frame.attributes[i]!,'frame-attribute')}>${esc(a)}</td>`).join('')
-        +r.cells.map((v,i)=>v===undefined?`<td${roleAttr(roles,frame.columns[i]!)}><span class="muted">\u2014</span></td>`
-          :value(v,frame.columns[i]!,roleAttr(roles,frame.columns[i]!))).join('')
+        +measures.map(c=>cellOf(r,c)).join('')
         +'</tr>').join('')
-      +'</tbody></table></div>'+pages_(framePage(frame.rows.length),framePages(frame.rows.length));
-  if(grid)
+      +'</tbody></table></div>'+pages_(framePage(frame.rows.length),framePages(frame.rows.length));}
+  if(grid){
+    // A COUNT AND ITS PERCENTAGE IN ONE CELL here too, where the measures are the columns (2026-11-28).
+    const {shown:gridColumns,percentOf:gridPercent}=pairedColumns(grid.columns,present);
+    const gi=(c:string)=>grid.columns.indexOf(c);
+    const gridNotes=noteNumbers(present,grid.columns);
+    // NO MARGIN THAT GIVES A HIDDEN COUNT AWAY (review of #8): a row of "[c] | 13 | 17" with its total beside it lets the
+    // hidden count be worked out, and so do a column's total and the grand total. Until complementary suppression is
+    // built, a table hiding any count shows no totals, and says why.
+    const withheld=grid.grandTotal!==null&&anySuppressed(grid.rows.flatMap(r=>grid.columns.map((c,i)=>({column:c,value:r.cells[i]}))),present);
+    const showTotals=grid.grandTotal!==null&&!withheld;
+    const gridCell=(cells:readonly (number|null|undefined)[],c:string)=>{const v=cells[gi(c)],pc=gridPercent.get(c);
+      if(v===undefined)return '<td><span class="muted">—</span></td>';
+      if(pc===undefined)return value(v,c,'');
+      const both=pairedValue(v,cells[gi(pc)]??null,c,pc,present,esc);
+      return `<td${both.number?' data-number':''}${both.absent?' data-absent':''}>${both.html}</td>`;};
     return `<div class="table-meta muted">${table.rowCount} cells · ${esc(grid.rowKey)} by ${esc(grid.colKey)}`
       +` · value in ${unit}</div>`
       +`<table class="crosstab"><thead><tr>${roleHead(roles,grid.rowKey,esc)}`
-      +grid.columns.map(c=>`<th scope="col">${esc(c)}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
-      +(grid.grandTotal===null?'':'<th scope="col">Total</th>')
+      +gridColumns.map(c=>`<th scope="col">${esc(c)}${gridPercent.get(c)?` (${esc(gridPercent.get(c)!)})`:''}${headingMarks(c,present,esc,gridNotes,undefined,gridPercent.get(c))}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
+      +(showTotals?'<th scope="col">Total</th>':'')
       +`</tr></thead><tbody>`
       // A ROW'S MEANING BESIDE ITS NAME, where the table carries one (a regression's terms, experiment 172).
       +onPage(grid.rows).map(r=>`<tr><th scope="row">${esc(r.label)}${table.meanings?.[r.label]?`<span class="meaning"> · ${esc(table.meanings[r.label]!)}</span>`:''}</th>`
-        +r.cells.map((v,i)=>v===undefined?'<td><span class="muted">—</span></td>':value(v,grid.columns[i]??'','')).join('')
-        +(r.total===null?'':value(r.total,'Total',' class="crosstab-total"'))
+        +gridColumns.map(c=>gridCell(r.cells,c)).join('')
+        +(!showTotals||r.total===null?'':value(r.total,'Total',' class="crosstab-total"'))
         +'</tr>').join('')
       +`</tbody>`
       // The fourth row, where a reader looks for N.
-      +(grid.grandTotal===null?'':`<tfoot><tr><th scope="row">Total</th>`
-        +grid.columnTotals.map(v=>v===null?'<td class="crosstab-total"><span class="muted">—</span></td>':value(v,'Total',' class="crosstab-total"')).join('')
+      +(!showTotals?'':`<tfoot><tr><th scope="row">Total</th>`
+        +gridColumns.map(c=>grid.columnTotals[gi(c)]??null).map(v=>v===null?'<td class="crosstab-total"><span class="muted">—</span></td>':value(v,'Total',' class="crosstab-total"')).join('')
         +value(grid.grandTotal,'Total',' class="crosstab-total"')+'</tr></tfoot>')
       +`</table>`+pages_(framePage(grid.rows.length),framePages(grid.rows.length))
       // WHO SAID THESE COULD BE ADDED. A reader checking a margin is entitled to know whether
       // the table claimed its values count the same thing or a person did, because the two carry
       // different weight -- and because the person can be wrong in a way the file cannot.
-      +(grid.grandTotal!==null&&assertTotals&&!table.unit?.trim()
+      +(withheld?`<p class="table-meta muted">Totals are not shown: with them, a count hidden as small could be worked out.</p>`:'')
+      +(showTotals&&assertTotals&&!table.unit?.trim()
         ?`<p class="table-meta muted">Totals are shown because this step was told these values `
-          +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');
+          +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');}
   // A TABLE WITH NO VALUE COLUMN, a layer's attributes, shows none: an empty "unknown" on every row said nothing.
   const valued=!!table.valueField;
+  // A SEARCHED ROW IS PRESENTED BY ITS MEASURE (review of #8): searching shows the long rows, where the value's column is
+  // the table's value field; a count hidden in the wide table under its measure's name was shown raw once searched.
+  const measureKey=drawnColumns(table).measureKey;
+  const columnOf=(row:{key:Record<string,unknown>})=>measureKey&&row.key[measureKey]!==undefined?String(row.key[measureKey]):table.valueField;
   return `<div class="table-meta muted">${matching.length} of ${recordsSaid(table)}${valued&&table.missingValueCount?` · ${table.missingValueCount} values absent and kept as unknown`:''}${valued?` · value in ${unit}`:''}</div>`
     +`<table><thead><tr>${table.keys.map(k=>roleHead(roles,k,esc)).join('')}${valued?roleHead(roles,table.valueField,esc):''}</tr></thead><tbody>`
     // A CELL EDITED BY HAND IS MARKED, with what it was on hover (experiment 214).
     +shown.map(row=>{const edited=(row as {edited?:EditedCells}).edited;
       const cell=(c:string)=>roleAttr(roles,c,edited?.[c]?'cell-edited':'')+(edited?.[c]?` data-cell-edited title="${esc(editedTitle(edited[c]!))}"`:'');
-      return `<tr>${table.keys.map(k=>`<td${cell(k)}>${esc(row.key[k])}</td>`).join('')}${valued?value(row.value,table.valueField,cell(table.valueField)):''}</tr>`;}).join('')
+      return `<tr>${table.keys.map(k=>`<td${cell(k)}>${esc(row.key[k])}</td>`).join('')}${valued?value(row.value,columnOf(row),cell(table.valueField)):''}</tr>`;}).join('')
     +`</tbody></table>`+(limit!==undefined?'':pager(page,pages));
 }
 

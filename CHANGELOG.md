@@ -3,6 +3,52 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.205.0 — In development
+
+- **Table 0.16.0: each column, small counts, and a count with its percentage** (the table standard's open items, from
+  [the research note](docs/research/table-presentation-standards-2026-11-27.md)). In **Configure…**, under
+  **Presentation**, each column takes its own decimal places; a unit or denominator written once in its heading,
+  "Rate (per 100,000)", the column's unit from **Columns…** when none is set; and a note, marked "[note 1]" in the
+  heading and written below, the UK Analysis Function's way, because a screen reader passes over a superscript.
+  **Small counts not shown** writes a count from 1 up to a declared threshold as [c] (confidentiality) or [u] (too
+  few to be reliable), and a note below says which and where; zero is shown, and the data are not changed. A count
+  and its percentage can share a cell, "120 (34.5)", in a table of rows; a CSV keeps them apart.
+- **The write-up's and the draft's tables to the same standard.** They drew their own cells and read none of a
+  Table's Presentation; they now take its title, header cells, decimal places, units, notes, small counts and source,
+  and are ruled as Results is (above, under the headings, below). An empty cell's dash was drawn at 45% opacity; it is
+  now the muted text colour. A draft's attached CSV hides the same small counts, so what the page withholds is not
+  handed on beside it.
+- **Results' point table now applies decimal places.** It wrote every number as text before presenting it, so the
+  Presentation's decimal places, since Table 0.15.0, never reached it. Found by this release's browser test.
+- **Widgets added from the library land clear of one another.** Each was placed 80 px from the last by a count of the
+  nodes, while a node is about 340 by 230 px on screen, so three added in a row overlapped (found 2026-11-27). A new
+  widget now takes the first free place in the part of the canvas on screen, clear of every node as drawn; where there
+  is none, it goes beside the others and the canvas scrolls to it. Adding no longer zooms the whole canvas to fit,
+  which on a large workflow left the new widget too small to read. The first version looked down the column and put a
+  widget below a full canvas, out of sight; the gate caught it (`tests/write-your-own-rules.browser.mjs`).
+- **From the review of #8, six repairs, each with a test that failed before it.** A count hidden after a run, by Apply
+  alone, still reached Notes and the draft's attached CSV, which read the presentation from the run's copy of the
+  workflow; they now read it as last applied (`tests/table-suppression-reaches-draft.browser.mjs`, which downloads the
+  ZIP). Searching Results showed a hidden count raw; a searched row is now presented by its measure. A cross-tab hiding
+  a count showed totals that gave it away; it now shows none, and says why. A threshold that cannot be used, typed
+  over a saved one, turned hiding off; Apply is now refused and the rule kept, and only an empty box turns it off. The
+  note numbers in the headings and below the table counted different columns once a percentage was folded into its
+  count; both now count the columns as shown, the folded percentage's note on its count's heading. A widget placed
+  beside its source near the edge was scrolled to only when its corner was out of view; now when any of it is, and
+  the canvas moves only as far as brings it in, rather than centring it: centring moved the steps beside it out of view
+  (`tests/area-measurement.browser.mjs`, caught by the gate).
+- **From the follow-up review of #8, two more.** A lone "-" typed over a saved threshold turned hiding off, because a
+  number box reports a malformed entry as empty; the box is now text with a numeric keyboard, and only a truly empty
+  box is Off. A two-key table keyed the other way round, Measure then District, with a reading of District by Measure,
+  was drawn with the districts across, so a count hidden under Cases was shown; the cross-tab now puts the measures
+  across wherever the table says which key holds them, and Configure offers the columns Results draws. And a hidden
+  count's percentage was still shown beside its mark, "[c] (1.2)", which gives the count away to anyone who knows the
+  total; a hidden count now hides its percentage too.
+- Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
+  table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
+  alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed
+  on the old placement). Not run on WebKit.
+
 ## 0.204.7 — In development
 
 - **Apply waits for the run, then applies** (the practitioner's choice for an edit applied during a run: *keep the
