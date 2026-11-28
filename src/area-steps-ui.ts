@@ -320,7 +320,12 @@ function clipPolygonsPreview(kit:AreaStepKit,n:WorkflowNode):string{
       // UNLABELLED: eight catchments' names piled on one another at their first corners; the shapes are what is previewed.
       ...cut.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as Boundary)})),
       {kind:'area' as const,rings:parts(boundary)}];
-    return previewDrawing(shapes,`The polygons before the cut, the study area, and what the cut keeps`)
+    // THE COUNT STAYS IF THE DRAWING CANNOT BE MADE (review of #5): the drawing comes first on the page, and an error in
+    // it had taken the count and the area with it.
+    let drawing='';
+    try{drawing=previewDrawing(shapes,`The polygons before the cut, the study area, and what the cut keeps`);}
+    catch{drawing='<p>These polygons are too detailed to draw here. The count and area below are what the cut keeps.</p>';}
+    return drawing
       +`<p class="standard-result"><strong>${after.toLocaleString('en')} of ${before.toLocaleString('en')} polygons kept.</strong> `
       +`${kit.esc(said(area(polygons)))} before the cut, ${kit.esc(said(area(cut)))} after.</p>`;
   }catch(error){return cannot(kit,error);}

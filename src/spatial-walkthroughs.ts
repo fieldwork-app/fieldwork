@@ -45,9 +45,11 @@ const KEY:Record<Kind,string>={input:'Grey outline: what the step is given',area
 
 /** The shapes drawn in a 360 by 240 box, longitude across and latitude up, at the scale of the widest shape. */
 function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string[];scale?:Scale}{
-  const all=shapes.flatMap(s=>[...(s.rings??[]).flat(2),...(s.point?[s.point]:[])]);
-  const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);
-  const w=Math.min(...xs),e=Math.max(...xs),south=Math.min(...ys),n=Math.max(...ys);
+  // THE BOUNDS IN ONE PASS (review of #5, 2026-11-27): every coordinate spread into Math.min and Math.max threw RangeError
+  // on an 80,000-vertex ring, well inside the input budget.
+  let w=Infinity,e=-Infinity,south=Infinity,n=-Infinity;
+  const take=(p:Position)=>{if(p[0]<w)w=p[0];if(p[0]>e)e=p[0];if(p[1]<south)south=p[1];if(p[1]>n)n=p[1];};
+  for(const s of shapes){for(const poly of s.rings??[])for(const r of poly)for(const p of r)take(p);if(s.point)take(s.point);}
   // ROOM FOR A LABEL on the right and above: a label is drawn up and to the right of its shape, and one on the widest
   // shape's edge was cut off (Summarize's "H6", 2026-11-22). The shapes take 260 by 180 of the 360 by 240 box.
   const scale=Math.min(260/((e-w)||1e-3),180/((n-south)||1e-3));
