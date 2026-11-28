@@ -1,0 +1,68 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:donut_geomask",
+ "nodeType": "donut_geomask",
+ "version": "0.5.0",
+ "title": "Move points in a donut",
+ "released": "2026-11-28",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['donut_geomask']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "points",
+    "type": "points"
+   }
+  ],
+  "output": "points"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:DonutGeomasking",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "PROV computation activity with typed SHACL runtime receipt; configuration and privacy effectiveness require separate validation.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/geoprivacy.ts",
+   "src/core.ts",
+   "src/geoprivacy-ui.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/table-walkthrough.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws where each point was and where the seed moves it, and reads the whole layer where the source holds one, not the first 500."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Structural and deterministic checks only. No privacy guarantee or independent scientific certification. 0.3.0: tests/spatial-walkthroughs.browser.mjs, Show me how stepped to its last sentence; Chromium, 2026-11-23.\n\nTHE PREVIEW (2026-11-25). Browser tested on Chromium through the dialogs that open it. NOT established: that the numbers it reports are checked against the run's own, which would need a test holding both.\n\nTHE PREVIEW DRAWS (2026-11-28). tests/transform-previews-draw.browser.mjs, on the John Snow geoprivacy example: 250 points where they were and 250 moved, redrawn for another seed; Chromium, 2026-11-28, failing on the code before. NOT established: WebKit, which CI runs."
+ }
+}

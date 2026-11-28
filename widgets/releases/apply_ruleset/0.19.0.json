@@ -1,0 +1,79 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:apply_ruleset",
+ "version": "0.19.0",
+ "nodeType": "apply_ruleset",
+ "title": "Apply ruleset",
+ "released": "2026-11-28",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['apply_ruleset']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "shaclShapes": [],
+  "validationStatus": "application-only"
+ },
+ "ports": {
+  "inputs": [],
+  "output": null
+ },
+ "ontology": {
+  "status": "gap",
+  "mappings": [],
+  "note": "The semantic contract belongs to the ruleset, which declares its own output vocabulary and basis; do not infer one from this widget.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/rule-application.ts",
+   "src/rulesets.ts",
+   "src/core.ts",
+   "src/rule-evaluation.ts",
+   "src/rule-editor.ts",
+   "src/authored-application.ts",
+   "src/authored-rules.ts",
+   "src/config-dialog.ts",
+   "src/ruleset-json.ts",
+   "scripts/ruleset-schema.mjs",
+   "src/ruleset-ui.ts",
+   "src/run-ruleset.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [
+   {
+    "nodeType": "policy",
+    "adapterVersion": "1",
+    "implementation": "src/core.ts#validateWorkflow"
+   },
+   {
+    "nodeType": "access_policy",
+    "adapterVersion": "1",
+    "implementation": "src/core.ts#validateWorkflow"
+   },
+   {
+    "nodeType": "xpert",
+    "adapterVersion": "1",
+    "implementation": "src/core.ts#validateWorkflow"
+   }
+  ],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "For a published ruleset evaluated directly, the Preview shows the records and what the ruleset concludes for each, with the columns chosen for its inputs, as the rule editor's After shows them; it had listed the rules only. The binding of inputs to columns and units is one function for the run and the Preview. A ruleset that goes to the reasoner is not run in the dialog."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Repository regression coverage exists, and the Validation Lab checks this widget exhaustively rather than by sample -- check 23 enumerates the complete input space of all three bundled rulesets, 46 cells, reproducing every conclusion with an independent decision table and verifying the emitted receipt. That is evidence about the rulesets and about this widget's four stages; it does not certify the widget independently, and it says nothing about whether any threshold is right. 0.12.0: tests/seven-one-seven.browser.mjs (four cases by hand: 9 and -1 days, NoVerdict where onset or response is missing); Chromium. Experiment 207: tests/data-issues.test.mjs, tests/seven-one-seven-ontology.test.mjs, tests/ruleset-example.test.mjs. 0.13.0: tests/band-rules.test.mjs (labels, conditions, every age in exactly one band, refusals). 0.13.1: scripts/sentence-numbers.mjs finds every number in each step's sentence among its results, across every worked example; Validation Lab check 49 recomputes MERS's 7-1-7 verdicts from the source files. 0.13.2: tests/rule-editor.browser.mjs and the rule tests; Chromium. 0.13.3: The population example's comparison chain over shares built from the reference totals: the census share read, the difference computed for all 90 Rwandan rows, run in Node; no browser test yet. 0.14.0: The practitioner, 2026-11-15: \"Date time arithmetic is important.\" Oswego: 44 of 46 ill with onset dates and times, a median of 4 hours from the meal for 21, as computed by hand from the CSV. tests/dates-and-times.test.mjs; tests/oswego-times.browser.mjs; Chromium.\n\nSTARTS WITH AND QUOTED WORDS (2026-11-26, for the syndromic example on NSSP's definitions). tests/rule-words.test.mjs: a quoted \" flu \" finds stomach flu and not influenza or a bare flu; startsWith finds J10 in R50.9;J10.1 and in j101, and not in XJ10; notStartsWith refuses A08.1;J11.1; both are evaluated directly, never compiled to N3. Node. NOT established: that ESSENCE's own matching agrees on every punctuation case; the items are split at ; / & and spaces only.\n\nTHE PUBLISHED PREVIEW SHOWS ROWS (2026-11-28). tests/ruleset-published-preview.browser.mjs: 7-1-7 over two cases, case A 9 days to detect from the columns chosen; the Projection extract contract says its conclusions come after a run; Chromium, 2026-11-28, failing on the code before. NOT established: WebKit, which CI runs."
+ }
+}

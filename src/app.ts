@@ -3800,22 +3800,33 @@ function partsTableUnderMap(polygons:NonNullable<Output['polygons']>):{choose:(i
 }
 /** A WORKED EXAMPLE'S PLACED IMAGE, filled in from its own file (2026-11-15): Hagelloch's 1824 sheet ships placed under
  *  the cluster map with the image's digest and not its bytes, so the bytes are fetched from beside the application,
- *  checked against that digest, and kept on the device. A sheet the learner places is not touched: it has no image yet. */
+ *  checked against that digest, and kept on the device. A sheet the learner places is not touched: it has no image yet.
+ *  Or from the example's repository at its pinned commit (2026-11-28): Snow's Map 2 at full resolution is 46 MB, too
+ *  large to carry inside the project file, and `verifiedFile` refuses it unless its size and digest are the pinned ones. */
 async function fillPlacedImages():Promise<void>{
   for(const n of workflow.nodes){
     if(n.type!=='map_image_input')continue;
     const p=(n as WorkflowNode<'map_image_input'>).params;
-    if(!p.offered?.url||!p.image?.width||!p.world||(typeof p.data==='string'&&p.data.startsWith('data:')))continue;
-    const response=await fetch(p.offered.url);
-    if(!response.ok)throw new Error(`${p.offered.filename} could not be fetched from beside the application (${response.status}).`);
-    const bytes=new Uint8Array(await response.arrayBuffer());
+    if(!(p.offered?.url||p.offered?.from)||!p.image?.width||!p.world||(typeof p.data==='string'&&p.data.startsWith('data:')))continue;
+    const offered=p.offered;
+    let bytes:Uint8Array<ArrayBuffer>;
+    if(offered.from){
+      const example=exampleById(offered.from.example);
+      if(!example)throw new Error(`${offered.from.example} is not in this version's catalog of worked examples.`);
+      bytes=await verifiedFile(example,offered.from.path);
+    }else{
+      const response=await fetch(offered.url!);
+      if(!response.ok)throw new Error(`${offered.filename} could not be fetched from beside the application (${response.status}).`);
+      bytes=new Uint8Array(await response.arrayBuffer());
+    }
     if(p.image.sha256&&await contentHash(bytes)!==p.image.sha256)
-      throw new Error(`${p.offered.filename} is not the file this example placed: its digest differs. Reload the application.`);
+      throw new Error(`${offered.filename} is not the file this example placed: its digest differs. Reload the application.`);
+    const path=offered.from?.path??offered.url!;
     const data=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));
-      r.onerror=()=>reject(new Error(`${p.offered!.filename} could not be read.`));
-      r.readAsDataURL(new Blob([bytes],{type:p.offered!.url!.endsWith('.png')?'image/png':'image/jpeg'}));});
+      r.onerror=()=>reject(new Error(`${offered.filename} could not be read.`));
+      r.readAsDataURL(new Blob([bytes],{type:path.endsWith('.png')?'image/png':'image/jpeg'}));});
     const digest=await payloadDigest(data);
-    if(!await keepDataset(digest,data))throw new Error(`${p.offered.filename} could not be kept on this device.`);
+    if(!await keepDataset(digest,data))throw new Error(`${offered.filename} could not be kept on this device.`);
     p.data=data;p.dataRef=digest;
   }
 }
@@ -3925,7 +3936,13 @@ async function run(){if(busy)return;
   // a state line that says what is true -- not "Run failed", which claims something went wrong.
   try{executionPlan(workflow);}catch(e){
     if(e instanceof IncompleteWorkflow){runIncomplete=true;showIncomplete(e);render();return;}
-    toast(errorMessage(e),{tone:'failure'});runFailed=true;render();console.error(e);return;}busy=true;runStartedAt=performance.now();statuses={};justFinished.clear();lastRunMs=null;/* THE LAST RUN'S RASTER IS LET GO AS THIS ONE STARTS (2026-11-17): held while the next run loaded its own, two windows were in memory at once, measured on Nigeria at 100 m. */if(result?.outputs.some(o=>o.raster)){result=null;renderResults();}{const key=storageKey(workflow);if(key&&runsByWorkflow.get(key)?.run.outputs.some(o=>o.raster))runsByWorkflow.delete(key);}render();try{await fillPlacedImages();}catch(e){busy=false;queueMicrotask(runSettled);toast(errorMessage(e),{tone:'failure'});runFailed=true;render();return;}const snapshot=structuredClone(workflow);const started=performance.now();try{const next=await executeWorkflow(snapshot,reason,(id,state)=>{statuses[id]=state;if(state==='done'){justFinished.add(id);setTimeout(()=>{justFinished.delete(id);if(!busy||statuses[id]==='done')flow?.update(playbackView(),selected,statuses);},FINISH_GLOW_MS);}flow?.update(playbackView(),selected,statuses);});lastRunMs=performance.now()-started;
+    toast(errorMessage(e),{tone:'failure'});runFailed=true;render();console.error(e);return;}
+  // AN EXAMPLE'S MAP IMAGE NOT YET PLACED IS NOT A FAILED RUN (the practitioner, 2026-11-28: "The run failed in the workflow
+  // because I have not loaded the map2 cached map"). Snow's Map 2 placed by hand waits for the learner to choose and place
+  // the image; Run said "Run failed". It now says what it waits for, as Run workflows does, and points at the step.
+  {const waiting=workflow.nodes.find(n=>n.type==='map_image_input'&&(n as WorkflowNode<'map_image_input'>).params.offered&&!(n as WorkflowNode<'map_image_input'>).params.image?.width);
+   if(waiting){runIncomplete=true;showIncomplete(new IncompleteWorkflow(`${waiting.params.label||'The map image'} is not placed yet. Choose the image and place it in Configure\u2026, then run.`,waiting.id));render();return;}}
+  busy=true;runStartedAt=performance.now();statuses={};justFinished.clear();lastRunMs=null;/* THE LAST RUN'S RASTER IS LET GO AS THIS ONE STARTS (2026-11-17): held while the next run loaded its own, two windows were in memory at once, measured on Nigeria at 100 m. */if(result?.outputs.some(o=>o.raster)){result=null;renderResults();}{const key=storageKey(workflow);if(key&&runsByWorkflow.get(key)?.run.outputs.some(o=>o.raster))runsByWorkflow.delete(key);}render();try{await fillPlacedImages();}catch(e){busy=false;queueMicrotask(runSettled);toast(errorMessage(e),{tone:'failure'});runFailed=true;render();return;}const snapshot=structuredClone(workflow);const started=performance.now();try{const next=await executeWorkflow(snapshot,reason,(id,state)=>{statuses[id]=state;if(state==='done'){justFinished.add(id);setTimeout(()=>{justFinished.delete(id);if(!busy||statuses[id]==='done')flow?.update(playbackView(),selected,statuses);},FINISH_GLOW_MS);}flow?.update(playbackView(),selected,statuses);});lastRunMs=performance.now()-started;
     // THE CANVAS CAN MOVE WHILE A RUN IS IN FLIGHT, and this run is then nobody's results.
     //
     // `renderResults` discards a result whose workflow is no longer the open one -- the rule
@@ -4317,7 +4334,12 @@ function relateKit():RelateKit{
 }
 /** COMPARE POINT SETS' KIT (point-comparison-ui.ts): the step kit, with the table of distances its last run made. */
 function compareKit():CompareKit{
-  return {...stepKit(),made:id=>result?.tables?.[id]};
+  return {...stepKit(),made:id=>result?.tables?.[id],
+    pointsOn:(id,port)=>{
+      const held=layerOnPort(id,port);if(held)return held;
+      const e=workflow.edges.find(x=>x.to===id&&x.port===port),made=e&&!dirty?result?.computed?.[e.from]:undefined;
+      return made?.features.length?{type:'FeatureCollection',features:made.features.map((f,i)=>({type:'Feature',id:`p${i+1}`,
+        properties:{name:f.name},geometry:f.geometry as {type:'Point';coordinates:[number,number]}}))}:undefined;}};
 }
 /** JOIN'S KIT (area-join-ui.ts): the step kit, with what feeds each port, the table's columns, the parts joined to, and
  *  what the last run joined. */

@@ -7,6 +7,9 @@ import type {OwnInspector,StepKit} from './inspector-kit.js';
 import type {DataTable} from './data-table.js';
 import {openConfigDialog} from './config-dialog.js';
 import {TYPES,nearestPlaces} from './core.js';
+import {satisfies} from './nearest-neighbour.js';
+import {previewDrawing} from './spatial-walkthroughs.js';
+import type {Position} from './types.js';
 
 export interface DistanceKit extends StepKit {
   /** The points on one of the step's input ports, where they resolve. */ layerOn:(nodeId:string,port:string)=>PointCollection|undefined;
@@ -48,9 +51,22 @@ function distancePreview(kit:DistanceKit,node:WorkflowNode<'measure_distance'>,d
     .map(r=>r.distance as number).sort((a:number,b:number)=>a-b);
   const n=(v:number)=>v.toLocaleString('en-US');
   const d=(v:number)=>`${v.toLocaleString('en-US',{maximumFractionDigits:v<10?2:0})} ${draft.unit==='metres'?'m':'km'}`;
+  // DRAWN (2026-11-28): each point joined to the candidate it would be measured to, the candidates a condition keeps
+  // drawn strong and the ones it leaves out faint, so narrowing is seen moving the lines. Listed by the preview audit's
+  // re-review of 2026-11-27 as numbers with no reason recorded for not drawing.
+  const kept=new Set(candidates.features.filter(f=>f.geometry&&satisfies(f.properties,draft.candidateFilter)));
+  const lines=(rows as {coordinates:Position|null;center:{coordinates:Position}|null}[])
+    .filter(r=>r.coordinates&&r.center).map(r=>({kind:'result' as const,rings:[[[r.coordinates!,r.center!.coordinates,r.coordinates!]]]}));
+  const drawing=previewDrawing([
+    ...lines,
+    ...candidates.features.filter(f=>f.geometry).map(f=>({kind:kept.has(f)?'look' as const:'gone' as const,point:f.geometry!.coordinates as Position})),
+    ...points.features.filter(f=>f.geometry).map(f=>({kind:'input' as const,point:f.geometry!.coordinates as Position}))],
+    'Each point joined to the nearest candidate it would be measured to',undefined,
+    {result:'Line: from a point to its nearest eligible candidate',look:'Strong: an eligible candidate',
+      gone:'Faint: a candidate the conditions leave out',input:'Open circle: a point measured from'});
   // THE CONDITIONS' OWN NUMBER FIRST, because it is the setting on the screen. Stated even where nothing is
   // narrowed, so adding the first condition changes a number already in view rather than making one appear.
-  return said
+  return drawing+said
     +`<p class="standard-result"><strong>${n(eligibleCount)}</strong> of ${n(candidateCount)} `
     +`candidate${candidateCount===1?'':'s'} eligible`
     +(eligibleCount===candidateCount?' (no condition narrows them)':'')+'.</p>'

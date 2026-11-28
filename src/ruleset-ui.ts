@@ -13,7 +13,10 @@ import type {Ruleset} from './rulesets.js';
 import {pinnedRuleset} from './rule-application.js';
 import {settingNamed,isWordComparator} from './authored-rules.js';
 import {orderSentence} from './rule-evaluation.js';
-import {openRuleEditor} from './rule-editor.js';
+import {openRuleEditor,beforeAndAfter,computedColumnsOf} from './rule-editor.js';
+import {publishedAsAuthored} from './run-ruleset.js';
+import {evaluateAuthored} from './rule-evaluation.js';
+import {authoredUnitProblems} from './authored-rules.js';
 import {openConfigDialog} from './config-dialog.js';
 import {authoredSubjects} from './authored-application.js';
 
@@ -365,7 +368,25 @@ function openRulesetConfig(kit:RulesetKit,nodeId:string){
       if(!chosen)return {settings,preview:'<p class="muted">Choose a ruleset to see what it decides.</p>'};
       const basis={published:'Published basis','practitioner-agreed':'Practitioner-agreed basis',illustrative:'Illustrative, no source',proxy:'Proxy, no source'}[chosen.basis.status]||chosen.basis.status;
       const obligation=(chosen as unknown as {obligation?:{summary:string;whatYouTakeOn:string;howToAcknowledge:string;ifYouDoNot:string}}).obligation;
-      const preview=`<p class="description">${esc(chosen.description)}</p>`
+      // WHAT THE CHOSEN RULESET CONCLUDES OVER THESE RECORDS (2026-11-28). The preview audit found this the last transform
+      // whose Preview showed neither a drawing nor rows, with no reason recorded: it showed the rules and not what they
+      // decide. A published ruleset that is evaluated directly runs as `runApplyRuleset` runs it, through
+      // `publishedAsAuthored` with the draft's bindings and `evaluateAuthored`, synchronously over the records `rulePreview`
+      // reads; shown as the rule editor's After shows it. One that goes to the reasoner is NOT run here: the reasoner is an
+      // asynchronous engine the run starts (run-ruleset.ts, `reasoner`), and a dialog builds its Preview synchronously,
+      // so what it concludes is in the Result after a run.
+      const direct=publishedAsAuthored(chosen,draft.bindings);
+      const records=direct?rulePreview(kit,nodeId):undefined;
+      let concluded='';
+      if(direct&&records){
+        const units=authoredUnitProblems(direct as never);
+        try{concluded=units.length?`<p class="profile-flag">${esc(units[0]!.says)}</p>`
+          :beforeAndAfter(records,evaluateAuthored(records.records,direct.fields as never,direct.rules as never,draft.parameters,undefined,
+            (direct as {otherwise?:never}).otherwise??[]),computedColumnsOf(direct.rules as never).map(c=>c.label),esc);}
+        catch(error){concluded=`<p class="muted">${esc(`These rules cannot be applied to these records yet: ${error instanceof Error?error.message:String(error)}`)}</p>`;}
+      }else if(direct)concluded='<p class="muted">Connect the records, and what these rules conclude over them is shown here.</p>';
+      else concluded='<p class="muted">What these rules conclude over the records is in the Result after a run.</p>';
+      const preview=concluded+`<p class="description">${esc(chosen.description)}</p>`
         +(chosen.authored?`<div class="inspector-actions"><button class="button" id="review-rules">Read them in the rule editor</button></div>`
           +rulesList(chosen.authored.rules as ShownRule[],chosen.inputContract.fieldFrom??[],
           v=>{const s=settingNamed(v);return s?`${s} · ${draft.parameters[s]??'not set'}`:typeof v==='string'&&v.includes(':')?v.slice(v.indexOf(':')+1):String(v);},esc)

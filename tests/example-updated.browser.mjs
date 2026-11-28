@@ -85,12 +85,13 @@ test(`${key}: opened and run fresh, it is the example as it ships`,async({page})
   const run=page.locator('#run-button');
   await expect.poll(async()=>{
     if((await page.locator('#workflow-state').innerText()).includes('Run complete'))return true;
-    if(key==='hagelloch-sheet'&&await page.getByText('This step has no image yet').isVisible())return true;
+    if(key==='hagelloch-sheet'&&(await page.locator('#workflow-state').innerText()).includes('Not ready to run'))return true;
     if(await run.isEnabled())await run.click({timeout:2000}).catch(()=>{});
     return false;
   },{timeout:240_000,intervals:[1000]}).toBe(true);
   // The 1824 sheet waits for the learner: its image is offered in Configure… and chosen only on request (experiment 201).
-  if(key==='hagelloch-sheet')await expect(page.getByText('This step has no image yet')).toBeVisible({timeout:240_000});
+  // Since 0.206.0 Run says so before it starts, rather than failing at the sheet ("This step has no image yet").
+  if(key==='hagelloch-sheet')await expect(page.locator('#workflow-state')).toHaveText('Not ready to run');
   else await expect(page.locator('#workflow-state')).toContainText('Run complete',{timeout:240_000});
   await page.goto(`/?example=${key}`);
   await expect(page.locator('#example-note')).toHaveAttribute('data-revision',/./);

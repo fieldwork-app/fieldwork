@@ -1,6 +1,6 @@
 # Cases by period
 
-_Created 2026-11-07 · Updated 2026-11-25_
+_Created 2026-11-07 · Updated 2026-11-28_
 
 **An epidemic curve's counts.** Cases per day, week or month, or by day of the week or month of the year, by a date whose kind you state: onset, report, death,
 specimen collection, or a date of unstated kind.
@@ -95,6 +95,11 @@ never put at midnight. Oswego's *When did they fall ill?* counts 44 cases from 3
 the date and time put together from the line list's two columns by Apply ruleset.
 
 ## History
+
+### 2026-11-28 · The Preview draws the curve (0.11.0)
+
+**Configure…**'s Preview draws the curve the step would make, one bar per period with empty periods kept, above the
+counts it gave before. Split by a column, each bar is the sum over its values; Chart draws them stacked.
 
 ### 2026-11-26 · The Preview follows the input type you are choosing (0.10.0)
 

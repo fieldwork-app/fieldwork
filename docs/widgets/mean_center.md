@@ -1,6 +1,6 @@
 # Mean center
 
-_Created 2026-11-22 · Updated 2026-11-23_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A spatial operation.** It takes points and gives back one point: their average position, each point counted once or
 in proportion to a number it carries.
@@ -38,6 +38,13 @@ Out comes one point. **Compare point sets** reads two of them to say how far a c
 The lab's [mean centre notebook](https://digital-twin-ph.github.io/validation-lab/lab/index.html?path=06-mean-center-vs-pyproj.ipynb) recomputes the centre with pyproj.
 
 ## History
+
+### 2026-11-28 · The Preview draws the centre, and follows the weight chosen (0.6.0)
+
+**Configure…**'s Preview draws the points and the centre the step passes on over them. It had given only the
+centre's coordinates. It also ignored the weight being chosen, and showed the saved one; with DEATHS chosen in the
+Snow geoprivacy example it now says *weighted by DEATHS totalling 489*. The hint under the weight was about Snow's
+data; it now says what a weight does.
 
 ### 2026-11-23 · Show me how (0.4.0)
 

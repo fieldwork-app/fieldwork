@@ -1,6 +1,6 @@
 # Georeferenced map image
 
-_Created 2026-10-27 · Updated 2026-11-22_
+_Created 2026-10-27 · Updated 2026-11-28_
 
 ## What it does
 
@@ -28,8 +28,8 @@ Its output goes to a **Map**, on the `ground` port.
 ## Reading what you get
 
 The figure says which plate it drew, where it came from, and **about how many metres one of its
-pixels covers**. Snow's plate over south London is about 16 metres per pixel: enough to recognise
-the river and the parish outlines, not enough to read a street.
+pixels covers**. Snow's plate over south London, UCLA's full scan, is about 1.2 metres per pixel: zoom in and its
+print can be read. It is still ink, not a survey of the streets.
 
 The receipt records the image's digest, its pixel size, the four bounds, that ground resolution,
 and `layerRole "context"`.
@@ -117,10 +117,12 @@ A world file that turns the image is drawn turned.
 ## An image a worked example has already placed
 
 A worked example can ship an image already placed: its placement, its control points and the digest of its image, but
-not the image's bytes. When the workflow runs, the image is fetched from beside the application, checked against the
-digest, and kept on this device; a file that does not match is refused. Hagelloch's cluster map has the 1824 cadastral
-sheet under it this way, placed from the same four junctions the sheet workflow asks a learner to match. The sheet
-workflow itself still waits for the learner to choose and place the image.
+not the image's bytes. When the workflow first runs, the image is fetched, checked against the digest, and kept on
+this device; a file that does not match is refused. It comes from beside the application, or from the example's own
+repository at the commit Fieldwork pins. Hagelloch's cluster map has the 1824 cadastral sheet under it this way, placed
+from the same four junctions the sheet workflow asks a learner to match. South London's choropleth and its plate as
+published have Snow's Map 2 under them this way, at 12,828 × 10,097 pixels. The workflows that ask the learner to place
+the image still wait for the learner to choose it.
 
 ## A scanned sheet as a GeoTIFF
 
@@ -149,6 +151,12 @@ corner moves it 652 m east and 11 m south, the same as measured from its pixels.
 north of it, is placed correctly by its tags.
 
 ## History
+
+### 2026-11-28 · A placed image from an example's repository
+
+A worked example's placed image can now be fetched from the example's repository, by its pinned digest, when the
+workflow first runs. Before, only an image served beside the application could be. Snow's Map 2 uses it: UCLA's scan
+of 46 MB, too large to carry inside the project file. Nothing in the widget's settings changed.
 
 ### 2026-11-22 · Moved out of the application's main file (0.8.1)
 

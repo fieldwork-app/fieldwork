@@ -6,10 +6,23 @@ import {authoredUnitProblems,compileAuthoredRuleset,evaluatedDirectly,fieldsRead
 import {issueFacts} from './data-issues.js';
 import type {DisplayValue,Receipt} from './results.js';
 import {evaluateAuthored,evaluatedTable,evaluationSentence} from './rule-evaluation.js';
-import {bindParameters,publishedRuleset,resolveRuleset,rulesetCitation,tableContractFailures} from './rulesets.js';
+import {bindParameters,publishedRuleset,resolveRuleset,rulesetCitation,tableContractFailures,type Ruleset} from './rulesets.js';
 import type {PointCollection} from './types.js';
 import type {StepContext} from './core.js';
 import {dataOrigin} from './core.js';
+
+/** A PUBLISHED RULESET THAT IS EVALUATED DIRECTLY, as the rules written on a step are (experiment 197): its fields are
+ *  its declared bindings, each read from the column `bindings` chooses, or its own name, with the unit its contract
+ *  expects. Undefined for one that goes to the reasoner. One function for the run and for the dialog's Preview
+ *  (2026-11-28), so the Preview cannot bind a column the run would not. */
+export function publishedAsAuthored(published:Ruleset,bindings:Record<string,string>|undefined){
+  if(!(published.authored&&published.inputContract.fieldFrom?.length&&evaluatedDirectly(published.authored as never)))return undefined;
+  return {title:published.title,mustNotBeReadAs:published.mustNotBeReadAs,
+    fields:published.inputContract.fieldFrom.map(b=>({...b,attribute:bindings?.[b.predicate]||b.attribute,
+      unit:(published.inputContract.expects as {predicate:string;unit?:string}[]|undefined)?.find(e=>e.predicate===b.predicate)?.unit})),
+    parameters:[],rules:published.authored.rules,
+    ...((published.authored as {otherwise?:unknown}).otherwise?{otherwise:(published.authored as {otherwise?:unknown}).otherwise}:{})};
+}
 
 export async function runApplyRuleset(ctx:StepContext<'apply_ruleset'>):Promise<unknown>{
   const {inputs,node,reasoner,receipts,runId,workflow}=ctx;
@@ -29,12 +42,7 @@ export async function runApplyRuleset(ctx:StepContext<'apply_ruleset'>):Promise<
   // are its declared bindings, each with the unit its contract expects. The reasoner cannot compute a value, so
   // a published ruleset that does could otherwise conclude nothing.
   const published=node.params.authored?undefined:resolveRuleset(pinned.id,pinned.version);
-  const directly=published?.authored&&published.inputContract.fieldFrom?.length&&evaluatedDirectly(published.authored as never)
-    ?{title:published.title,mustNotBeReadAs:published.mustNotBeReadAs,
-      fields:published.inputContract.fieldFrom.map(b=>({...b,attribute:node.params.bindings?.[b.predicate]||b.attribute,
-        unit:(published.inputContract.expects as {predicate:string;unit?:string}[]|undefined)?.find(e=>e.predicate===b.predicate)?.unit})),
-      parameters:[],rules:published.authored.rules,
-      ...((published.authored as {otherwise?:unknown}).otherwise?{otherwise:(published.authored as {otherwise?:unknown}).otherwise}:{})}:undefined;
+  const directly=published?publishedAsAuthored(published,node.params.bindings):undefined;
   const authored=node.params.authored??directly as typeof node.params.authored;
   if(authored){
     // Points or a table. The rules do not know the difference: a rule reads a predicate,

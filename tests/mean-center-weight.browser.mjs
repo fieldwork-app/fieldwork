@@ -16,7 +16,7 @@ test('a mean centre can be weighted by a record attribute, and the receipt says 
   await expect(settings).toContainText('each counted once');
   // The arriving points' numeric columns are offered; DEATHS among them.
   const dialog=await configureStep(page,{},{apply:false});
-  await expect(dialog).toContainText('250 addresses carrying 489 deaths have two different centres');
+  await expect(dialog).toContainText('Each point counts as many times as its value in that column.');
   await expect(dialog.locator('#mean-center-weight option[value="DEATHS"]')).toHaveCount(1);
   await dialog.locator('#mean-center-weight').selectOption('DEATHS');
   await dialog.locator('#config-apply').click();await expect(dialog).toHaveCount(0);

@@ -1,6 +1,6 @@
 # Observed extent (convex hull)
 
-_Created 2026-10-14 · Updated 2026-11-23_
+_Created 2026-10-14 · Updated 2026-11-28_
 
 **A process widget.** It takes points and gives back one polygon: the smallest convex outline
 that contains them, with the area it encloses.
@@ -57,6 +57,11 @@ The lab's [hull notebook](https://digital-twin-ph.github.io/validation-lab/lab/i
 recomputes the outline and the area with Shapely and compares them to this widget's.
 
 ## History
+
+### 2026-11-28 · The Preview draws the outline (0.5.0)
+
+**Configure…**'s Preview draws the outline it measures, filled, with the points over it, as **Show me how** ends.
+It had given only the area and how many points the outline passes through.
 
 ### 2026-11-23 · Show me how (0.3.0)
 

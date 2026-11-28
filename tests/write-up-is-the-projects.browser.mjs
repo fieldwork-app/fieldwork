@@ -47,7 +47,8 @@ const workflows=documents.filter(d=>!waits(d)).map(d=>d.name),WAITING=documents.
 const RUNNABLE=workflows.length;
 
 const open=async page=>{
-  await page.route(/raw\.githubusercontent\.com/,r=>r.fulfill({status:200,body:bundle}));
+  // The bundle only. Snow's Map 2 is fetched from the checkout when its workflows run (fixtures.mjs).
+  await page.route(/raw\.githubusercontent\.com\/.*\/fieldwork-project\.json\.gz$/,r=>r.fulfill({status:200,body:bundle}));
   await page.goto('/');await page.evaluate(()=>localStorage.clear());
   await page.goto('/?example=blank');
   await page.locator('[data-view="project"]').click();

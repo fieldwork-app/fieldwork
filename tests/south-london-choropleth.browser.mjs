@@ -18,6 +18,9 @@ import {collectPageErrors} from './page-errors.mjs';
 const BUNDLE=new URL('../../example-1855-cholera-south-london/fieldwork-project.json.gz',import.meta.url);
 const skip=existsSync(BUNDLE)?false
   :'example-1855-cholera-south-london is not checked out beside this repository.';
+// Snow's Map 2 under the choropleth is fetched from the checkout when the workflow runs (fixtures.mjs); a service worker
+// in WebKit would take that request past the route.
+test.use({serviceWorkers:'block'});
 
 test('a table of rates joins to named parts and draws a classed figure',async({page})=>{test.skip(!!skip,skip);
   const errors=collectPageErrors(page);
@@ -40,7 +43,7 @@ test('a table of rates joins to named parts and draws a classed figure',async({p
   await page.locator('#join-config #config-cancel').click();
 
   await page.locator('#run-button').click();
-  await expect(page.locator('#workflow-state')).toContainText('Run complete',{timeout:60000});
+  await expect(page.locator('#workflow-state')).toContainText('Run complete',{timeout:90000});
 
   await page.locator('[data-view="results"]').click();
   // 33 parts for 32 sub-districts: Streatham is two polygons and both take its rate, which is
@@ -62,5 +65,7 @@ test('a table of rates joins to named parts and draws a classed figure',async({p
   expect(text).toContain('5 quantile classes');
   expect(text).not.toContain('modeled catchments');
   expect(text).not.toContain('Squares: sites');
+  // THE PLATE UNDER IT is UCLA's full-resolution scan, fetched by its pinned digest when the workflow ran.
+  await expect(page.locator('#map image[data-map-image="644ad3a52b52"]')).toHaveCount(1);
   expect(errors).toEqual([]);
 });

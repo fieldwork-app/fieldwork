@@ -38,6 +38,11 @@ test('Measure distance previews the candidates a condition keeps, and the distan
   // different, so a median between the other two is a real statement about these points.
   await expect(preview).toContainText('Nearest');
   await expect(preview).toContainText('over 3 points');
+  // DRAWN (2026-11-28): each household joined to the candidate it is measured to, every candidate eligible.
+  const drawing=preview.locator('.preview-drawing');
+  await expect(drawing.locator('path.walk-shape-result')).toHaveCount(3);
+  await expect(drawing.locator('.walk-point.walk-shape-look')).toHaveCount(4);
+  await expect(drawing.locator('.walk-point.walk-shape-input')).toHaveCount(3);
 
   // NARROWED, AND THE NUMBER MOVES AS IT IS TYPED. Two of the four are clinics.
   await page.locator('#distance-config #filter-add').click();
@@ -51,6 +56,10 @@ test('Measure distance previews the candidates a condition keeps, and the distan
   await expect(page.locator('#distance-config [data-filter-values="0"]')).toHaveValue('clinic');
   await expect(preview).toContainText('2 of 4 candidates eligible');
   await expect(preview).not.toContainText('no condition narrows them');
+  // The two clinics drawn strong, the pharmacy and the warehouse faint, and the lines go to the clinics.
+  await expect(drawing.locator('.walk-point.walk-shape-look')).toHaveCount(2);
+  await expect(drawing.locator('.walk-point.walk-shape-gone')).toHaveCount(2);
+  await expect(drawing.locator('path.walk-shape-result')).toHaveCount(3);
 
   // A CONDITION THAT KEEPS NOTHING LEAVES EVERY POINT WITHOUT A DISTANCE, which is the finding: a table of
   // distances shows it only as a column of gaps.
@@ -59,6 +68,7 @@ test('Measure distance previews the candidates a condition keeps, and the distan
   await expect(page.locator('#distance-config [data-filter-values="0"]')).toHaveValue('mobile-team');
   await expect(preview).toContainText('0 of 4 candidates eligible');
   await expect(preview).toContainText('3 of 3 points get no distance: no candidate is eligible');
+  await expect(drawing.locator('path.walk-shape-result')).toHaveCount(0);
 
   await page.locator('#distance-config #config-cancel').click();
   expect(errors).toEqual([]);

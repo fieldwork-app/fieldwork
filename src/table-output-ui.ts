@@ -13,7 +13,7 @@ import {projectFromCRS84} from './reproject.js';
 import {shownRows,dataTableMarkup,drawnColumns} from './data-table-ui.js';
 import type {DataTable} from './data-table.js';
 import {isProjectedReference,type PointCollection,type AnySpatialReference} from './types.js';
-import {presentCell,presentedTable,presentationFields,headingMarks,noteNumbers,type TablePresentation,type PresentableColumn,type ColumnPresentation} from './table-presentation.js';
+import {presentCell,presentedTable,presentationFields,headingMarks,noteNumbers,pairedColumns,pairedValue,type TablePresentation,type PresentableColumn,type ColumnPresentation} from './table-presentation.js';
 
 export interface TableOutputKit extends StepKit {
   /** The unit the table's rows state, where they state one, so the totals claim is not offered over it. */
@@ -98,14 +98,22 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
   const choose=(total:number)=>`<div class="field preview-rows"><label class="field-label" for="preview-rows">Rows in the preview</label>`
     +`<select id="preview-rows">${PREVIEW_CHOICES.map(n=>`<option value="${n}"${rowsShown===n?' selected':''}>${n}</option>`).join('')}`
     +`<option value="all"${rowsShown==='all'?' selected':''}>All ${total.toLocaleString('en')}, to review</option></select></div>`;
-  const table=(head:{label:string;number:boolean}[],rows:string[],total:number)=>{
-    const names=head.map(h=>h.label),numbers=noteNumbers(present,names);
+  const table=(head:{label:string;number:boolean;pairWith?:string}[],rows:string[],total:number)=>{
+    const names=head.flatMap(h=>h.pairWith?[h.label,h.pairWith]:[h.label]),numbers=noteNumbers(present,names);
     return choose(total)+`<p class="muted">${total.toLocaleString('en')} ${total===1?'row':'rows'}${total>rows.length?`, the first ${rows.length.toLocaleString('en')} shown`:''}.</p>`
     +presentedTable(present,node.params.label||kit.title('table_output'),
       `<div class="table-scroll" tabindex="0" role="region" aria-label="Preview of the table"><table class="table-standard"><thead><tr>`
-      +head.map(h=>`<th scope="col"${h.number?' class="number"':''}>${esc(h.label)}${headingMarks(h.label,present,esc,numbers)}</th>`).join('')+`</tr></thead><tbody>`
+      +head.map(h=>`<th scope="col"${h.number?' class="number"':''}>${esc(h.label)}${h.pairWith?` (${esc(h.pairWith)})`:''}${headingMarks(h.label,present,esc,numbers,undefined,h.pairWith)}</th>`).join('')+`</tr></thead><tbody>`
       +rows.join('')+'</tbody></table></div>',esc,names);};
   const limit=(n:number)=>rowsShown==='all'?n:Math.min(n,rowsShown);
+  // A COUNT AND ITS PERCENTAGE IN ONE CELL among a row's attributes (2026-11-28), as Results' point table draws them.
+  const attributeColumns=(attributes:string[],number:(k:string)=>boolean)=>{
+    const {shown,percentOf}=pairedColumns(attributes,present);
+    return {head:shown.map(k=>({label:k,number:number(k),...percentOf.get(k)?{pairWith:percentOf.get(k)!}:{}})),
+      cells:(values:Record<string,unknown>|null|undefined)=>shown.map(k=>{const pc=percentOf.get(k);
+        if(!pc)return presentCell(values?.[k],k,present,esc);
+        const both=pairedValue(values?.[k],values?.[pc],k,pc,present,esc);
+        return `<td${both.absent?' class="absent-cell"':both.number?' class="number"':''}>${both.html}</td>`;}).join('')};};
   // A DATA TABLE DRAWN BY RESULTS' OWN RENDERER (PR 10's review: "Show totals" changed Results and not the preview), with
   // the draft's totals, the presentation and the rows asked for, and no pager.
   const dataTablePreview=(t:DataTable)=>{
@@ -129,9 +137,10 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
     const rows=(ran as {rows?:{name:string;attributes?:Record<string,unknown>}[]}|undefined)?.rows;
     if(!rows?.length)return '<p class="muted">Each polygon layer connected, one row per area, with its summaries. Run the workflow to see them here.</p>';
     const attributes=[...new Set(rows.flatMap(r=>Object.keys(r.attributes??{})))].filter(k=>k!=='name');
-    const head=[{label:'Area',number:false},...attributes.map(k=>({label:k,number:rows.some(r=>typeof r.attributes?.[k]==='number')}))];
+    const paired=attributeColumns(attributes,k=>rows.some(r=>typeof r.attributes?.[k]==='number'));
+    const head=[{label:'Area',number:false},...paired.head];
     return table(head,rows.slice(0,limit(rows.length)).map(r=>`<tr>${presentCell(r.name,'Area',present,esc,{measure:false})}`
-      +attributes.map(k=>presentCell(r.attributes?.[k],k,present,esc)).join('')+'</tr>'),rows.length);
+      +paired.cells(r.attributes)+'</tr>'),rows.length);
   }
   const layers=nodeInputs(node).filter(([,type])=>type==='points').map(([port])=>kit.layerOn(node.id,port)).filter((c):c is PointCollection=>!!c);
   if(!layers.length)return '<p class="muted">Nothing to show yet: connect point records, or run the workflow if a step makes them.</p>';
@@ -147,12 +156,13 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
   const attributes=[...new Set(features.flatMap(({f})=>Object.keys(f.properties??{})))].filter(k=>k!=='name');
   const anyMetres=features.some(x=>x.metres);
   const numericAttribute=(k:string)=>features.some(({f})=>typeof f.properties?.[k]==='number');
+  const paired=attributeColumns(attributes,numericAttribute);
   const head=[{label:'Record',number:false},{label:anyMetres?'Easting (m)':'Longitude (°)',number:true},{label:anyMetres?'Northing (m)':'Latitude (°)',number:true},
-    ...attributes.map(k=>({label:k,number:numericAttribute(k)}))];
+    ...paired.head];
   const rows=features.slice(0,limit(features.length)).map(({f,metres})=>{const at=f.geometry?.coordinates as [number,number]|undefined;
     const coordinate=(v:number|undefined)=>v===undefined?presentCell(null,'',present,esc):`<td class="number">${(metres?v.toFixed(1):v.toFixed(6))}</td>`;
     return `<tr>${presentCell((f.properties as {name?:unknown}|null)?.name??f.id??'','Record',present,esc,{measure:false})}`
-      +coordinate(at?.[0])+coordinate(at?.[1])+attributes.map(k=>presentCell(f.properties?.[k],k,present,esc)).join('')+'</tr>';});
+      +coordinate(at?.[0])+coordinate(at?.[1])+paired.cells(f.properties as Record<string,unknown>|null)+'</tr>';});
   return table(head,rows,features.length);
 }
 
@@ -214,7 +224,7 @@ function openTableConfig(kit:TableOutputKit,nodeId:string){
         +(draft.coord.metres?zoneFields(kit,draft.coord,'output'):'');
       if(!settings)settings='<p class="muted">Nothing to set: what you connect decides how it is shown.</p>';
       return {settings,presentation:presentationFields(draft.present,node.params.label||kit.title('table_output'),esc,columnsShown(kit,node,mode),
-        mode==='table'||(mode==='polygons'&&kit.ranOutput(node.id)?.kind==='data-table'),draft.typedThreshold),
+        true,draft.typedThreshold),
         ...(draft.typedThreshold!==undefined?{blocked:true,message:{tone:'refusal' as const,
           text:`Small counts: "${draft.typedThreshold}" cannot be used. Hide a count below a whole number from 2 to 1,000, or empty the box to show every count.`}}:{}),
         preview:tablePreview(kit,node,mode,draft.coord,draft.present,draft.rowsShown,draft.totalsAsserted===true)};

@@ -1,6 +1,6 @@
 # Move points in a donut
 
-_Created 2026-11-22 · Updated 2026-11-23_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A geoprivacy teaching step.** It takes points and gives back the same number of points, each moved a random distance
 in a random direction, between a least and a most distance from where it was.
@@ -40,6 +40,11 @@ the move cost.
 No lab notebook checks it yet. The browser test asserts that every point moved within the stated ring.
 
 ## History
+
+### 2026-11-28 · The Preview draws where the points move (0.5.0)
+
+**Configure…**'s Preview draws where each point was, faint, and where this seed moves it. It had given only how far
+the points moved. It reads the whole layer where the source holds one, where it had read the first 500.
 
 ### 2026-11-23 · Show me how (0.3.0)
 

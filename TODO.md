@@ -1,6 +1,6 @@
 # TODO
 
-_Created 2026-10-10 · Updated 2026-11-27_
+_Created 2026-10-10 · Updated 2026-11-28_
 
 The project's one list of open work. **Merged 2026-10-26 from two**: a root `TODO.md` of
 deferred work created 2026-10-10 and a `docs/todo.md` of committed work created 2026-10-11, one
@@ -97,19 +97,17 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   checked, what to try next), and whether built-in examples get manuals. Measure: examples with each surface.
 - **Previews that change something and show only words** ([audit](docs/audits/preview-audit.md), re-review
   2026-11-27; the practitioner: *"re-review / audit all the previews that are supposed to both render and not render
-  previews and recorded reason for not rendering"*). 20 widgets change data or shapes and neither draw nor show rows;
-  11 have no recorded reason. **2026-11-27, 0.204.6:** Voronoi catchments and Summarize points to polygons now draw
-  (the second had a recorded reason, "the number is the result"; the practitioner asked for it drawn all the same: *"Summarize points to polygon for Voronoi catchment still with no preview"*). Network isochrone draws too; its
-  recorded reason held only for a downloaded network. So 17 and 10 remain: Measure distance, Move points in a donut, Aggregate points to H3 cells, Convex hull, Mean center, Space-time scan, Compare point sets, Apply ruleset (published), Sample a raster
-  (satellite files), Cases by period. Six display steps show no Preview or only numbers, with no reason either: Study
-  area's countries, Georeferenced map image, Point data's editor, Street network, Study design, Raster input. For each: draw or show rows, or record why not. The
-  drawing helper Clip polygons now uses (`previewDrawing`) is the way in for the spatial ones. Measure: transforms
-  that neither render nor say why.
+  previews and recorded reason for not rendering"*). **2026-11-28:** Convex hull, Mean center, Move points in a donut,
+  Aggregate points to H3 cells, Measure distance and Compare point sets draw with `previewDrawing`; Cases by period draws
+  its curve. Space-time scan's reason was in the code (the shuffles belong in the run); Sample a raster's satellite files
+  are read in the run; five of the six display steps have a reason recorded. Apply ruleset (published) shows the rows
+  and what a directly evaluated ruleset concludes; one that goes to the reasoner says why not. **Left:** 9 transforms
+  neither draw nor show rows, each with a reason recorded. **Raster input** shows numbers with no reason. Measure: transforms that neither render nor say why.
 - **Next batch, agreed 2026-11-27, in order:** (1) ~~an edit applied during a run~~, done in 0.204.7: Apply waits for the
-  run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) the
+  run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) ~~the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a
-  second spike: schema, each role's read rules as testable checks, the turn-ending function, every move timestamped
-  and attributed, provenance; nothing created in Supabase until the practitioner agrees it; (4)
+  second spike~~, drafted in 0.206.0 and not created anywhere; the SQL has not been run on a database, and ten questions
+  for the practitioner are in 233's Spike 2; (4)
   `find_literature_for_terms` from [232](docs/experiments/232-terms-looked-up-and-appraised.md)'s design, its two
   syntaxes read against their current documentation first.
 - **A cooperative, turn-based training mission** ([233](docs/experiments/233-a-cooperative-turn-based-training-mission.md)):

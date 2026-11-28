@@ -1,6 +1,6 @@
 # Measure distance
 
-_Created 2026-11-09 · Updated 2026-11-26_
+_Created 2026-11-09 · Updated 2026-11-28_
 
 **For each point, the nearest of a set of candidates, and how far it is.** Each facility's nearest tide gauge; each
 sampled location's nearest clinic.
@@ -49,6 +49,12 @@ The step's panel holds its **Name**, its two inputs, one sentence saying what it
 The sea-level example (each facility's nearest tide gauge).
 
 ## History
+
+### 2026-11-28 · The Preview draws each point to its nearest candidate (0.8.0)
+
+**Configure…**'s Preview draws a line from each point to the candidate it would be measured to, the candidates the
+conditions keep strong and the others faint, so a condition is seen moving the lines. It had given only the counts
+and distances.
 
 ### 2026-11-26 · Its code out of app.ts (0.7.1)
 

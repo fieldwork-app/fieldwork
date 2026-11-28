@@ -8,7 +8,8 @@ import {openConfigDialog} from './config-dialog.js';
 import {validatePrivacyNode,moveDonut,aggregateHex} from './geoprivacy.js';
 import {errorMessage} from './guards.js';
 import {SHOW_ME,showMeIn} from './table-walkthrough.js';
-import {donutWalkthrough,h3Walkthrough} from './spatial-walkthroughs.js';
+import {donutWalkthrough,h3Walkthrough,previewDrawing,classedScale} from './spatial-walkthroughs.js';
+import {latLngToCell} from 'h3-js';
 
 const sentence=(kit:InspectorKit,text:string)=>`<p class="standard-sentence">${kit.esc(text)}</p>`;
 const configure='<div class="inspector-actions"><button id="configure-step" class="button primary">Configure…</button></div>';
@@ -29,12 +30,18 @@ const waitingForPoints='<p class="muted">Connect the points, and what this step 
 /** The points arriving on a port, as a collection the step's own functions take. `pointChoices` is the one reader of
  *  a port that sees a layer an upstream step COMPUTED as well as one stored on a node. */
 const pointsOn=(kit:InspectorKit,nodeId:string):import('./types.js').PointCollection|null=>{
+  // THE WHOLE LAYER where the source holds it (2026-11-28): the picker's features stop at 500, so a larger layer was
+  // counted, and would have been drawn, from its first 500 points. The picker remains the way to a computed layer.
+  const records=(kit as AreaStepKit).recordsOn(nodeId,'points');
+  const own=records?.features.filter(f=>f.geometry&&Array.isArray(f.geometry.coordinates));
+  if(own?.length)return {type:'FeatureCollection',features:own};
   const {features}=(kit as AreaStepKit).pointChoices(nodeId,'points');
   const placed=features.filter(f=>f.geometry&&Array.isArray(f.geometry.coordinates));
   if(!placed.length)return null;
   return {type:'FeatureCollection',features:placed.map((f,i)=>({type:'Feature',id:`p${i+1}`,
     properties:{name:f.name},geometry:f.geometry}))} as unknown as import('./types.js').PointCollection;
 };
+const where=(f:{geometry?:unknown})=>(f.geometry as {coordinates:import('./types.js').Position}).coordinates;
 const previewFailed=(kit:InspectorKit,error:unknown)=>
   `<p class="muted">This cannot be previewed yet: ${kit.esc(error instanceof Error?error.message:String(error))}</p>`;
 
@@ -54,7 +61,14 @@ function donutPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'donut
     if(!metres.length)return waitingForPoints+SHOW_ME;
     const at=(q:number)=>metres[Math.min(metres.length-1,Math.floor(q*metres.length))]!;
     const m=(v:number)=>`${Math.round(v).toLocaleString('en')} m`;
-    return `<p class="standard-result"><strong>${moved.features.length.toLocaleString('en')} points would move.</strong> `
+    // DRAWN (2026-11-28), as Show me how ends: where each point was, faint, and where this seed moves it. Listed by the
+    // preview audit's re-review of 2026-11-27 as numbers with no reason recorded for not drawing.
+    const drawing=previewDrawing([
+      ...before.map(f=>({kind:'gone' as const,point:where(f)})),
+      ...moved.features.filter(f=>f.geometry).map(f=>({kind:'result' as const,point:where(f)}))],
+      'Where the points were, and where this step would move them',undefined,
+      {gone:'Faint: where each point was',result:'Filled: where this seed moves it'});
+    return drawing+`<p class="standard-result"><strong>${moved.features.length.toLocaleString('en')} points would move.</strong> `
       +`Nearest ${kit.esc(m(at(0)))}, middle ${kit.esc(m(at(0.5)))}, furthest ${kit.esc(m(metres[metres.length-1]!))}, `
       +`with this seed. Each keeps a new name and id, and nothing else of the record.</p>`+SHOW_ME;
   }catch(error){return previewFailed(kit,error)+SHOW_ME;}
@@ -69,9 +83,20 @@ function hexPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'aggrega
     const kept=cells.features.length;
     const held=cells.features.reduce((t,f)=>t+(f.count??0),0);
     const left=features.length-held;
+    // DRAWN (2026-11-28), as Show me how ends: the cells kept, shaded by their count on Map's scale, and the points in
+    // the cells left out, faint. Listed by the re-review of 2026-11-27 as numbers with no reason for not drawing.
+    const keptCells=new Set(cells.features.map(f=>String(f.id)));
+    const out=features.filter(f=>{const [lon,lat]=where(f);return !keptCells.has(latLngToCell(lat,lon,params.resolution));});
+    const scaled=classedScale(cells.features);
+    const drawing=cells.features.length||out.length?previewDrawing([
+      ...cells.features.map(f=>({kind:'result' as const,rings:[(f.geometry as {coordinates:import('./types.js').Position[][]}).coordinates],...(scaled?{fill:scaled.fill(f)}:{})})),
+      ...out.map(f=>({kind:'gone' as const,point:where(f)}))],
+      'The cells this step would keep, shaded by their count, and the points left out',
+      scaled?{title:cells.valueName??'Points in the cell',entries:scaled.scale}:undefined,
+      {gone:'Faint: a point in a cell left out'}):'';
     // THE POINTS LEFT OUT ARE THE FINDING. A minimum occupancy is a disclosure control, and how much it withholds is
     // the thing to judge before applying it -- not after a run.
-    return `<p class="standard-result"><strong>${kept.toLocaleString('en')} cells would be shown</strong>, `
+    return drawing+`<p class="standard-result"><strong>${kept.toLocaleString('en')} cells would be shown</strong>, `
       +`holding ${held.toLocaleString('en')} of ${features.length.toLocaleString('en')} points. `
       +(left>0?`${left.toLocaleString('en')} ${left===1?'point falls':'points fall'} in cells with fewer than `
         +`${params.minOccupancy.toLocaleString('en')}, and ${left===1?'is':'are'} left out.`

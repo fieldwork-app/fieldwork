@@ -1,4 +1,4 @@
-import {presentValue,headingMarks,noteNumbers,type TablePresentation} from './table-presentation.js';
+import {presentValue,headingMarks,noteNumbers,type TablePresentation,pairedColumns,pairedValue} from './table-presentation.js';
 import {crsIRIFromName} from './metric-crs.js';
 import type {NodeSpec,WorkflowNode,PointInput,Escape,Scalar} from './types.js';
 import type {CoverageValue,TableValue,PointRow,CoverageRow,Receipt} from './results.js';
@@ -128,7 +128,12 @@ export function pointTableColumns(output:TableValue|CoverageValue,{attributePage
   ]};
 }
 export function pointTableMarkup(output:TableValue|CoverageValue,esc:Escape,{query='',page=0,attributePage=0,sort,present}:{query?:string;page?:number;attributePage?:number;sort?:TableSort;present?:TablePresentation}={}){
-  const {columns,attributeKeys}=pointTableColumns(output,{attributePage});
+  const {columns:all,attributeKeys}=pointTableColumns(output,{attributePage});
+  // A COUNT AND ITS PERCENTAGE IN ONE CELL, in a table of points or of polygon summaries too (2026-11-28; Table 0.16.0
+  // had them only in a table of rows). Only two attributes pair: a name, an identifier or a coordinate is not a count.
+  const {percentOf}=pairedColumns(all.filter(c=>c.key.startsWith('attribute:')).map(c=>c.label),present);
+  const folded=new Set(percentOf.values());
+  const columns=all.filter(c=>!(c.key.startsWith('attribute:')&&folded.has(c.label)));
   const metres=(output.spatialReference as {units?:string}|undefined)?.units==='metre';
   const needle=query.trim().toLowerCase(),filtered=output.rows.filter((r:PointRow & Partial<CoverageRow>)=>!needle||[r.name,r.recordId,r.layerLabel,r.sourceNodeId,...(r.coordinates||[]),r.relation?relationLabel(r.relation):'',action(r),r.exclusionReason||'',...Object.values(r.attributes).map(display)].join(' ').toLowerCase().includes(needle));
   const sorted=sort&&columns.some(c=>c.key===sort.column)?sortRows(filtered,columns.find(c=>c.key===sort.column)!.read,sort.direction):null;
@@ -136,14 +141,14 @@ export function pointTableMarkup(output:TableValue|CoverageValue,esc:Escape,{que
   const pages=Math.max(1,Math.ceil(ordered.length/TABLE_PAGE_SIZE));page=Math.min(page,pages-1);
   const shown=ordered.slice(page*TABLE_PAGE_SIZE,(page+1)*TABLE_PAGE_SIZE);
   const sortedColumn=sort?columns.find(c=>c.key===sort.column):undefined;
-  const noted=noteNumbers(present,columns.map(c=>c.label));
+  const noted=noteNumbers(present,all.map(c=>c.label));
   return {
     head:columns.map(c=>{
       const active=sort&&sort.column===c.key?sort.direction:'none';
       const next=active==='ascending'?'descending':'ascending';
       // A COLUMN OF NUMBERS IS HEADED ON THE RIGHT, over its numbers (Table 0.15.0).
       const numbers=shown.some(r=>{const v=c.read(r);return typeof v==='number';});
-      return `<th scope="col" aria-sort="${active}"${numbers?' class="number"':''}><button type="button" class="column-sort" data-table-sort="${esc(c.key)}" data-table-direction="${next}">${esc(c.label)}${headingMarks(c.label,present,esc,noted)}<span aria-hidden="true" class="sort-mark">${active==='ascending'?'▲':active==='descending'?'▼':''}</span></button></th>`;
+      return `<th scope="col" aria-sort="${active}"${numbers?' class="number"':''}><button type="button" class="column-sort" data-table-sort="${esc(c.key)}" data-table-direction="${next}">${esc(c.label)}${percentOf.get(c.label)?` (${esc(percentOf.get(c.label)!)})`:''}${headingMarks(c.label,present,esc,noted,undefined,percentOf.get(c.label))}<span aria-hidden="true" class="sort-mark">${active==='ascending'?'▲':active==='descending'?'▼':''}</span></button></th>`;
     }).join(''),
     body:shown.length?shown.map((r:PointRow & Partial<CoverageRow>)=>`<tr tabindex="0" data-place="${esc(r.id)}">${columns.map(c=>{
       const shownValue=display(c.read(r));
@@ -157,6 +162,7 @@ export function pointTableMarkup(output:TableValue|CoverageValue,esc:Escape,{que
       const v=coordinate?{html:esc((raw as number).toFixed(metres?1:6)),number:true,absent:false}
         // THE NUMBER ITSELF, where it is one (2026-11-28): `display` writes it as text, and text is shown as written, so
         // decimal places and small-count hiding never reached Results' point table.
+        :percentOf.has(c.label)?pairedValue(raw,r.attributes[percentOf.get(c.label)!],c.label,percentOf.get(c.label)!,present,esc)
         :presentValue(typeof raw==='number'?raw:shownValue,c.label,present,esc,{measure:c.key.startsWith('attribute:')});
       return v.absent?`<td data-absent="${absence}" class="absent-cell">${v.html}</td>`:`<td${v.number?' data-number':''}>${v.html}</td>`;
     }).join('')}</tr>`).join(''):`<tr><td colspan="${columns.length}">${output.rows.length?'No matching records.':'No point records in this input.'}</td></tr>`,

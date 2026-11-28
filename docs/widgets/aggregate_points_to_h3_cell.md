@@ -1,6 +1,6 @@
 # Aggregate points to H3 cells
 
-_Created 2026-11-22 · Updated 2026-11-26_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A geoprivacy teaching step.** It takes points and gives back hexagonal cells, each carrying how many of the points
 fall in it, leaving out any cell with fewer than a stated number.
@@ -37,6 +37,12 @@ Out come the cells, each with its count. Draw them on a Map.
 The lab's [hex notebook](https://digital-twin-ph.github.io/validation-lab/lab/index.html?path=21-hex-vs-h3py.ipynb) recounts the cells with h3-py.
 
 ## History
+
+### 2026-11-28 · The Preview draws the cells (0.8.0)
+
+**Configure…**'s Preview draws the cells it would keep, shaded by their count on the scale Map uses, and the points
+in the cells it leaves out, faint. It had given only the counts. It reads the whole layer where the source holds one,
+where it had read the first 500.
 
 ### 2026-11-26 · Map shades the cells by their count (0.7.0)
 

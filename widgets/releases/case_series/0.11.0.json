@@ -1,0 +1,73 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:case_series",
+ "nodeType": "case_series",
+ "version": "0.11.0",
+ "title": "Cases by period",
+ "released": "2026-11-28",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['case_series']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "points",
+    "type": "points"
+   }
+  ],
+  "output": "table",
+  "optionalInputs": [],
+  "note": "Points in, a keyed table of periods out, so a Table output can display the series and a Chart output can draw it as a curve. The time axis needs no new port type: the dates are already attributes of the input."
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:CaseSeriesComputation",
+    "file": "ontology/runtime.ttl"
+   },
+   {
+    "role": "entity",
+    "iri": "urn:fieldwork:CaseSeries",
+    "file": "ontology/runtime.ttl"
+   }
+  ],
+  "note": "fw:CaseSeries is declared disjoint from fw:PointDataset, and fw:CaseSeriesShape requires the kind of date and the period, so a series that does not say what it is a series of cannot conform. Verified in tests; this registry version records application validation only.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/case-series.ts",
+   "src/core.ts",
+   "src/app.ts",
+   "src/series-rate-ui.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws the curve the step would make, one bar per period, empty periods kept, above its counts."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Unit checks cover weighted versus unweighted totals, retained empty periods, Monday-based weeks and month grouping, the required kind of date, refusal to parse a non-ISO date, and refusal of a non-numeric or negative weight. It counts what it is told to count: nothing here establishes that the declared weight really is a case count or that the dates are accurate. 0.3.0: tests/hagelloch-example.browser.mjs (seven bars Monday to Sunday, 23 21 25 34 30 27 28) and tests/epidemic-curve.browser.mjs through Configure\u2026; Chromium. 0.4.0: tests/case-series.test.mjs (month of the year across two years with an empty month, a weight and an undated record; day of the week Monday to Sunday). 0.5.0: tests/chart-pyramid.test.mjs (every period for every value, blank last); Chromium for Hagelloch's school classes. 0.6.0: MERS's cases arrive as a table whose value column is age: a curve by generation summed ages. tests/transmission-chains.test.mjs. 0.7.0: Oswego: cases by hour of onset, 3 PM on 18 April to 10 AM on 19 April, 10 at 1 AM, as computed by hand. tests/dates-and-times.test.mjs; tests/oswego-times.browser.mjs; Chromium. 0.8.0: tests/table-stress.test.mjs (the second pass); Node with the reasoner, 2026-11-22.\n\nTHE PREVIEW (2026-11-25). Browser tested on Chromium, before any run: tests/epidemic-curve.browser.mjs asserts 616 deaths over 43 days with the peak of 127 on 1854-09-02, the same figures the curve draws from the same table. NOT established: that an unreadable date is reported identically by the run, which would need a test holding both.\n\nTHE DRAFT'S INPUT TYPE (2026-11-26). tests/settings-previews.browser.mjs switches the type with points connected and asserts the count goes and returns, on Chromium. Found in review of 0.198.0.\n\nTHE PREVIEW DRAWS (2026-11-28). tests/transform-previews-draw.browser.mjs, on the Hagelloch example: seven bars by day of the week, more by day; Chromium, 2026-11-28, failing on the code before. NOT established: WebKit, which CI runs."
+ }
+}

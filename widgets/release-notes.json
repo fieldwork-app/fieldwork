@@ -38,12 +38,12 @@
    "replacementCandidate": "urn:fieldwork:widget:apply_ruleset"
   },
   "aggregate_points_to_h3_cell": {
-   "version": "0.7.0",
-   "released": "2026-11-26",
+   "version": "0.8.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "minor",
-     "description": "Each cell carries its count of points as the value Map shades it by, named Points in the cell; Map shades the cells by class instead of one blue, and keys them by range. Show me how ends on the same classes and ranges. Raised in pull request 6's review."
+     "kind": "changed",
+     "description": "The Preview draws the cells it keeps, shaded by count on Map's scale, and the points in cells left out, and reads the whole layer where the source holds one, not the first 500."
     }
    ],
    "breaking": false,
@@ -65,24 +65,12 @@
    ]
   },
   "apply_ruleset": {
-   "version": "0.18.0",
-   "released": "2026-11-26",
+   "version": "0.19.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "added",
-     "description": "Two comparisons for text: has an item starting with any of (`startsWith`), and has no item starting with any of (`notStartsWith`). An item is each part of the text between semicolons, slashes, ampersands or spaces, so a discharge diagnosis written J10.1;R50.9 is two codes, and J10 starts the first. That is how ESSENCE reads a code written ^[;/ ]J10^ in NSSP's syndrome definitions, with the ampersand added for ICD-11's clusters. Evaluated directly, like contains."
-    },
-    {
-     "kind": "added",
-     "description": "A word in double quotes keeps its spaces. \" flu \" finds stomach flu and not influenza, as NSSP's ^ flu ^ does; without the quotes it was trimmed to flu, which influenza contains."
-    },
-    {
-     "kind": "fixed",
-     "description": "Reading a published ruleset in the rule editor took any column compared by anything other than equals for a number, so a ruleset of words showed its text column as a number. A word comparison now means text."
-    },
-    {
      "kind": "changed",
-     "description": "Its Inspector, its dialogs and the rule list moved out of app.ts into src/ruleset-ui.ts, unchanged in what they do."
+     "description": "For a published ruleset evaluated directly, the Preview shows the records and what the ruleset concludes for each, with the columns chosen for its inputs, as the rule editor's After shows them; it had listed the rules only. The binding of inputs to columns and units is one function for the run and the Preview. A ruleset that goes to the reasoner is not run in the dialog."
     }
    ],
    "breaking": false,
@@ -129,12 +117,12 @@
    "migrationFrom": []
   },
   "case_series": {
-   "version": "0.10.0",
-   "released": "2026-11-26",
+   "version": "0.11.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "fixed",
-     "description": "The Preview resolves on the INPUT TYPE BEING CHOSEN, not the one saved. Switching the step from points to a table left it counting the points still connected -- \"2 cases in 2 days\" of records that Apply would then discard along with the connection -- because the reader was looking at a draft and the Preview was reading the node. Where the chosen type has nothing on it, the Preview names what to connect."
+     "kind": "changed",
+     "description": "The Preview draws the curve the step would make, one bar per period, empty periods kept, above its counts."
     }
    ],
    "breaking": false,
@@ -208,16 +196,15 @@
    "migrationFrom": []
   },
   "compare_point_sets": {
-   "version": "0.3.0",
-   "released": "2026-11-20",
+   "version": "0.4.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "major",
-     "description": "Hands on a table of what it found, in metres: how far the mean centre moved, each mean centre's distance to its nearest pump with the pump named, and how far a point moved, least, median and most. Comparison map, which read its result, retired into Map and a Table (docs/audits/comparison-map-retired.md). On the standard (experiment 186): its Inspector moves to point-comparison-ui.ts, the UTM zone into Configure…, and its Result says how far the mean centre moved.",
-     "breaking": true
+     "kind": "changed",
+     "description": "A Preview: the comparison run on the points connected, drawing the two mean centres, the line between them and the pumps, with the distances it reports."
     }
    ],
-   "breaking": true,
+   "breaking": false,
    "migrationFrom": []
   },
   "comparison_map": {
@@ -277,12 +264,12 @@
    ]
   },
   "donut_geomask": {
-   "version": "0.4.0",
-   "released": "2026-11-25",
+   "version": "0.5.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "added",
-     "description": "A PREVIEW, where the section held only Show me how it works. It runs `moveDonut` on the points connected and says how many would move and how far they ACTUALLY went -- nearest, middle, furthest -- with this seed, rather than restating the ring that was asked for."
+     "kind": "changed",
+     "description": "The Preview draws where each point was and where the seed moves it, and reads the whole layer where the source holds one, not the first 500."
     }
    ],
    "breaking": false,
@@ -440,12 +427,12 @@
    ]
   },
   "mean_center": {
-   "version": "0.5.0",
-   "released": "2026-11-25",
+   "version": "0.6.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "added",
-     "description": "A PREVIEW, where the section held only Show me how it works. It runs `computeMeanCenter` on the points connected and says where the centre falls, from how many points, and whether they were weighted."
+     "kind": "changed",
+     "description": "The Preview draws the points and the centre over them, and follows the weight being chosen: it had shown the saved one. The points are read with their values, so a weight is not refused there while the run takes it. The hint under the weight says what a weight does, not what it does to Snow's data."
     }
    ],
    "breaking": false,
@@ -464,12 +451,12 @@
    "migrationFrom": []
   },
   "measure_distance": {
-   "version": "0.7.1",
-   "released": "2026-11-26",
+   "version": "0.8.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "patch",
-     "description": "Its Inspector, its sentence and its Configure… moved out of app.ts into src/distance-ui.ts, unchanged in what they do."
+     "kind": "changed",
+     "description": "The Preview draws a line from each point to the candidate it would be measured to, eligible candidates strong and the rest faint."
     }
    ],
    "breaking": false,
@@ -830,12 +817,12 @@
    "migrationFrom": []
   },
   "summarize_hull": {
-   "version": "0.4.0",
-   "released": "2026-11-25",
+   "version": "0.5.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "added",
-     "description": "A PREVIEW, where the section held only Show me how it works. It runs `convexHull` on the points actually connected and says the area inside the outline and how many of them the outline is drawn through -- a hull is decided by its corners, and how few there are says how much of the layer is doing the work."
+     "kind": "changed",
+     "description": "The Preview draws the outline it measures, filled, with the points over it, as Show me how ends. It had given only the area and the corners."
     }
    ],
    "breaking": false,
