@@ -1,4 +1,5 @@
 import {test,expect} from './fixtures.mjs';
+import {readFileSync} from 'node:fs';
 
 // The practitioner, 2026-11-27, in the John Snow Voronoi example after the 0.204.5 re-audit: *"Voronoi still with no
 // preview"*, then *"Summarize points to polygon for Voronoi catchment still with no preview"*. Both Previews counted
@@ -59,6 +60,27 @@ test('Network isochrone draws what the Broadwick Street pump reaches in 1, 5, 10
   expect(blocked).toBeLessThan(500);
   await expect(d.locator('.preview-drawing .walk-shape-result')).toHaveCount(2,{timeout:30000});
   expect(await d.locator('.preview-drawing .walk-shape-result').first().getAttribute('d')).not.toBe(before);
+});
+
+// A NETWORK EDITED TO THE SAME COUNTS IS A DIFFERENT NETWORK (review of #6, 2026-11-27): the Preview kept its answers by
+// the number of junctions and edges, so the same 738 and 1,619 with every edge four times as long drew the old bands.
+test('Network isochrone redraws when its network changes and the counts do not',async({page})=>{
+  const d=await open(page,'catchments','#isochrone-dialog','snow-isochrone');
+  const first=d.locator('.preview-drawing .walk-shape-result').first();
+  await expect(d.locator('.preview-drawing .walk-shape-result')).toHaveCount(4,{timeout:30000});
+  const before=await first.getAttribute('d');
+  await page.keyboard.press('Escape');
+  await expect(d).toBeHidden();
+  const graph=JSON.parse(readFileSync(new URL('../examples/john-snow/network.json',import.meta.url),'utf8'));
+  for(const edge of graph.edges)edge.lengthM*=4;
+  await page.locator('.react-flow__node[data-id="network"]').click();
+  await page.locator('#network-upload').setInputFiles({name:'soho-x4.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(graph))});
+  await expect(page.locator('#inspector-content')).toContainText('738');
+  await page.locator('.react-flow__node[data-id="catchments"]').click();
+  await page.locator('#inspector-content #configure-step').click();
+  await expect(d).toBeVisible();
+  await expect(d.locator('.preview-drawing .walk-shape-result')).toHaveCount(4,{timeout:30000});
+  await expect.poll(async()=>await d.locator('.preview-drawing .walk-shape-result').first().getAttribute('d'),{timeout:30000}).not.toBe(before);
 });
 
 /** NESTED BANDS TOLD APART (2026-11-27). The practitioner, of Clip polygons on Snow's isochrone: *"the isochrone bands

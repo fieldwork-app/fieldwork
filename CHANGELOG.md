@@ -5,6 +5,14 @@ shown in a local build is not a claim that it has been published.
 
 ## 0.204.6 — In development
 
+- **Review of #3 to #6, five repairs, each with a test that failed before it.** The Credentials manual's DHIS2 entry
+  checks the address and the server's reach before the CORS allowlist, since Fieldwork says *could not be reached* for
+  any failed request (#3). The address check holds site links to `homepage` and repository links to `repository`, so a
+  homepage moved to another path or a custom domain finds the old site links (#4). Clip polygons' Preview draws an
+  80,000-vertex ring, which threw RangeError, and keeps its count and area if a drawing cannot be made (#5). Network
+  isochrone's Preview keeps its answers by what the network is, not its counts, so a network edited to the same 738
+  junctions and 1,619 edges is drawn again (#6). A carried layer's largest value is found once, in one pass, rather than
+  for every mark, which was quadratic and threw RangeError at 250,000 points (#6). Chromium only.
 - **Voronoi catchments 0.8.0 and Summarize points to polygons 0.8.0: their Previews draw** (the practitioner, in Snow's
   Voronoi example after the re-audit: *"Voronoi still with no preview"*, *"Summarize points to polygon for Voronoi
   catchment still with no preview"*). Voronoi draws the cells it would make, the area dashed and the sites; Summarize

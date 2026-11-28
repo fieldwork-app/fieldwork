@@ -258,11 +258,24 @@ export function recordAttributesHtml(attributes:Record<string,unknown>|undefined
 }
 
 
+/** THE LARGEST VALUE OF A COLUMN, ONCE PER LAYER AND IN ONE PASS (review of #6, 2026-11-27): each mark had scanned the
+ *  whole layer, spread into Math.max, which was quadratic over the marks and threw RangeError at 250,000 records. */
+const largestSeen=new WeakMap<readonly unknown[],Map<string,number>>();
+function largestOf(features:readonly {properties?:Record<string,unknown>|null}[],column:string):number{
+  let byColumn=largestSeen.get(features);
+  if(!byColumn){byColumn=new Map();largestSeen.set(features,byColumn);}
+  const known=byColumn.get(column);if(known!==undefined)return known;
+  let largest=0;
+  for(const f of features){const v=Number(f.properties?.[column]);if(Number.isFinite(v)&&v>largest)largest=v;}
+  byColumn.set(column,largest);
+  return largest;
+}
+
 /** A CARRIED POINT'S RADIUS, one rule for the plot and the interactive map (2026-11-27): its layer's size, or, sized by a
  *  column, the area of each mark in proportion, as every point layer is drawn. */
 export function observationRadius(p:import('./catchments.js').Polygons,properties:Record<string,unknown>|null|undefined):number{
   const symbol=p.observationSymbol;if(!symbol)return 3;
   if(!symbol.sizeBy)return symbol.size;
-  const largest=Math.max(0,...(p.observations?.features??[]).map(f=>Number(f.properties?.[symbol.sizeBy!])).filter(Number.isFinite));
+  const largest=largestOf(p.observations?.features??[],symbol.sizeBy);
   return largest>0?proportionalRadius(properties?.[symbol.sizeBy],largest,symbol.size):symbol.size;
 }

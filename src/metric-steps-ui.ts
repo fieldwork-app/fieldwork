@@ -2,6 +2,7 @@
  *  isochrone and Mean center; Reachable junctions 2026-11-23. Moved out of app.ts and catchment-ui.ts by the rule for any widget touched: Name, Inputs,
  *  Settings in one sentence with Configure…, Result. Each dialog carries the UTM zone with the zone the workflow's data
  *  suggests and what the chosen zone stretches, which the Inspector showed below the step before. */
+import {networkIdentity} from './network-preview.js';
 import type {WorkflowNode} from './types.js';
 import type {InspectorKit,OwnInspector} from './inspector-kit.js';
 import type {AreaStepKit} from './area-steps-ui.js';
@@ -285,7 +286,8 @@ const isoAnswers=new Map<string,IsoAnswer>();
 let isoRedraw:()=>void=()=>{};
 function isochroneAnswer(sites:import('./types.js').PointCollection,network:import('./catchments.js').Network,
     params:WorkflowNode<'isochrone'>['params']):IsoAnswer{
-  const key=JSON.stringify([params,sites.features.map(f=>f.geometry),network.nodes.length,network.edges.length]);
+  // BY WHAT THE NETWORK IS, not its counts (review of #6): a network edited to the same counts drew the old bands.
+  const key=JSON.stringify([params,sites.features.map(f=>[f.id,f.geometry]),networkIdentity(network)]);
   const known=isoAnswers.get(key);
   if(known)return known;
   isoAnswers.set(key,{state:'pending'});
