@@ -42,9 +42,28 @@ async function answerHeldBoundaries(page){
     body:execFileSync('git',['-C',BOUNDARIES,'show',`${HELD.commit}:${route.request().url().slice(HELD.raw.length)}`],{maxBuffer:1<<28})}));
 }
 
+/** A CURATED EXAMPLE'S FILES (2026-11-28), answered from its checkout beside this repository: what a workflow fetches
+ *  when it runs, such as Snow's Map 2 placed under a figure, which is no longer carried inside the project file. The
+ *  catalog's digest check still runs on these bytes, so a checkout that differs from the pin is refused as it would be
+ *  online. A test that serves its own answer registers it after this one and wins. */
+const CATALOG=JSON.parse(readFileSync(new URL('../widgets/examples.json',import.meta.url),'utf8'));
+async function answerExampleCheckouts(page){
+  for(const example of CATALOG.examples){
+    if(!example.rawBase||!example.commit)continue;
+    const checkout=new URL(`../../${example.rawBase.split('/').pop()}/`,import.meta.url);
+    if(!existsSync(checkout))continue;
+    const base=`${example.rawBase}/${example.commit}/`;
+    await page.route(url=>url.href.startsWith(base),route=>{
+      const file=new URL(route.request().url().slice(base.length),checkout);
+      if(!existsSync(file))return route.fulfill({status:404,body:''});
+      return route.fulfill({status:200,headers:{'access-control-allow-origin':'*'},body:readFileSync(file)});});
+  }
+}
+
 export async function answerFromRecordedCopies(page){
   if(process.env.FIELDWORK_LIVE)return;
   await answerHeldBoundaries(page);
+  await answerExampleCheckouts(page);
   const record=!!process.env.FIELDWORK_RECORD;
   for(const service of RECORDED_SERVICES)await page.route(service.pattern,async route=>{
     const url=new URL(route.request().url());

@@ -1,7 +1,7 @@
 {
   "schema": "fieldwork/example-catalog/1",
   "catalogVersion": "0.1.0",
-  "updated": "2026-11-13",
+  "updated": "2026-11-28",
   "description": "Curated worked-example repositories. This file is the trust root, on the same terms as widgets/packs.json: an example is admitted only at a full commit SHA, only from a curated owner, and every file it may fetch is pinned by digest here. A branch is never fetched, because a digest pinned against a moving ref verifies nothing.\n\nAn example is a RESOURCE -- a workflow document, data and a provenance record -- and declares no node type, so runtimeFetching: \"none\" in widgets/packs.json does not reach it. That rule governs widget definitions. See docs/experiments/127-examples-as-repositories.md.",
   "governance": {
     "curatedOwners": [
@@ -16,7 +16,7 @@
       "id": "urn:fieldwork:example:south-london-1854",
       "title": "Snow's South London water supply study, 1854",
       "repository": "https://github.com/digital-twin-ph/example-1855-cholera-south-london",
-      "commit": "f7d7451ba8055965dd81c9167574e522c30dc599",
+      "commit": "ec1772a343521b2580f382c0f4ca36e10347c699",
       "rawBase": "https://raw.githubusercontent.com/digital-twin-ph/example-1855-cholera-south-london",
       "licence": {
         "data": "CC0-1.0, except geo/sub-districts-csds.geojson which is BSD-2-Clause and geo/thames-reaches.geojson and geo/thames-tidal-limit.geojson which are ODbL-1.0",
@@ -33,18 +33,18 @@
       "files": [
         {
           "path": "fieldwork-project.json.gz",
-          "sha256": "2108526054f4168d4b70ad947e89d7e873fc77f3f383558960a5146f17905185",
-          "bytes": 1016505
+          "sha256": "d0a46d0bbb78b1c97679963eac9899bb93103b363763391d9b10bc783edfb5f4",
+          "bytes": 487162
         },
         {
           "path": "README.md",
-          "sha256": "779226531e8074db819f1ee6fc01dde9e2a53cd0eb1b431a5a57eda6fdc8c1a4",
-          "bytes": 41695
+          "sha256": "ebec45381ed47fb982fd2c11abea683898d641eba4fa4736c747b4f45d9bde12",
+          "bytes": 42765
         },
         {
           "path": "NOTICE.txt",
-          "sha256": "d18f35ca5b63e4d9060428583410801ac2002bced2e1d0a2cc1e6713c96e3942",
-          "bytes": 12211
+          "sha256": "dc144a58708e33dd84b31a008f77ad9718547158b0fc6c70e209d032c4d97c28",
+          "bytes": 13334
         },
         {
           "path": "LICENSE",
@@ -53,8 +53,8 @@
         },
         {
           "path": "provenance.json",
-          "sha256": "c865bad2d1c84de59e60ccb3c80ecc7a582d990bf044bc82cc84c77757483ae3",
-          "bytes": 8853
+          "sha256": "0d0d3d9f3a023368613eb5c5e5704188cc51c92b7758c506d50a9feb6594f2bd",
+          "bytes": 10602
         },
         {
           "path": "data/table-ix-first-seven-weeks.csv",
@@ -78,8 +78,8 @@
         },
         {
           "path": "geo/map2-georeference.json",
-          "sha256": "075e43b53993409903df6bc4035be26a18e2de4c8b3fce3b3b66f9bc2b6163b7",
-          "bytes": 5432
+          "sha256": "10139e82adae6c7fd1e9e25427c6742ec298c34ff49e1c90a08795dc310d32bf",
+          "bytes": 6829
         },
         {
           "path": "geo/map2-water-supply-zones.geojson",
@@ -105,6 +105,16 @@
           "path": "geo/map2.jpg",
           "sha256": "a3131c5fc9ad7605ae1c9b79d58ad3f54baab1cda26bfa176b9a2cfa2cc297f0",
           "bytes": 260535
+        },
+        {
+          "path": "geo/map2-ucla.jgw",
+          "sha256": "5cca262a7bc306457e221779e790e965ffb782bcc8a1f151b9332313e422a37e",
+          "bytes": 73
+        },
+        {
+          "path": "geo/map2-ucla.jpg",
+          "sha256": "644ad3a52b52c8427000db906662293c917af632731ed262da261c47fd11685b",
+          "bytes": 46067475
         },
         {
           "path": "notes/snow-quotations.json",
@@ -159,7 +169,7 @@
         "two_by_two"
       ],
       "usesNote": "The node types the pinned bundle's workflows instantiate, DECLARED HERE rather than read from the clone, so widgets/evidence.json is the same on a machine that has the checkout and one that does not. A generated ledger whose value depends on what somebody happens to have cloned is not a measurement. validate:examples recomputes this list from the bundle wherever the checkout exists and refuses on a difference, so the declaration cannot drift from the bytes it describes.",
-      "largePlateNote": "geo/map2-large.jpg is in the example repository at 5,341,773 bytes and is deliberately NOT pinned here. It is the same plate as geo/map2.jpg, sharing one georeference, and pinning it would multiply what a reader fetches by about fourteen for detail a figure at screen size cannot show. The small plate is about 16 metres per pixel over south London, which is ground. Anyone wanting the 5000-pixel scan has the repository and its digest."
+      "plateNote": "geo/map2-ucla.jpg is pinned at 46,067,475 bytes: UCLA's full-resolution scan of Map 2, 12,828 x 10,097 pixels, and the plate all three workflows that draw Map 2 use. It is fetched only when one of them first runs, or when the learner asks for it in Configure..., and kept on the device after that. It replaced geo/map2.jpg (1,002 x 788) on 2026-11-28. The practitioner: \"the original one was blurry when zoomed in and I could not read anything at all.\" Until then this note argued that the small plate was enough because a figure at screen size could not show more; that held for a figure seen whole and not for a plate read zoomed in. geo/map2-large.jpg (5,341,773 bytes) is still not pinned: nothing reads it."
     },
     {
       "id": "urn:fieldwork:example:oswego-1940",

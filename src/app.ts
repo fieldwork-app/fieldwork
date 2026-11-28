@@ -3800,22 +3800,33 @@ function partsTableUnderMap(polygons:NonNullable<Output['polygons']>):{choose:(i
 }
 /** A WORKED EXAMPLE'S PLACED IMAGE, filled in from its own file (2026-11-15): Hagelloch's 1824 sheet ships placed under
  *  the cluster map with the image's digest and not its bytes, so the bytes are fetched from beside the application,
- *  checked against that digest, and kept on the device. A sheet the learner places is not touched: it has no image yet. */
+ *  checked against that digest, and kept on the device. A sheet the learner places is not touched: it has no image yet.
+ *  Or from the example's repository at its pinned commit (2026-11-28): Snow's Map 2 at full resolution is 46 MB, too
+ *  large to carry inside the project file, and `verifiedFile` refuses it unless its size and digest are the pinned ones. */
 async function fillPlacedImages():Promise<void>{
   for(const n of workflow.nodes){
     if(n.type!=='map_image_input')continue;
     const p=(n as WorkflowNode<'map_image_input'>).params;
-    if(!p.offered?.url||!p.image?.width||!p.world||(typeof p.data==='string'&&p.data.startsWith('data:')))continue;
-    const response=await fetch(p.offered.url);
-    if(!response.ok)throw new Error(`${p.offered.filename} could not be fetched from beside the application (${response.status}).`);
-    const bytes=new Uint8Array(await response.arrayBuffer());
+    if(!(p.offered?.url||p.offered?.from)||!p.image?.width||!p.world||(typeof p.data==='string'&&p.data.startsWith('data:')))continue;
+    const offered=p.offered;
+    let bytes:Uint8Array<ArrayBuffer>;
+    if(offered.from){
+      const example=exampleById(offered.from.example);
+      if(!example)throw new Error(`${offered.from.example} is not in this version's catalog of worked examples.`);
+      bytes=await verifiedFile(example,offered.from.path);
+    }else{
+      const response=await fetch(offered.url!);
+      if(!response.ok)throw new Error(`${offered.filename} could not be fetched from beside the application (${response.status}).`);
+      bytes=new Uint8Array(await response.arrayBuffer());
+    }
     if(p.image.sha256&&await contentHash(bytes)!==p.image.sha256)
-      throw new Error(`${p.offered.filename} is not the file this example placed: its digest differs. Reload the application.`);
+      throw new Error(`${offered.filename} is not the file this example placed: its digest differs. Reload the application.`);
+    const path=offered.from?.path??offered.url!;
     const data=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));
-      r.onerror=()=>reject(new Error(`${p.offered!.filename} could not be read.`));
-      r.readAsDataURL(new Blob([bytes],{type:p.offered!.url!.endsWith('.png')?'image/png':'image/jpeg'}));});
+      r.onerror=()=>reject(new Error(`${offered.filename} could not be read.`));
+      r.readAsDataURL(new Blob([bytes],{type:path.endsWith('.png')?'image/png':'image/jpeg'}));});
     const digest=await payloadDigest(data);
-    if(!await keepDataset(digest,data))throw new Error(`${p.offered.filename} could not be kept on this device.`);
+    if(!await keepDataset(digest,data))throw new Error(`${offered.filename} could not be kept on this device.`);
     p.data=data;p.dataRef=digest;
   }
 }

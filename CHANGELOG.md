@@ -5,6 +5,13 @@ shown in a local build is not a claim that it has been published.
 
 ## 0.206.0 — In development
 
+- **Snow's Map 2 at full resolution** (the practitioner, 2026-11-28: the plate was blurry when zoomed in and nothing
+  on it could be read). The South London example's three workflows that draw Map 2 used a 1,002-pixel copy; they now use
+  UCLA's 600 dpi scan, 12,828 × 10,097 pixels, about 1.2 m a pixel, credited to the UCLA Department of Epidemiology's
+  John Snow website (R. R. Frerichs). Street names read in Configure…'s image pane when zoomed. The scan registers to
+  the plate's existing georeference by scale alone, checked at its four control points. A worked example's placed image
+  can now come from the example's own repository: fetched when the workflow first runs, checked against its pinned
+  digest, and kept on the device. Example pinned at ec1772a.
 - **Previews that draw what a step would make.** Convex hull 0.5.0, Mean center 0.6.0, Move points in a donut 0.5.0,
   Aggregate points to H3 cells 0.8.0 and Measure distance 0.8.0 draw in Configure…'s Preview, the way Show me how
   draws them; before, they gave only numbers. Compare point sets 0.4.0 has a Preview where it had none: the two mean
