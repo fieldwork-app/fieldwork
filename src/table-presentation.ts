@@ -130,18 +130,27 @@ export function presentCell(value:unknown,column:string,p:TablePresentation|unde
 /** A COLUMN'S UNIT, once, in its heading: what Presentation sets for it, else what its declaration says. */
 export const columnUnit=(column:string,p:TablePresentation|undefined,declared?:string):string|undefined=>
   p?.columns?.[column]?.unit?.trim()||declared?.trim()||undefined;
-/** The columns carrying a note, numbered in the order the table shows them. */
+/** The columns carrying a note, numbered in the order the table SHOWS them: a percentage folded into its count's cell
+ *  is read with that count, so its note comes straight after the count's (review of #8: the headings numbered the folded
+ *  columns and the notes below the unfolded ones, so "[note 1]" named two different notes). `columns` are the table's
+ *  own, before folding; every caller passes those. */
 export function noteNumbers(p:TablePresentation|undefined,columns:readonly string[]):Map<string,number>{
+  const {shown,percentOf}=pairedColumns(columns,p);
   const numbers=new Map<string,number>();
-  for(const c of columns)if(p?.columns?.[c]?.note?.trim()&&!numbers.has(c))numbers.set(c,numbers.size+1);
+  for(const c of shown.flatMap(c=>percentOf.has(c)?[c,percentOf.get(c)!]:[c]))
+    if(p?.columns?.[c]?.note?.trim()&&!numbers.has(c))numbers.set(c,numbers.size+1);
   return numbers;
 }
 /** WHAT FOLLOWS A COLUMN'S NAME IN ITS HEADING: its unit in brackets and its note's number, "Rate (per 100,000) [note 1]".
  *  The name is never replaced. */
-export function headingMarks(column:string,p:TablePresentation|undefined,esc:Escape,numbers:Map<string,number>,declaredUnit?:string):string{
-  const unit=columnUnit(column,p,declaredUnit),n=numbers.get(column);
-  return (unit?` (${esc(unit)})`:'')+(n?` <span class="table-note-mark">[note ${n}]</span>`:'');
+export function headingMarks(column:string,p:TablePresentation|undefined,esc:Escape,numbers:Map<string,number>,declaredUnit?:string,
+    /** The percentage folded into this column's cell: its note's number follows the count's. */ pairWith?:string):string{
+  const unit=columnUnit(column,p,declaredUnit),marks=[numbers.get(column),pairWith?numbers.get(pairWith):undefined].filter((n):n is number=>!!n);
+  return (unit?` (${esc(unit)})`:'')+marks.map(n=>` <span class="table-note-mark">[note ${n}]</span>`).join('');
 }
+/** WHETHER ANY COUNT IN THESE ROWS IS HIDDEN AS SMALL, so the totals that would give it away are not shown. */
+export const anySuppressed=(cells:readonly {column:string;value:unknown}[],p:TablePresentation|undefined):boolean=>
+  !!p?.suppress&&cells.some(c=>suppressedMark(c.value,c.column,p)!==undefined);
 /** WHAT IS WRITTEN BELOW A TABLE, in the standards' order: the column notes by number, what the small-cell marks mean,
  *  the table's notes, then the source. */
 export function tableNotesHtml(p:TablePresentation|undefined,columns:readonly string[],esc:Escape):string{
@@ -186,7 +195,7 @@ export interface PresentableColumn {name:string; number:boolean; declaredUnit?:s
 /** EACH COLUMN, AND THE SMALL COUNTS: decimal places, unit and a note per column; a percentage shown in its count's cell;
  *  and the threshold below which a count is not shown. In a disclosure, so a table of thirty columns does not push the
  *  rest of the dialog away. */
-function columnFields(p:TablePresentation,columns:readonly PresentableColumn[],esc:Escape,canPair:boolean):string{
+function columnFields(p:TablePresentation,columns:readonly PresentableColumn[],esc:Escape,canPair:boolean,typedThreshold?:string):string{
   if(!columns.length)return '';
   const numbers=columns.filter(c=>c.number);
   const pairOf=(c:string)=>p.pairs?.find(x=>x.count===c)?.percent??'';
@@ -209,7 +218,7 @@ function columnFields(p:TablePresentation,columns:readonly PresentableColumn[],e
     +`</tr></thead><tbody>${rows}</tbody></table></div></details>`
     +(numbers.length?`<details class="present-suppress"${q?' open':''}><summary>Small counts not shown</summary>`
       +`<div class="field"><label class="field-label" for="present-suppress-below">Hide a count from 1 up to, but not including</label>`
-      +`<input id="present-suppress-below" type="number" min="2" max="1000" step="1" value="${q?.below??''}" placeholder="Off"></div>`
+      +`<input id="present-suppress-below" type="number" min="2" max="1000" step="1" value="${esc(typedThreshold??String(q?.below??''))}" placeholder="Off"${typedThreshold!==undefined?' aria-invalid="true"':''}></div>`
       +`<div class="field"><label class="field-label" for="present-suppress-reason">Why</label><select id="present-suppress-reason">`
       +Object.entries(SUPPRESSION_REASONS).map(([k,r])=>`<option value="${k}"${(q?.reason??'confidentiality')===k?' selected':''}>${r.mark} ${esc(r.said.replace(/^not shown(, |: )/,''))}</option>`).join('')+'</select></div>'
       +`<fieldset class="field"><legend class="field-label">In these columns</legend>`
@@ -220,7 +229,9 @@ function columnFields(p:TablePresentation,columns:readonly PresentableColumn[],e
 /** The Presentation section of Configure…, on a draft. */
 export function presentationFields(p:TablePresentation,fallbackCaption:string,esc:Escape,columns:readonly PresentableColumn[]=[],
   /** Whether this table can show a count and its percentage in one cell: a table of rows does; points and areas do not. */
-  canPair=false):string{
+  canPair=false,
+  /** A threshold typed and not usable, shown as typed so it can be corrected; Apply is refused meanwhile. */
+  typedThreshold?:string):string{
   return `<div class="field"><label class="field-label" for="present-caption">Title: what, where and when</label>`
     +`<input id="present-caption" maxlength="200" placeholder="${esc(fallbackCaption)}" value="${esc(p.caption??'')}"></div>`
     +`<div class="field"><label class="field-label" for="present-decimals">Decimal places for the values</label>`
@@ -234,5 +245,5 @@ export function presentationFields(p:TablePresentation,fallbackCaption:string,es
     +`<textarea id="present-notes" rows="3" maxlength="2000">${esc(p.notes??'')}</textarea></div>`
     +`<div class="field"><label class="field-label" for="present-source">Source</label>`
     +`<input id="present-source" maxlength="500" value="${esc(p.source??'')}"></div>`
-    +columnFields(p,columns,esc,canPair);
+    +columnFields(p,columns,esc,canPair,typedThreshold);
 }

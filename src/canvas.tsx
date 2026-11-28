@@ -120,9 +120,14 @@ export function mountCanvas(container:HTMLElement,callbacks:CanvasCallbacks):Can
       api.visibleArea=()=>{const r=container.getBoundingClientRect();if(!r.width||!r.height)return null;
         const a=flow.screenToFlowPosition({x:r.left,y:r.top}),b=flow.screenToFlowPosition({x:r.right,y:r.bottom});
         return {x:a.x,y:a.y,width:b.x-a.x,height:b.y-a.y};};
+      // THE WHOLE NODE, not its corner (review of #8): a node placed beside a source near the edge began inside the view and
+      // ran 300 px out of it, and a check of its top left did not scroll. Measured once drawn; scrolled, at the zoom as it
+      // is, only where some of it is out of view.
       api.reveal=id=>{let tries=0;const go=()=>{const n=flow.getNode(id);
         if(!n?.measured?.width){if(++tries<10)requestAnimationFrame(go);return;}
-        void flow.setCenter(n.position.x+n.measured.width/2,n.position.y+(n.measured.height??0)/2,{zoom:flow.getZoom(),duration:200});};
+        const w=n.measured.width,h=n.measured.height??0,view=api.visibleArea();
+        if(view&&n.position.x>=view.x&&n.position.y>=view.y&&n.position.x+w<=view.x+view.width&&n.position.y+h<=view.y+view.height)return;
+        void flow.setCenter(n.position.x+w/2,n.position.y+h/2,{zoom:flow.getZoom(),duration:200});};
         requestAnimationFrame(go);};
       callbacks.ready(api);
     },[]);

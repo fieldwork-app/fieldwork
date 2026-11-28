@@ -26,6 +26,15 @@ shown in a local build is not a claim that it has been published.
   is none, it goes beside the others and the canvas scrolls to it. Adding no longer zooms the whole canvas to fit,
   which on a large workflow left the new widget too small to read. The first version looked down the column and put a
   widget below a full canvas, out of sight; the gate caught it (`tests/write-your-own-rules.browser.mjs`).
+- **From the review of #8, six repairs, each with a test that failed before it.** A count hidden after a run, by Apply
+  alone, still reached Notes and the draft's attached CSV, which read the presentation from the run's copy of the
+  workflow; they now read it as last applied (`tests/table-suppression-reaches-draft.browser.mjs`, which downloads the
+  ZIP). Searching Results showed a hidden count raw; a searched row is now presented by its measure. A cross-tab hiding
+  a count showed totals that gave it away; it now shows none, and says why. A threshold that cannot be used, typed
+  over a saved one, turned hiding off; Apply is now refused and the rule kept, and only an empty box turns it off. The
+  note numbers in the headings and below the table counted different columns once a percentage was folded into its
+  count; both now count the columns as shown, the folded percentage's note on its count's heading. A widget placed
+  beside its source near the edge was scrolled to only when its corner was out of view; now when any of it is.
 - Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
   table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
   alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed

@@ -2,7 +2,7 @@ import {editedTitle,type EditedCells} from './cell-edits.js';
 import type {Escape,Workflow,WorkflowNode} from './types.js';
 import {PREVIEW_ROWS,scrollLongTables} from './long-tables.js';
 import {escapeHtml} from './html-escape.js';
-import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,type TablePresentation} from './table-presentation.js';
+import {presentValue,pairedValue,pairedColumns,headingMarks,noteNumbers,anySuppressed,type TablePresentation} from './table-presentation.js';
 import {type OwnInspector,type StepKit} from './inspector-kit.js';
 import {describableColumns,isDescribed,dictionaryKeyOf} from './column-metadata.js';
 import type {DataTable,DataTableSource,TableSelection} from './data-table.js';
@@ -1325,7 +1325,7 @@ const roleHead=(roles:ColumnRoles|undefined,column:string,esc:Escape,also='',mea
   const meta=headingLabels?.[column],label=meta?.confirmed?meta.label?.trim():'';
   // The declared unit only where no meaning is written beside the name: a meaning already ends in its unit.
   const declared=!means&&!label&&meta?.confirmed?meta.unit:undefined;
-  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${pairWith?` (${esc(pairWith)})`:''}${headingMarks(column,headingPresent.p,esc,headingPresent.numbers,declared)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
+  return `<th scope="col"${roleAttr(roles,column,also)}>${esc(column)}${pairWith?` (${esc(pairWith)})`:''}${headingMarks(column,headingPresent.p,esc,headingPresent.numbers,declared,pairWith)}${means?`<span class="meaning">: ${esc(means)}</span>`:''}`
     +(label&&label!==column?`<span class="column-label">${esc(label)}</span>`:'')
     +(r?`<span class="column-role">${r==='key'?'matched on':'brought across'}</span>`:'')+'</th>';};
 
@@ -1386,7 +1386,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
     // A COUNT AND ITS PERCENTAGE IN ONE CELL, where Presentation pairs them: the percentage column is folded into its count's.
     const {shown:measures,percentOf}=pairedColumns(frame.columns,present);
     const at=(c:string)=>frame.columns.indexOf(c);
-    headingPresent={p:present,numbers:noteNumbers(present,[frame.subject,...frame.attributes,...measures])};
+    headingPresent={p:present,numbers:noteNumbers(present,[frame.subject,...frame.attributes,...frame.columns])};
     const cellOf=(r:WideFrame['rows'][number],c:string)=>{const v=r.cells[at(c)],pc=percentOf.get(c);
       if(v===undefined)return `<td${roleAttr(roles,c)}><span class="muted">\u2014</span></td>`;
       if(pc===undefined)return value(v,c,roleAttr(roles,c));
@@ -1411,7 +1411,12 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
     // A COUNT AND ITS PERCENTAGE IN ONE CELL here too, where the measures are the columns (2026-11-28).
     const {shown:gridColumns,percentOf:gridPercent}=pairedColumns(grid.columns,present);
     const gi=(c:string)=>grid.columns.indexOf(c);
-    const gridNotes=noteNumbers(present,gridColumns);
+    const gridNotes=noteNumbers(present,grid.columns);
+    // NO MARGIN THAT GIVES A HIDDEN COUNT AWAY (review of #8): a row of "[c] | 13 | 17" with its total beside it lets the
+    // hidden count be worked out, and so do a column's total and the grand total. Until complementary suppression is
+    // built, a table hiding any count shows no totals, and says why.
+    const withheld=grid.grandTotal!==null&&anySuppressed(grid.rows.flatMap(r=>grid.columns.map((c,i)=>({column:c,value:r.cells[i]}))),present);
+    const showTotals=grid.grandTotal!==null&&!withheld;
     const gridCell=(cells:readonly (number|null|undefined)[],c:string)=>{const v=cells[gi(c)],pc=gridPercent.get(c);
       if(v===undefined)return '<td><span class="muted">—</span></td>';
       if(pc===undefined)return value(v,c,'');
@@ -1420,34 +1425,39 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
     return `<div class="table-meta muted">${table.rowCount} cells · ${esc(grid.rowKey)} by ${esc(grid.colKey)}`
       +` · value in ${unit}</div>`
       +`<table class="crosstab"><thead><tr>${roleHead(roles,grid.rowKey,esc)}`
-      +gridColumns.map(c=>`<th scope="col">${esc(c)}${gridPercent.get(c)?` (${esc(gridPercent.get(c)!)})`:''}${headingMarks(c,present,esc,gridNotes)}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
-      +(grid.grandTotal===null?'':'<th scope="col">Total</th>')
+      +gridColumns.map(c=>`<th scope="col">${esc(c)}${gridPercent.get(c)?` (${esc(gridPercent.get(c)!)})`:''}${headingMarks(c,present,esc,gridNotes,undefined,gridPercent.get(c))}${table.headings?.[c]?`<span class="meaning">: ${esc(table.headings[c]!)}</span>`:''}</th>`).join('')
+      +(showTotals?'<th scope="col">Total</th>':'')
       +`</tr></thead><tbody>`
       // A ROW'S MEANING BESIDE ITS NAME, where the table carries one (a regression's terms, experiment 172).
       +onPage(grid.rows).map(r=>`<tr><th scope="row">${esc(r.label)}${table.meanings?.[r.label]?`<span class="meaning"> · ${esc(table.meanings[r.label]!)}</span>`:''}</th>`
         +gridColumns.map(c=>gridCell(r.cells,c)).join('')
-        +(r.total===null?'':value(r.total,'Total',' class="crosstab-total"'))
+        +(!showTotals||r.total===null?'':value(r.total,'Total',' class="crosstab-total"'))
         +'</tr>').join('')
       +`</tbody>`
       // The fourth row, where a reader looks for N.
-      +(grid.grandTotal===null?'':`<tfoot><tr><th scope="row">Total</th>`
+      +(!showTotals?'':`<tfoot><tr><th scope="row">Total</th>`
         +gridColumns.map(c=>grid.columnTotals[gi(c)]??null).map(v=>v===null?'<td class="crosstab-total"><span class="muted">—</span></td>':value(v,'Total',' class="crosstab-total"')).join('')
         +value(grid.grandTotal,'Total',' class="crosstab-total"')+'</tr></tfoot>')
       +`</table>`+pages_(framePage(grid.rows.length),framePages(grid.rows.length))
       // WHO SAID THESE COULD BE ADDED. A reader checking a margin is entitled to know whether
       // the table claimed its values count the same thing or a person did, because the two carry
       // different weight -- and because the person can be wrong in a way the file cannot.
-      +(grid.grandTotal!==null&&assertTotals&&!table.unit?.trim()
+      +(withheld?`<p class="table-meta muted">Totals are not shown: with them, a count hidden as small could be worked out.</p>`:'')
+      +(showTotals&&assertTotals&&!table.unit?.trim()
         ?`<p class="table-meta muted">Totals are shown because this step was told these values `
           +`count the same thing. The table states no unit, so nothing here checks that.</p>`:'');}
   // A TABLE WITH NO VALUE COLUMN, a layer's attributes, shows none: an empty "unknown" on every row said nothing.
   const valued=!!table.valueField;
+  // A SEARCHED ROW IS PRESENTED BY ITS MEASURE (review of #8): searching shows the long rows, where the value's column is
+  // the table's value field; a count hidden in the wide table under its measure's name was shown raw once searched.
+  const measureKey=wideFrame(table)?.measureKey??crossTab(table,{assertCommensurable:false})?.colKey;
+  const columnOf=(row:{key:Record<string,unknown>})=>measureKey&&row.key[measureKey]!==undefined?String(row.key[measureKey]):table.valueField;
   return `<div class="table-meta muted">${matching.length} of ${recordsSaid(table)}${valued&&table.missingValueCount?` · ${table.missingValueCount} values absent and kept as unknown`:''}${valued?` · value in ${unit}`:''}</div>`
     +`<table><thead><tr>${table.keys.map(k=>roleHead(roles,k,esc)).join('')}${valued?roleHead(roles,table.valueField,esc):''}</tr></thead><tbody>`
     // A CELL EDITED BY HAND IS MARKED, with what it was on hover (experiment 214).
     +shown.map(row=>{const edited=(row as {edited?:EditedCells}).edited;
       const cell=(c:string)=>roleAttr(roles,c,edited?.[c]?'cell-edited':'')+(edited?.[c]?` data-cell-edited title="${esc(editedTitle(edited[c]!))}"`:'');
-      return `<tr>${table.keys.map(k=>`<td${cell(k)}>${esc(row.key[k])}</td>`).join('')}${valued?value(row.value,table.valueField,cell(table.valueField)):''}</tr>`;}).join('')
+      return `<tr>${table.keys.map(k=>`<td${cell(k)}>${esc(row.key[k])}</td>`).join('')}${valued?value(row.value,columnOf(row),cell(table.valueField)):''}</tr>`;}).join('')
     +`</tbody></table>`+(limit!==undefined?'':pager(page,pages));
 }
 

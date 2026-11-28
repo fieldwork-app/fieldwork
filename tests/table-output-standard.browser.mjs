@@ -171,3 +171,32 @@ test('a column\'s unit, note and decimal places, and its small counts hidden, re
   await expect(page.locator('#result-rows')).toContainText('[c]');
   expect(errors).toEqual([]);
 });
+
+/** AN UNUSABLE THRESHOLD IS NOT "OFF" (review of #8, 2026-11-28): 1, typed over a saved 5, had turned hiding off and shown
+ *  the counts it hid. Now Apply is refused with the reason, the saved rule stands, and only an empty box turns it off. */
+test('a small-count threshold that cannot be used refuses Apply and keeps the rule; an empty box turns it off',async({page})=>{
+  const errors=collectPageErrors(page);
+  await page.goto('/?example=snow-geoprivacy');
+  await expect(page.locator('#workflow-state')).toHaveText('✓ Run complete',{timeout:60000});
+  await page.locator('[data-view="workflow"]').click();
+  await page.locator('.react-flow__node[data-id="before-table"]').click();
+  const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('fieldwork-workflow-v1')).nodes.find(n=>n.id==='before-table').params.presentation?.suppress);
+  const dialog=page.locator('#table-config');
+  const threshold=async value=>{await dialog.locator('#present-suppress-below').fill(value);await dialog.locator('#present-suppress-below').press('Tab');};
+  await page.locator('#configure-step').click();
+  await dialog.locator('.present-suppress summary').click();
+  await threshold('5');await dialog.locator('[data-suppress-column="DEATHS"]').check();
+  await dialog.locator('#config-apply').click();await expect(dialog).toBeHidden();
+  expect(await saved()).toEqual({below:5,columns:['DEATHS'],reason:'confidentiality'});
+  await page.locator('#configure-step').click();
+  await threshold('1');
+  await expect(dialog.locator('.config-message-refusal')).toContainText('"1" cannot be used');
+  await expect(dialog.locator('#config-apply')).toBeDisabled();
+  await expect(dialog.locator('#present-suppress-below')).toHaveValue('1');
+  await expect(dialog.locator('#present-suppress-below')).toHaveAttribute('aria-invalid','true');
+  await threshold('');
+  await expect(dialog.locator('#config-apply')).toBeEnabled();
+  await dialog.locator('#config-apply').click();await expect(dialog).toBeHidden();
+  expect(await saved()).toBeUndefined();
+  expect(errors).toEqual([]);
+});

@@ -2069,12 +2069,11 @@ function renderLibrary(search=''){
       // The new node is not drawn yet: it is given the room of the largest drawn one, or the default.
       // Beside its source where it has one; otherwise in the part of the canvas on screen.
       const at=freeSpot(w.nodes,source?{x:source.x+310,y:source.y}:{x:180,y:90},sizes,largest.width?largest:undefined,source?null:flow?.visibleArea());const added={...required(sample),id,x:at.x,y:at.y};if(added.type==='output')added.params={view:'bars',label:`Bar chart ${w.nodes.filter(n=>n.type==='output').length+1}`};w.nodes.push(added);if(added.type==='raster_input'||added.type==='clip_raster'){const area=w.nodes.find(n=>n.type==='study_area');if(area)setConnection(w,area.id,id,'area');}selected=id;});if(didAdd===false)return;
-    // SEEN WHERE IT LANDS (2026-11-28): a node placed in view leaves the practitioner's zoom alone; one that had to go
-    // outside it is scrolled to. Fitting the whole canvas on every add zoomed a large workflow out until the new node was
+    // SEEN WHERE IT LANDS (2026-11-28): a node placed in view leaves the practitioner's zoom alone; one that is not wholly
+    // in view is scrolled to. Fitting the whole canvas on every add zoomed a large workflow out until the new node was
     // too small to read.
-    {const view=flow?.visibleArea(),n=workflow.nodes.find(x=>x.id===id);
-      if(n&&view&&!(n.x>=view.x&&n.y>=view.y&&n.x<=view.x+view.width&&n.y<=view.y+view.height))flow?.reveal(id);
-      else if(!view)flow?.fit();}
+    // The canvas measures the whole node once drawn, and scrolls only where some of it is out of view.
+    if(flow?.visibleArea())flow.reveal(id);else flow?.fit();
     toast(type==='study_area'?'Study area added. Select its boundary in the Inspector.':`${TYPES[type].title} added. Connect its ports to the workflow.`);
   });
 }
@@ -5385,6 +5384,11 @@ function renderNotesView(){
   // every table a run passed between steps, inputs included, so the table is there to draw.
   // A TABLE'S PRESENTATION, from the Table step that shows it (2026-11-28): the node itself where it is a Table, or the
   // Table its output feeds, so a table described by its producer prints as the Table that presents it.
+  // THE PRESENTATION AS LAST APPLIED, not as the run found it (review of #8, 2026-11-28): Table's Apply changes its
+  // presentation without a run, so the run's snapshot still held the raw counts the practitioner had since hidden, and the
+  // draft's attached CSV handed them on. The rows are the run's; how they are shown is the workflow's as it now stands.
+  const appliedWorkflow=(key:string,held:{workflow:Workflow}):Workflow=>key===storageKey(workflow)?workflow
+    :(readSavedWorkflows()[key] as Workflow|undefined)??held.workflow;
   const presentationIn=(w:Workflow)=>(nodeId:string)=>{
     const own=w.nodes.find(n=>n.id===nodeId);
     if(own?.type==='table_output')return (own as WorkflowNode<'table_output'>).params.presentation;
@@ -5400,20 +5404,21 @@ function renderNotesView(){
     if(note.kind!=='machined'&&note.kind!=='derived')return undefined;
     const key='workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow);
     const held=heldFor(key);
-    return figureFor(id,held?{...held.run,mapSvg:mapSvgOf(held),chartSvg:chartSvgOf(held),presentationOf:presentationIn(held.workflow)}:undefined,esc)||undefined;
+    return figureFor(id,held?{...held.run,mapSvg:mapSvgOf(held),chartSvg:chartSvgOf(held),presentationOf:presentationIn(appliedWorkflow(key,held))}:undefined,esc)||undefined;
   };
   // THE ROWS BEHIND A TABLE'S NOTE, for a draft that attaches what it cannot print (experiment 202, 2026-11-19). A workflow
   // whose table was fetched from elsewhere names where, and its rows are never handed on: the project does not carry them.
   const tableOf=(note:Note):AttachableTable|undefined=>{
     const id='nodeId' in note&&note.nodeId?note.nodeId:undefined;
     if(!id||note.kind!=='machined'||!describedNode(note.id))return undefined;
-    const held=heldFor('workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow));
+    const key='workflowKey' in note&&note.workflowKey?note.workflowKey:storageKey(workflow);
+    const held=heldFor(key);
     const table=held?.run.tables?.[id];
     if(table?.kind!=='data-table'||(table as {twoByTwo?:unknown}).twoByTwo)return undefined;
     const remote=held!.workflow.nodes.map(n=>n.type==='table_input'?(n as WorkflowNode<'table_input'>).params.remote?.url:undefined).find(Boolean);
     let host:string|undefined;try{host=remote?new URL(remote).hostname:undefined;}catch{host=remote;}
     return {rows:tableRowCount(table),source:held!.workflow.nodes.find(n=>n.id===id)?.type==='table_input',
-      csv:()=>tableCsv(table,presentationIn(held!.workflow)(id)),...host?{fetchedFrom:host}:{}};
+      csv:()=>tableCsv(table,presentationIn(appliedWorkflow(key,held!))(id)),...host?{fetchedFrom:host}:{}};
   };
   // THE WORKS THIS PROJECT CITES, assembled from the entries rather than stored beside them.
   const references=referenceList(entries.map(e=>

@@ -51,7 +51,9 @@ function wirePresentation(root:ParentNode,p:TablePresentation,redraw:()=>void):v
 
 /** Connects the column and small-count controls to the draft. Each setting cleared is removed, so an unset table saves
  *  nothing. */
-function wireColumnPresentation(root:ParentNode,p:TablePresentation,redraw:()=>void):void{
+function wireColumnPresentation(root:ParentNode,p:TablePresentation,redraw:()=>void,
+  /** A threshold typed that cannot be used, or undefined: kept apart from Off, so Apply can refuse it. */
+  typed:(raw:string|undefined)=>void=()=>{}):void{
   const set=(column:string,key:keyof ColumnPresentation,value:string|number|undefined)=>{
     const columns={...(p.columns??{})},one={...(columns[column]??{})};
     if(value===undefined||value==='')delete one[key];else (one as Record<string,unknown>)[key]=value;
@@ -70,9 +72,14 @@ function wireColumnPresentation(root:ParentNode,p:TablePresentation,redraw:()=>v
   const below=root.querySelector<HTMLInputElement>('#present-suppress-below');
   const reason=root.querySelector<HTMLSelectElement>('#present-suppress-reason');
   const columnsChecked=()=>[...root.querySelectorAll<HTMLInputElement>('[data-suppress-column]')].filter(x=>x.checked).map(x=>x.dataset.suppressColumn!);
-  const update=()=>{const n=Number(below?.value);
-    if(below?.value.trim()&&Number.isInteger(n)&&n>=2&&n<=1000)p.suppress={below:n,columns:columnsChecked(),reason:(reason?.value??'confidentiality') as 'confidentiality'|'reliability'};
-    else delete p.suppress;redraw();};
+  // AN UNUSABLE NUMBER IS NOT OFF (review of #8): 1, typed over a saved 5, had turned hiding off and shown the counts it
+  // hid. Only an empty box turns it off; anything else that is not a whole number from 2 to 1,000 keeps the rule as it was
+  // and is held, as typed, for Apply to refuse.
+  const update=()=>{const raw=below?.value.trim()??'',n=Number(raw);
+    if(!raw){delete p.suppress;typed(undefined);}
+    else if(Number.isInteger(n)&&n>=2&&n<=1000){p.suppress={below:n,columns:columnsChecked(),reason:(reason?.value??'confidentiality') as 'confidentiality'|'reliability'};typed(undefined);}
+    else typed(raw);
+    redraw();};
   below?.addEventListener('change',update);reason?.addEventListener('change',update);
   root.querySelectorAll<HTMLInputElement>('[data-suppress-column]').forEach(x=>x.addEventListener('change',update));
 }
@@ -186,7 +193,7 @@ export function tableOutputSentence(kit:TableOutputKit,n:WorkflowNode<'table_out
  *  written by Apply. Turning a reasoning table into a map or a chart changes the step itself. */
 function openTableConfig(kit:TableOutputKit,nodeId:string){
   const esc=kit.esc,workflow=kit.workflow(),node=workflow.nodes.find(x=>x.id===nodeId) as WorkflowNode<'table_output'>|undefined;if(!node)return;
-  type Draft=WorkflowNode<'table_output'>['params']&{view?:'map'|'table'|'bars';coord:{metres:boolean;zone:string;hemisphere:'north'|'south'};present:TablePresentation;rowsShown:number|'all'};
+  type Draft=WorkflowNode<'table_output'>['params']&{view?:'map'|'table'|'bars';coord:{metres:boolean;zone:string;hemisphere:'north'|'south'};present:TablePresentation;rowsShown:number|'all';typedThreshold?:string};
   const mode=shownMode(node,workflow.edges);
   const points=mode!=='table'&&mode!=='polygons';
   const held=node.params.coordinates,suggested=kit.zoneAdvice(30,'north');
@@ -206,11 +213,13 @@ function openTableConfig(kit:TableOutputKit,nodeId:string){
         +(draft.coord.metres?zoneFields(kit,draft.coord,'output'):'');
       if(!settings)settings='<p class="muted">Nothing to set: what you connect decides how it is shown.</p>';
       return {settings,presentation:presentationFields(draft.present,node.params.label||kit.title('table_output'),esc,columnsShown(kit,node,mode),
-        mode==='table'||(mode==='polygons'&&kit.ranOutput(node.id)?.kind==='data-table')),
+        mode==='table'||(mode==='polygons'&&kit.ranOutput(node.id)?.kind==='data-table'),draft.typedThreshold),
+        ...(draft.typedThreshold!==undefined?{blocked:true,message:{tone:'refusal' as const,
+          text:`Small counts: "${draft.typedThreshold}" cannot be used. Hide a count below a whole number from 2 to 1,000, or empty the box to show every count.`}}:{}),
         preview:tablePreview(kit,node,mode,draft.coord,draft.present,draft.rowsShown,draft.totalsAsserted===true)};
     },
     wire:(root,draft,redraw)=>{
-      wirePresentation(root,draft.present,redraw);wireColumnPresentation(root,draft.present,redraw);
+      wirePresentation(root,draft.present,redraw);wireColumnPresentation(root,draft.present,redraw,raw=>{if(raw===undefined)delete draft.typedThreshold;else draft.typedThreshold=raw;});
       root.querySelector<HTMLSelectElement>('#preview-rows')?.addEventListener('change',e=>{const v=(e.target as HTMLSelectElement).value;
         draft.rowsShown=v==='all'?'all':Number(v);redraw();});
       root.querySelector<HTMLSelectElement>('#output-coordinates')?.addEventListener('change',e=>{draft.coord.metres=(e.target as HTMLSelectElement).value==='metres';redraw();});
@@ -219,7 +228,7 @@ function openTableConfig(kit:TableOutputKit,nodeId:string){
         if((e.target as HTMLInputElement).checked)draft.totalsAsserted=true;else delete draft.totalsAsserted;redraw();});
     },
     apply:draft=>{
-      const {view,coord,present,rowsShown:_shown,...params}=draft;
+      const {view,coord,present,rowsShown:_shown,typedThreshold:_typed,...params}=draft;
       if(Object.keys(present).length)params.presentation=present;else delete params.presentation;
       if(coord.metres)params.coordinates={zone:Number(coord.zone),hemisphere:coord.hemisphere};else delete params.coordinates;
       if(view&&view!=='table'){kit.change(w=>{const index=w.nodes.findIndex(x=>x.id===nodeId);

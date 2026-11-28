@@ -126,7 +126,7 @@ export function tableFigure(table:DataTable|undefined,label:string|undefined,
   const drawn=view.rows.slice(0,FIGURE_ROW_CEILING);
   const over=view.rows.length-drawn.length;
   const {shown:columns,percentOf}=pairedColumns(view.columns,present);
-  const numbers=noteNumbers(present,columns);
+  const numbers=noteNumbers(present,view.columns);
   const declared=(name:string)=>view.headings?.[name]?undefined:table.columns?.[name]?.confirmed?table.columns[name]!.unit:undefined;
   const isNumber=(name:string)=>drawn.length>0&&drawn.every(row=>typeof row[name]==='number'||row[name]===null||row[name]===undefined)
     &&drawn.some(row=>typeof row[name]==='number');
@@ -137,12 +137,12 @@ export function tableFigure(table:DataTable|undefined,label:string|undefined,
     +`<table><thead><tr>`
     // A NUMBER'S HEADING STANDS OVER IT (2026-11-19: "85" sat under "Dead" in MERS's table, headings left and numbers right).
     +columns.map(name=>`<th scope="col"${isNumber(name)?' class="figure-number"':''}>${esc(name)}${percentOf.get(name)?` (${esc(percentOf.get(name)!)})`:''}`
-      +headingMarks(name,present,esc,numbers,declared(name))
+      +headingMarks(name,present,esc,numbers,declared(name),percentOf.get(name))
       +`${view.headings?.[name]?`<span class="meaning">: ${esc(view.headings[name]!)}</span>`:''}</th>`).join('')
     +`</tr></thead><tbody>`
     +drawn.map(row=>`<tr>`+columns.map(name=>cell(valueOf(row as Record<string,unknown>,name))).join('')+`</tr>`).join('')
     +`</tbody></table>`
-    +tableNotesHtml(present,columns,esc)
+    +tableNotesHtml(present,view.columns,esc)
     // THE CEILING IS REPORTED WHERE IT BITES. A figure silently showing 50 of 320 rows is a
     // figure that lies about the data, and the number a reader would quote comes from the
     // caption rather than from counting what is drawn.

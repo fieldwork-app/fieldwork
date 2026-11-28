@@ -83,3 +83,37 @@ test('Results\' cross-tab shows a count and its percentage in one cell, and the 
   assert.doesNotMatch(html,/<th scope="col">percent/);
   assert.match(html,/120 \(34\.5\)/);
 });
+
+/** THE REVIEW OF #8, 2026-11-28: three ways a hidden count, or a note, came out wrong. */
+const DISTRICTS={kind:'data-table',keys:['district','measure'],valueField:'value',rowCount:12,missingValueCount:0,
+  rows:['North','South','East','West'].flatMap((d,i)=>[{key:{district:d,measure:'Cases'},value:[4,13,20,9][i]},
+    {key:{district:d,measure:'Percent'},value:[8.7,28.3,43.5,19.6][i]},{key:{district:d,measure:'Rate'},value:[1.2,3.4,5.6,7.8][i]}])};
+test('a count hidden in the table stays hidden when Results is searched',async()=>{
+  const {dataTableMarkup}=await import('../build/data-table-ui.js');
+  const present={suppress:{below:5,columns:['Cases'],reason:'confidentiality'}};
+  assert.match(dataTableMarkup(DISTRICTS,esc,{present}),/\[c\]/);
+  const searched=dataTableMarkup(DISTRICTS,esc,{present,query:'North'});
+  assert.match(searched,/\[c\]/,'the searched North row hides its 4');
+  assert.doesNotMatch(searched,/>4</);
+});
+test('a table hiding a count shows no totals, which would give it away, and says why',async()=>{
+  const {dataTableMarkup}=await import('../build/data-table-ui.js');
+  const T={kind:'data-table',keys:['district','sex'],valueField:'cases',rowCount:8,missingValueCount:0,unit:'cases',
+    rows:['North','South','East','West'].flatMap((d,i)=>[{key:{district:d,sex:'F'},value:[4,13,20,9][i]},{key:{district:d,sex:'M'},value:[13,6,8,11][i]}])};
+  const shown=dataTableMarkup(T,esc,{assertTotals:true,present:{}});
+  assert.match(shown,/Total/,'totals as before where nothing is hidden');
+  const hidden=dataTableMarkup(T,esc,{assertTotals:true,present:{suppress:{below:5,columns:['F'],reason:'confidentiality'}}});
+  assert.match(hidden,/\[c\]/);
+  assert.doesNotMatch(hidden,/<th scope="col">Total<\/th>|crosstab-total/,'no row, column or grand total');
+  assert.match(hidden,/Totals are not shown: with them, a count hidden as small could be worked out\./);
+});
+test('a heading\'s note number and the note below it are the same note, a folded percentage\'s included',async()=>{
+  const {dataTableMarkup}=await import('../build/data-table-ui.js');
+  const present={pairs:[{count:'Cases',percent:'Percent'}],columns:{Percent:{note:'Of all cases.'},Rate:{note:'Per 1,000.'}}};
+  const html=dataTableMarkup(DISTRICTS,esc,{present});
+  const notes=tableNotesHtml(present,['district','Cases','Percent','Rate'],esc);
+  const markOf=name=>new RegExp(`>${name}[^<]*(?:<span class="table-note-mark">\\[note (\\d)\\]</span>)`).exec(html)?.[1];
+  const percentNote=/\[note (\d)\] Of all cases\./.exec(notes)?.[1],rateNote=/\[note (\d)\] Per 1,000\./.exec(notes)?.[1];
+  assert.equal(markOf('Rate'),rateNote,'Rate\'s heading names Rate\'s note');
+  assert.match(html,new RegExp(`Cases \\(Percent\\) <span class="table-note-mark">\\[note ${percentNote}\\]</span>`),'the folded Percent note is on the paired heading');
+});
