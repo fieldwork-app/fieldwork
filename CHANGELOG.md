@@ -10,9 +10,12 @@ shown in a local build is not a claim that it has been published.
   until Apply was pressed again; an edit left there was lost when the dialog was closed. Found on Table's
   Presentation, set while Snow's geoprivacy example ran its first pass, lost in 2 of 3 tries. Apply now reads
   *Waiting for the run…* and applies the draft, as it then stands, when the run is done, and the dialog closes.
-  Cancel while it waits applies nothing. Every configuration dialog shares this. Validation:
-  `tests/config-apply-during-run.browser.mjs`, three times each, Chromium only; the Table case failed before. Not
-  run on WebKit.
+  Cancel while it waits applies nothing. Every configuration dialog shares this. From the review of #7: on resume
+  the field being typed in commits first, so text typed while waiting is what is applied, and a setting refused
+  while waiting (an isochrone time of 0) keeps the dialog open with its refusal rather than closing on an edit the
+  workflow refuses. Validation: `tests/config-apply-during-run.browser.mjs`, Chromium only. The tests hold the run
+  with a stand-in catchment worker, so the waiting is certain. The Table case, the typed caption and the refused
+  setting each failed before. Not run on WebKit.
 
 ## 0.204.6 — In development
 

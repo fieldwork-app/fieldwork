@@ -85,8 +85,18 @@ export function openConfigDialog<D>(spec:ConfigDialog<D>,esc:Escape):void{
   let confirming=false;
   const changed=()=>JSON.stringify(draft)!==held;
   let applied=false,waiting=false;
+  // ON RESUME, THE DRAFT AS IT NOW STANDS, AND ONLY IF IT CAN BE APPLIED (review of #7, 2026-11-28). A press made by code
+  // does not take the focus from a text box as a press of the mouse does, so a caption typed while waiting and not yet
+  // left was not in the draft: the focus is taken first, and the field commits as it would on leaving it. Then the form
+  // is drawn again, without the wait, so a setting refused while waiting (an isochrone time of 0) keeps Apply disabled
+  // and the dialog open with its refusal, rather than being pressed anyway and closing on an edit the workflow refuses.
   const resume=()=>{if(!waiting)return;if(runInFlight())return;waiting=false;waitingForRun.delete(resume);
-    applyButton.textContent=applyLabel;applyButton.disabled=false;applyButton.click();};
+    applyButton.textContent=applyLabel;
+    const active=document.activeElement;
+    if(active instanceof HTMLElement&&dialog.contains(active))active.blur();
+    draw();
+    if(applyButton.disabled)return;
+    applyButton.click();};
   const close=()=>{waiting=false;waitingForRun.delete(resume);spec.beforeRedraw?.();dialog.close();dialog.remove();if(!applied)spec.onClose?.();};
   const WAIT_TEXT='The workflow is running. These settings will be applied when the run is done; Cancel keeps things as they were.';
   const waitMessage=()=>`<div class="config-message config-message-warning" role="status" data-run-in-flight><p>${WAIT_TEXT}</p></div>`;
