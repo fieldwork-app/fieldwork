@@ -800,7 +800,10 @@ applies nothing. `tests/config-apply-during-run.browser.mjs`.
 **DONE 2026-11-28 — widgets added from the library land clear of one another** (0.205.0). Found 2026-11-27 writing the
 blank-port test: three added in a row overlapped, each placed 80 px from the last. `freeSpot` in `src/layout.ts` places a
 new widget where it touches no node as drawn. `tests/added-widgets-clear.browser.mjs`. The notice that covered the third
-one's port was not looked at separately.
+one's port was not looked at separately. **Checked 2026-11-28, not reproduced:** three widgets added in a row
+(Point data twice, then Measure distance) at 1050 × 766 px in Chromium; after each add, every notice on screen was
+measured against every port, and none covered one, and each new widget ended wholly in view. The 0.205.0 placement
+puts a new widget in the visible part of the canvas, away from the bottom edge where the notice sits.
 
 **DONE 2026-11-28 — the write-up's and the export's tables to the table standard** (0.205.0, Table 0.16.0), with the
 standard's open items: decimal places, unit and note per column, small counts hidden, a count and its percentage in one
