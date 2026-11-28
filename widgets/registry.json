@@ -131,7 +131,7 @@
   {
    "id": "urn:fieldwork:widget:apply_ruleset",
    "nodeType": "apply_ruleset",
-   "currentVersion": "0.18.0",
+   "currentVersion": "0.19.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -242,6 +242,11 @@
      "version": "0.18.0",
      "path": "widgets/releases/apply_ruleset/0.18.0.json",
      "sha256": "e569ca4a9a0bc3824695008fe364fa8a49af3fa9d741e407533b220f9fd91097"
+    },
+    {
+     "version": "0.19.0",
+     "path": "widgets/releases/apply_ruleset/0.19.0.json",
+     "sha256": "2a23cf5997c069f00c8c6a78d47558ffc10f7a87b18a93097d1b0d6985aedb6e"
     }
    ]
   },

@@ -1,6 +1,6 @@
 # Audit — what a Configure dialog's Preview shows
 
-_Created 2026-11-25 · Updated 2026-11-27_
+_Created 2026-11-25 · Updated 2026-11-28_
 
 The practitioner, opening one Configure dialog after another in the John Snow example: *"for this voronoi catchment
 dialog there is no preview"*, then the same of Clip polygons, Summarize points to polygons, Move points in a donut,
@@ -152,7 +152,7 @@ displays, reads in or configures.
 | Raster input | raster-ui.ts:117 | Numbers (cells, window, metadata) | — | D | none found |
 | Clip raster | raster-ui.ts:291 | Sentence | always | T | this audit, as Network isochrone |
 | Relate a column | relate-ui.ts:306, :337 | Table | after a run with both tables | T | — |
-| Apply ruleset, published | ruleset-ui.ts:368 | Sentence (its rules, no records) | — | T | none found |
+| Apply ruleset, published | ruleset-ui.ts:340 | Table, Before and After, for a ruleset evaluated directly (since 2026-11-28; was Sentence); its rules otherwise | when records are reachable | T | for a ruleset that goes to the reasoner: the reasoner is started by the run, and a dialog builds its Preview synchronously (ruleset-ui.ts, beside `publishedAsAuthored`; this audit, 2026-11-28) |
 | Apply ruleset, rule editor | rule-editor.ts:621, :645 | Table, Before, Sorted and After | when records are reachable | T | — |
 | Sample a raster | sample-raster-ui.ts:109 | Sentence + WT | always | T | this audit, as Network isochrone |
 | Sample a raster, satellite files | sample-raster-ui.ts:192 | None | — | T | this audit, 2026-11-28: the files are fetched and read in the run (run-raster.ts:54, `readGridFiles(…, fetch, …)`) |
@@ -232,6 +232,19 @@ window's cells could be drawn, and were not attempted.
 
 **Counts, by the most each dialog can show, 2026-11-28:** drawing 17, table 11, numbers 6, sentence 7, none 6 (47
 dialogs).
+
+**Later on 2026-11-28: Apply ruleset (published) shows rows.** A published ruleset that is evaluated directly (7-1-7
+and Compare a level to an elevation) now runs in the dialog as the run runs it: `publishedAsAuthored`, taken out of
+run-ruleset.ts so the run and the Preview bind each input to the same column with the same unit, then
+`evaluateAuthored` over the records `rulePreview` reads. The rows are shown as the rule editor's After shows them, by the
+same function (`beforeAndAfter`, moved out of the editor). Checked in Chromium (`tests/ruleset-published-preview.browser.mjs`,
+failing on the code before): case A's 9 days to detect, read from the columns chosen. A ruleset that goes to the
+reasoner (Projection extract contract) is not run in the dialog, and the Preview says its conclusions are in the Result
+after a run.
+
+**Left now:** 9 transforms, 10 dialogs, neither draw nor show rows, and **every one has a reason recorded**. Raster
+input, a display step, still shows numbers with no reason. **Counts, by the most each dialog can show:** drawing 17,
+table 12, numbers 6, sentence 6, none 6 (47 dialogs).
 
 ### Claims in the record that the code does not bear out
 

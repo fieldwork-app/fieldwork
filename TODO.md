@@ -1,6 +1,6 @@
 # TODO
 
-_Created 2026-10-10 · Updated 2026-11-27_
+_Created 2026-10-10 · Updated 2026-11-28_
 
 The project's one list of open work. **Merged 2026-10-26 from two**: a root `TODO.md` of
 deferred work created 2026-10-10 and a `docs/todo.md` of committed work created 2026-10-11, one
@@ -100,9 +100,9 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   previews and recorded reason for not rendering"*). **2026-11-28:** Convex hull, Mean center, Move points in a donut,
   Aggregate points to H3 cells, Measure distance and Compare point sets draw with `previewDrawing`; Cases by period draws
   its curve. Space-time scan's reason was in the code (the shuffles belong in the run); Sample a raster's satellite files
-  are read in the run; five of the six display steps have a reason recorded. **Left:** 10 transforms neither draw nor
-  show rows, one with no reason: **Apply ruleset (published)**, whose rows are reachable (`rulePreview`) and not shown.
-  **Raster input** shows numbers with no reason. Measure: transforms that neither render nor say why.
+  are read in the run; five of the six display steps have a reason recorded. Apply ruleset (published) shows the rows
+  and what a directly evaluated ruleset concludes; one that goes to the reasoner says why not. **Left:** 9 transforms
+  neither draw nor show rows, each with a reason recorded. **Raster input** shows numbers with no reason. Measure: transforms that neither render nor say why.
 - **Next batch, agreed 2026-11-27, in order:** (1) ~~an edit applied during a run~~, done in 0.204.7: Apply waits for the
   run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a

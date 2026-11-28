@@ -1,6 +1,6 @@
 # TODO, finished and declined
 
-_Created 2026-11-19 · Updated 2026-11-27_
+_Created 2026-11-19 · Updated 2026-11-28_
 
 This file holds the work moved out of [TODO.md](../TODO.md) on 2026-11-19 because it was done or decided against.
 Each item is word for word as it stood there, under the section it stood in, oldest first within each section.

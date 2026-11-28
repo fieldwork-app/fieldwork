@@ -1,6 +1,6 @@
 # Compare point sets
 
-_Created 2026-11-20 · Updated 2026-11-20_
+_Created 2026-11-20 · Updated 2026-11-28_
 
 **A process widget.** It takes a set of points and the same points moved, and gives back a table of distances: how far
 the mean centre moved, how far each mean centre is from its nearest reference point, and how far a point moved.

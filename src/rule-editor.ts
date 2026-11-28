@@ -174,6 +174,62 @@ export interface EditorOptions extends Partial<ReviewOptions> {
  *  the data. Not measured: the number of rows a person can read in a dialog, or draw on every keystroke, is open. */
 export const PREVIEW_ROWS=50;
 
+/** THE COLUMNS RULES WRITE BY COMPUTING, named as After heads them. */
+export const computedColumnsOf=(rules:Authored['rules'])=>rules.flatMap(rule=>rule.then.filter(c=>isComputed(c)||isWrittenDateTime(c))
+  .map(c=>({predicate:c.predicate,label:c.column?.trim()||localName(c.predicate)})));
+/** BEFORE, SORTED AND AFTER (experiment 188): the records as they arrive and as the rules leave them, with the columns
+ *  they conclude. Shared since 2026-11-28 by the rule editor and the published ruleset's dialog, so both show what a
+ *  ruleset concludes the same way. `computed` names the columns the rules write, shown even where no record has one. */
+export function beforeAndAfter(p:{records:SubjectRecord[];columns:string[]}|undefined,evaluation:Evaluation|null,
+    computed:string[],esc:Escape):string{
+  const cell=(v:unknown)=>v===null||v===undefined?'':typeof v==='number'?String(v):String(v);
+  if(!p?.records.length)return `<section class="rule-live"><h3>Before and after</h3>`
+    +`<p class="description">Connect the records this step reads, or run the workflow once, to see what these rules do to them.</p></section>`;
+  const shown=p.records.slice(0,PREVIEW_ROWS);
+  const head=(cols:string[])=>`<tr>${cols.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr>`;
+  const before=`<table class="rule-live-table"><thead>${head(p.columns)}</thead><tbody>`
+    +shown.map(r=>`<tr>${p.columns.map(c=>`<td>${esc(cell(r.properties[c]))}</td>`).join('')}</tr>`).join('')+`</tbody></table>`;
+  if(!evaluation)return `<section class="rule-live"><h3>Before</h3>${before}</section>`;
+  // SORTED, where the step sorts: the same rows in the order the rules read them, and After in that order too.
+  const sortedOrder=evaluation.order?evaluation.sequence.slice(0,PREVIEW_ROWS):null;
+  const sortedTable=sortedOrder?`<table class="rule-live-table"><thead>${head(p.columns)}</thead><tbody>`
+    +sortedOrder.map(i=>`<tr>${p.columns.map(c=>`<td>${esc(cell(p.records[i]!.properties[c]))}</td>`).join('')}</tr>`).join('')+`</tbody></table>`:'';
+  const afterRows=sortedOrder??shown.map((_,i)=>i);
+  const added=[...new Set([...computed,...evaluation.records.flatMap(r=>Object.keys(r.values))])];
+  const after=`<table class="rule-live-table"><thead>${head([...p.columns,...added,'Rule'])}</thead><tbody>`
+    +afterRows.map(i=>{const r=p.records[i]!,o=evaluation!.records[i]!;
+      const marks=[...o.divisionsByZero.map(c=>`${c}: divided by zero`),...o.missing.map(m=>`${m.column}: no ${m.operands.join(' or ')}`),
+    ...o.conflicts.map(c=>`${c.column}: rules ${c.rules.join(' and ')} disagree`),
+    ...o.noPrevious.map(x=>`${x.column}: no previous row, ${NO_PREVIOUS_WORDS[x.why]}`),
+    ...o.fell.map(c=>`${c}: fell below the previous row`)];
+      return `<tr${o.rules.length?'':' data-unmatched'}>${p.columns.map(c=>`<td>${esc(cell(r.properties[c]))}</td>`).join('')}`
+    +added.map(c=>`<td class="rule-new">${esc(cell(o.values[c]))}</td>`).join('')
+    +`<td>${o.rules.length?esc(o.rules.map(n=>`Rule ${n}`).join(', ')):'No rule'}${marks.length?`<br><strong>${esc(marks.join('; '))}</strong>`:''}</td></tr>`;}).join('')
+    +`</tbody></table>`;
+  const n=p.records.length;
+  const count=(test:(o:Evaluation['records'][number])=>boolean)=>evaluation!.records.filter(test).length;
+  const records=(k:number)=>`${k.toLocaleString('en')} record${k===1?'':'s'}`,has=(k:number)=>k===1?'has':'have';
+  const none=count(o=>!o.rules.length),zero=count(o=>o.divisionsByZero.length>0),
+    lacking=count(o=>o.missing.length>0),split=count(o=>o.conflicts.length>0),
+    orphan=count(o=>o.noPrevious.length>0),fell=count(o=>o.fell.length>0);
+  const words=[none?`${records(none)} matched no rule.`:'Every record matched a rule.',
+    zero?`${records(zero)} ${has(zero)} an empty value, from a division by zero.`:'',
+    lacking?`${records(lacking)} ${has(lacking)} no value, because a value to compute from is missing.`:'',
+    split?`${records(split)} ${has(split)} no value, because two rules gave different values.`:'',
+    orphan?`${records(orphan)} ${has(orphan)} no value, because there is no single previous row.`:'',
+    fell?`${records(fell)} fell below the previous row, kept as computed.`:'',
+    // A DEFAULT IS SAID AS ONE (experiment 192), beside the records no rule matched.
+    ...Object.entries(evaluation.defaultedByColumn??{}).map(([c,k])=>`${records(k)} took ${c}'s otherwise.`),
+    undescribedSentence(evaluation)].filter(Boolean);
+  return `<section class="rule-live" aria-live="polite"><h3>${sortedOrder?'Before, sorted and after':'Before and after'}</h3>`
+    +`<p class="rule-live-summary">${esc(`${n.toLocaleString('en')} record${n===1?'':'s'}. `+words.join(' '))}</p>`
+    +(n>shown.length?`<p class="description">Showing the first ${shown.length} of ${n.toLocaleString('en')}. The counts are of all of them.</p>`:'')
+    +`<h4>Before</h4><div class="rule-live-scroll">${before}</div>`
+    +(sortedOrder?`<h4>Sorted</h4><p class="description">${esc(`By ${evaluation.order!.by}${evaluation.order!.within.length?`, within each ${evaluation.order!.within.join(' and ')}`:''}. The previous row is ${PREVIOUS_WORDS[evaluation.order!.previous]}.`)}</p><div class="rule-live-scroll">${sortedTable}</div>`:'')
+    +`<h4>After</h4><div class="rule-live-scroll">${after}</div></section>`;
+    }
+
+
 /** Opens the dialog. Resolves with the edited rules, or with nothing if the practitioner closes
  *  it without keeping them -- the node is not touched until they do. */
 export function openRuleEditor(authored:Authored,esc:Escape,options?:EditorOptions):Promise<RuleEditorResult|undefined>{
@@ -335,8 +391,7 @@ export function openRuleEditor(authored:Authored,esc:Escape,options?:EditorOptio
       if(!options?.preview?.records.length)return null;
       try{return evaluateAuthored(options.preview.records,fields as never,rules as never,numericSettings,order,otherwise);}catch{return null;}
     };
-    const computedColumns=()=>rules.flatMap(rule=>rule.then.filter(c=>isComputed(c)||isWrittenDateTime(c))
-      .map(c=>({predicate:c.predicate,label:c.column?.trim()||localName(c.predicate)})));
+    const computedColumns=()=>computedColumnsOf(rules as never);
     // A DATE-LIKE OPERAND (2026-11-15): a date or date-time column, or a date and time a rule writes.
     const writtenDates=()=>new Set(rules.flatMap(rule=>rule.then.filter(isWrittenDateTime).map(c=>c.predicate)));
     const dateLike=(o:Operand)=>typeof o==='object'&&'field' in o&&(writtenDates().has(o.field)||['date','datetime'].includes(kindOf(o.field)));
@@ -420,53 +475,7 @@ export function openRuleEditor(authored:Authored,esc:Escape,options?:EditorOptio
           :'')
         +`</section>`;
     };
-    const previewMarkup=()=>{
-      const p=options?.preview;
-      if(!p?.records.length)return `<section class="rule-live"><h3>Before and after</h3>`
-        +`<p class="description">Connect the records this step reads, or run the workflow once, to see what these rules do to them.</p></section>`;
-      const shown=p.records.slice(0,PREVIEW_ROWS);
-      const head=(cols:string[])=>`<tr>${cols.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr>`;
-      const before=`<table class="rule-live-table"><thead>${head(p.columns)}</thead><tbody>`
-        +shown.map(r=>`<tr>${p.columns.map(c=>`<td>${esc(cell(r.properties[c]))}</td>`).join('')}</tr>`).join('')+`</tbody></table>`;
-      if(!evaluation)return `<section class="rule-live"><h3>Before</h3>${before}</section>`;
-      // SORTED, where the step sorts: the same rows in the order the rules read them, and After in that order too.
-      const sortedOrder=evaluation.order?evaluation.sequence.slice(0,PREVIEW_ROWS):null;
-      const sortedTable=sortedOrder?`<table class="rule-live-table"><thead>${head(p.columns)}</thead><tbody>`
-        +sortedOrder.map(i=>`<tr>${p.columns.map(c=>`<td>${esc(cell(p.records[i]!.properties[c]))}</td>`).join('')}</tr>`).join('')+`</tbody></table>`:'';
-      const afterRows=sortedOrder??shown.map((_,i)=>i);
-      const added=[...new Set([...computedColumns().map(c=>c.label),...evaluation.records.flatMap(r=>Object.keys(r.values))])];
-      const after=`<table class="rule-live-table"><thead>${head([...p.columns,...added,'Rule'])}</thead><tbody>`
-        +afterRows.map(i=>{const r=p.records[i]!,o=evaluation!.records[i]!;
-          const marks=[...o.divisionsByZero.map(c=>`${c}: divided by zero`),...o.missing.map(m=>`${m.column}: no ${m.operands.join(' or ')}`),
-            ...o.conflicts.map(c=>`${c.column}: rules ${c.rules.join(' and ')} disagree`),
-            ...o.noPrevious.map(x=>`${x.column}: no previous row, ${NO_PREVIOUS_WORDS[x.why]}`),
-            ...o.fell.map(c=>`${c}: fell below the previous row`)];
-          return `<tr${o.rules.length?'':' data-unmatched'}>${p.columns.map(c=>`<td>${esc(cell(r.properties[c]))}</td>`).join('')}`
-            +added.map(c=>`<td class="rule-new">${esc(cell(o.values[c]))}</td>`).join('')
-            +`<td>${o.rules.length?esc(o.rules.map(n=>`Rule ${n}`).join(', ')):'No rule'}${marks.length?`<br><strong>${esc(marks.join('; '))}</strong>`:''}</td></tr>`;}).join('')
-        +`</tbody></table>`;
-      const n=p.records.length;
-      const count=(test:(o:Evaluation['records'][number])=>boolean)=>evaluation!.records.filter(test).length;
-      const records=(k:number)=>`${k.toLocaleString('en')} record${k===1?'':'s'}`,has=(k:number)=>k===1?'has':'have';
-      const none=count(o=>!o.rules.length),zero=count(o=>o.divisionsByZero.length>0),
-        lacking=count(o=>o.missing.length>0),split=count(o=>o.conflicts.length>0),
-        orphan=count(o=>o.noPrevious.length>0),fell=count(o=>o.fell.length>0);
-      const words=[none?`${records(none)} matched no rule.`:'Every record matched a rule.',
-        zero?`${records(zero)} ${has(zero)} an empty value, from a division by zero.`:'',
-        lacking?`${records(lacking)} ${has(lacking)} no value, because a value to compute from is missing.`:'',
-        split?`${records(split)} ${has(split)} no value, because two rules gave different values.`:'',
-        orphan?`${records(orphan)} ${has(orphan)} no value, because there is no single previous row.`:'',
-        fell?`${records(fell)} fell below the previous row, kept as computed.`:'',
-        // A DEFAULT IS SAID AS ONE (experiment 192), beside the records no rule matched.
-        ...Object.entries(evaluation.defaultedByColumn??{}).map(([c,k])=>`${records(k)} took ${c}'s otherwise.`),
-        undescribedSentence(evaluation)].filter(Boolean);
-      return `<section class="rule-live" aria-live="polite"><h3>${sortedOrder?'Before, sorted and after':'Before and after'}</h3>`
-        +`<p class="rule-live-summary">${esc(`${n.toLocaleString('en')} record${n===1?'':'s'}. `+words.join(' '))}</p>`
-        +(n>shown.length?`<p class="description">Showing the first ${shown.length} of ${n.toLocaleString('en')}. The counts are of all of them.</p>`:'')
-        +`<h4>Before</h4><div class="rule-live-scroll">${before}</div>`
-        +(sortedOrder?`<h4>Sorted</h4><p class="description">${esc(`By ${evaluation.order!.by}${evaluation.order!.within.length?`, within each ${evaluation.order!.within.join(' and ')}`:''}. The previous row is ${PREVIOUS_WORDS[evaluation.order!.previous]}.`)}</p><div class="rule-live-scroll">${sortedTable}</div>`:'')
-        +`<h4>After</h4><div class="rule-live-scroll">${after}</div></section>`;
-    };
+    const previewMarkup=()=>beforeAndAfter(options?.preview,evaluation,computedColumns().map(c=>c.label),esc);
 
     // THE COLUMNS THE RULES READ, their kind and unit, as the Inspector listed them before (experiment 186).
     const fieldsMarkup=()=>`<section class="rule-order"><h3>Records and columns</h3>`

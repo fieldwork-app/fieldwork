@@ -1,6 +1,6 @@
 # Observed extent (convex hull)
 
-_Created 2026-10-14 · Updated 2026-11-23_
+_Created 2026-10-14 · Updated 2026-11-28_
 
 **A process widget.** It takes points and gives back one polygon: the smallest convex outline
 that contains them, with the area it encloses.

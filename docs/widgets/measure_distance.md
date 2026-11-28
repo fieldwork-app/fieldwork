@@ -1,6 +1,6 @@
 # Measure distance
 
-_Created 2026-11-09 · Updated 2026-11-26_
+_Created 2026-11-09 · Updated 2026-11-28_
 
 **For each point, the nearest of a set of candidates, and how far it is.** Each facility's nearest tide gauge; each
 sampled location's nearest clinic.

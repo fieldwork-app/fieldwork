@@ -382,3 +382,12 @@ version is under **Decisions**: the step stays on the version it was built on un
 ## What this does not establish
 
 That a rule is right for its question. Rules do exactly what they say, including what was meant and not written.
+
+## History
+
+### 2026-11-28 · A published ruleset's Preview shows what it concludes (0.19.0)
+
+For a published ruleset that computes its values, such as 7-1-7, **Configure…**'s Preview now shows the records
+connected and the columns the ruleset concludes for each, read from the columns chosen for its inputs, as the rule
+editor's After shows them. It had listed the rules only. A ruleset that goes to the reasoner is run only when the
+workflow runs, and the Preview says its conclusions are in the Result.

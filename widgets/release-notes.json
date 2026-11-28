@@ -65,24 +65,12 @@
    ]
   },
   "apply_ruleset": {
-   "version": "0.18.0",
-   "released": "2026-11-26",
+   "version": "0.19.0",
+   "released": "2026-11-28",
    "changes": [
     {
-     "kind": "added",
-     "description": "Two comparisons for text: has an item starting with any of (`startsWith`), and has no item starting with any of (`notStartsWith`). An item is each part of the text between semicolons, slashes, ampersands or spaces, so a discharge diagnosis written J10.1;R50.9 is two codes, and J10 starts the first. That is how ESSENCE reads a code written ^[;/ ]J10^ in NSSP's syndrome definitions, with the ampersand added for ICD-11's clusters. Evaluated directly, like contains."
-    },
-    {
-     "kind": "added",
-     "description": "A word in double quotes keeps its spaces. \" flu \" finds stomach flu and not influenza, as NSSP's ^ flu ^ does; without the quotes it was trimmed to flu, which influenza contains."
-    },
-    {
-     "kind": "fixed",
-     "description": "Reading a published ruleset in the rule editor took any column compared by anything other than equals for a number, so a ruleset of words showed its text column as a number. A word comparison now means text."
-    },
-    {
      "kind": "changed",
-     "description": "Its Inspector, its dialogs and the rule list moved out of app.ts into src/ruleset-ui.ts, unchanged in what they do."
+     "description": "For a published ruleset evaluated directly, the Preview shows the records and what the ruleset concludes for each, with the columns chosen for its inputs, as the rule editor's After shows them; it had listed the rules only. The binding of inputs to columns and units is one function for the run and the Preview. A ruleset that goes to the reasoner is not run in the dialog."
     }
    ],
    "breaking": false,

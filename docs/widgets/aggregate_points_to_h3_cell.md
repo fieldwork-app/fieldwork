@@ -1,6 +1,6 @@
 # Aggregate points to H3 cells
 
-_Created 2026-11-22 · Updated 2026-11-26_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A geoprivacy teaching step.** It takes points and gives back hexagonal cells, each carrying how many of the points
 fall in it, leaving out any cell with fewer than a stated number.

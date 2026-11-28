@@ -1,6 +1,6 @@
 # Mean center
 
-_Created 2026-11-22 · Updated 2026-11-23_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A spatial operation.** It takes points and gives back one point: their average position, each point counted once or
 in proportion to a number it carries.

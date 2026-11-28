@@ -1,6 +1,6 @@
 # Move points in a donut
 
-_Created 2026-11-22 · Updated 2026-11-23_
+_Created 2026-11-22 · Updated 2026-11-28_
 
 **A geoprivacy teaching step.** It takes points and gives back the same number of points, each moved a random distance
 in a random direction, between a least and a most distance from where it was.
