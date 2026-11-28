@@ -61,3 +61,26 @@ test('Snow’s Map 2: the plate offered from its repository, placed north-up by 
   await page.screenshot({path:'test-results/snow-map2-by-hand.png'});
   expect(errors).toEqual([]);
 });
+
+/** RUN BEFORE THE PLATE IS PLACED IS NOT A FAILED RUN (the practitioner, 2026-11-28: "The run failed in the workflow because
+ *  I have not loaded the map2 cached map"). It says the workflow is not ready, names the step, and offers to show it. */
+test('Snow’s Map 2 run before its plate is placed: not ready, not failed',async({page})=>{test.skip(!!skip,skip);
+  const errors=collectPageErrors(page);
+  await page.route(/raw\.githubusercontent\.com/,route=>{const path=new URL(route.request().url()).pathname.split('/').slice(4).join('/');
+    route.fulfill({status:200,body:readFileSync(REPO+path)});});
+  await page.route(/tile\.openstreetmap\.org/,route=>route.abort('failed'));
+  await page.goto('/');await page.evaluate(()=>localStorage.clear());
+  await page.goto('/?example=blank');
+  await page.locator('[data-view="project"]').click();
+  await page.locator('[data-open-example="urn:fieldwork:example:south-london-1854"]').click();
+  await expect(page.locator('[data-example-status="urn:fieldwork:example:south-london-1854"]')).toContainText('digest matched',{timeout:20000});
+  await page.locator('#workflow-select').selectOption({label:'Where does Snow’s Map 2 fall on today’s map?'});
+  await page.locator('[data-view="workflow"]').click();
+  await page.locator('#run-button').click();
+  await expect(page.locator('#workflow-state')).toHaveText('Not ready to run');
+  await expect(page.locator('#toast')).toContainText('is not placed yet. Choose the image and place it in Configure…, then run.');
+  await expect(page.locator('#toast')).not.toHaveClass(/failure/);
+  await page.locator('#toast button',{hasText:'Show the step'}).click();
+  await expect(page.locator('.react-flow__node[data-id="plate"]')).toHaveClass(/selected/);
+  expect(errors).toEqual([]);
+});

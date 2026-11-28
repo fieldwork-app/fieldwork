@@ -77,3 +77,16 @@ test('sorting applies to the filtered set, and resets to its own first page', ()
   assert.match(out.controls,/of 2 records/);
   assert.match(out.body.split('</tr>')[0],/Clinic C/,'the farthest of what is shown, not of what is hidden');
 });
+
+/** A COUNT AND ITS PERCENTAGE IN ONE CELL in a table of points or polygon summaries (2026-11-28): Table 0.16.0 paired them
+ *  only in a table of rows. */
+test('a paired count and percentage share a cell in the point table, the percentage not shown on its own', () => {
+  const t=table([row('a','North',{cases:120,share:34.5}),row('b','South',{cases:4,share:1.2})]);
+  const out=pointTableMarkup(t,esc,{present:{pairs:[{count:'cases',percent:'share'}],columns:{share:{decimals:1}}}});
+  assert.match(out.head,/>cases \(share\)/,'the heading names both');
+  assert.doesNotMatch(out.head,/>share</,'no column of its own');
+  assert.match(out.body,/<td data-number>120 \(34\.5\)<\/td>/);
+  const hidden=pointTableMarkup(t,esc,{present:{pairs:[{count:'cases',percent:'share'}],suppress:{below:5,columns:['cases'],reason:'confidentiality'}}});
+  assert.match(hidden.body,/\[c\]/,'a hidden count is hidden with its percentage');
+  assert.doesNotMatch(hidden.body,/1\.2/,'and its percentage does not give it away');
+});
