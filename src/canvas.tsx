@@ -126,8 +126,16 @@ export function mountCanvas(container:HTMLElement,callbacks:CanvasCallbacks):Can
       api.reveal=id=>{let tries=0;const go=()=>{const n=flow.getNode(id);
         if(!n?.measured?.width){if(++tries<10)requestAnimationFrame(go);return;}
         const w=n.measured.width,h=n.measured.height??0,view=api.visibleArea();
-        if(view&&n.position.x>=view.x&&n.position.y>=view.y&&n.position.x+w<=view.x+view.width&&n.position.y+h<=view.y+view.height)return;
-        void flow.setCenter(n.position.x+w/2,n.position.y+h/2,{zoom:flow.getZoom(),duration:200});};
+        if(!view)return;
+        // AS LITTLE AS BRINGS IT IN (2026-11-28): centring the new node moved the rest of the canvas half a screen for a
+        // node a few pixels over the edge, and the steps beside it went out of view. Each axis moves only by what is
+        // over, with a margin; a node wider or taller than the view is aligned to its top left.
+        const m=24,shift=(at:number,size:number,start:number,span:number)=>
+          size+2*m>span?start+m-at:at<start+m?start+m-at:at+size>start+span-m?start+span-m-(at+size):0;
+        const dx=shift(n.position.x,w,view.x,view.width),dy=shift(n.position.y,h,view.y,view.height);
+        if(!dx&&!dy)return;
+        const vp=flow.getViewport();
+        void flow.setViewport({x:vp.x+dx*vp.zoom,y:vp.y+dy*vp.zoom,zoom:vp.zoom},{duration:200});};
         requestAnimationFrame(go);};
       callbacks.ready(api);
     },[]);

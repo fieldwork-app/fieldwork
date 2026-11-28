@@ -34,7 +34,9 @@ shown in a local build is not a claim that it has been published.
   over a saved one, turned hiding off; Apply is now refused and the rule kept, and only an empty box turns it off. The
   note numbers in the headings and below the table counted different columns once a percentage was folded into its
   count; both now count the columns as shown, the folded percentage's note on its count's heading. A widget placed
-  beside its source near the edge was scrolled to only when its corner was out of view; now when any of it is.
+  beside its source near the edge was scrolled to only when its corner was out of view; now when any of it is, and
+  the canvas moves only as far as brings it in, rather than centring it: centring moved the steps beside it out of view
+  (`tests/area-measurement.browser.mjs`, caught by the gate).
 - Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
   table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
   alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed
