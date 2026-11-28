@@ -13,35 +13,30 @@
 import {readFileSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {join} from 'node:path';
+import {addressSettings,addressProblems} from './address-check.mjs';
 
 const root=new URL('..',import.meta.url).pathname;
 const project=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
-const repositoryUrl=project.repository.url.replace(/\.git$/,'').replace(/\/$/,'');
-const [owner,name]=repositoryUrl.replace(/^https:\/\/github\.com\//,'').split('/');
-const site=new URL(project.homepage);
+const settings=addressSettings(project);
+const {owner,name,site}=settings;
 
 const DATED=[/^docs\/experiments\//,/^docs\/audits\//,/^docs\/research\//,/^docs\/todo-history\.md$/,/^CHANGELOG\.md$/,/^TODO\.md$/,
   /^docs\/history-rewrite/,/^widgets\/releases\//,/^build\//,/^sw\.js$/,/^tests\/fixtures\//,/^content\/results\//,/^content\/fixtures\//];
+/** The check's own test, which names other addresses on purpose to show they are found. */
+const ITS_OWN_TEST='tests/address-check.test.mjs';
 const TEXT=/\.(md|ts|tsx|mjs|js|json|html|ttl|yml|yaml|css|txt|tsv)$/;
 /** Where code must read the address, not type it. */
 const READS=/^(src|scripts|tests)\//;
-const READERS=new Set(['src/site.ts','tests/site.mjs','scripts/validate-addresses.mjs']);
-
-// Fieldwork at any owner: github.com/<owner>/<name>, raw.githubusercontent.com/<owner>/<name>, <owner>.github.io/<name>.
-const ADDRESS=new RegExp(`(?:github\\.com|raw\\.githubusercontent\\.com)/([\\w-]+)/${name}(?![\\w-])|([\\w-]+)\\.github\\.io/${name}(?![\\w-])`,'g');
+const READERS=new Set(['src/site.ts','tests/site.mjs','scripts/validate-addresses.mjs','scripts/address-check.mjs']);
 
 function scan(dir,{reads}){
-  const files=execFileSync('git',['-C',dir,'ls-files'],{encoding:'utf8'}).split('\n').filter(f=>f&&TEXT.test(f)&&!DATED.some(d=>d.test(f)));
+  const files=execFileSync('git',['-C',dir,'ls-files'],{encoding:'utf8'}).split('\n').filter(f=>f&&TEXT.test(f)&&!DATED.some(d=>d.test(f))&&f!==ITS_OWN_TEST);
   const other=[],typed=[];
   for(const file of files){
     const path=join(dir,file);if(!existsSync(path))continue;
-    readFileSync(path,'utf8').split('\n').forEach((line,i)=>{
-      for(const m of line.matchAll(ADDRESS)){
-        const at=m[1]??m[2];
-        if(at!==owner)other.push(`${file}:${i+1} names ${m[0]}`);
-        else if(reads&&READS.test(file)&&!READERS.has(file))typed.push(`${file}:${i+1} types ${m[0]}; read it from src/site.ts or tests/site.mjs`);
-      }
-    });
+    const found=addressProblems(readFileSync(path,'utf8'),settings,{reads:reads&&READS.test(file)&&!READERS.has(file)});
+    for(const p of found.other)other.push(`${file}:${p.line} names ${p.link}, not ${p.kind==='site'?site.href:`github.com/${owner}/${name}`}`);
+    for(const p of found.typed)typed.push(`${file}:${p.line} types ${p.link}; read it from src/site.ts or tests/site.mjs`);
   }
   return {files:files.length,other,typed};
 }
