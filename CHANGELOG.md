@@ -35,6 +35,13 @@ shown in a local build is not a claim that it has been published.
 - **A worked example's map image not yet placed is "Not ready to run", not "Run failed".** Run on Snow's Map 2
   placed by hand, before the plate was chosen and placed, said the run had failed (the practitioner, 2026-11-28). It
   now says the plate is not placed yet and offers to show the step.
+- **Experiment 233, second spike: the cooperative training mission's data model**, drafted for review and created
+  nowhere. The SQL for Postgres as Supabase hosts it (`docs/experiments/233/game-model.sql`) covers missions, roles,
+  memberships, turns, append-only moves timestamped and attributed by the server, each role's read rules as row-level
+  security, and a facilitator-only turn-ending function that changes nothing when sent twice. A TypeScript copy
+  (`src/game-model.ts`, not used by the app) mirrors it, and 27 unit tests check what each role can and cannot read.
+  The mission's record uses the PROV-O terms runs already use. The SQL has not been run on any database; ten questions
+  for the practitioner are in the experiment.
 - **Checked, not reproduced:** a notice covering a newly added widget's port (`docs/todo-history.md`).
 - Validation, Chromium only: `tests/transform-previews-draw.browser.mjs`, `tests/measure-distance-preview.browser.mjs`,
   `tests/ruleset-published-preview.browser.mjs`, `tests/snow-map2-by-hand.browser.mjs` (the not-ready case),

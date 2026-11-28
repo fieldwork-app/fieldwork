@@ -2,10 +2,11 @@
 
 _Created 2026-11-26 · Updated 2026-11-27_
 
-**Status:** tried, one spike. A research proposal, kept for review. The first piece is tried: a Supabase key made by
-the practitioner and checked from Fieldwork's Credentials dialog, which Supabase accepted (2026-11-27, below). Nothing else is built: no game,
-no hosted session, no learner trial. Every other design choice below is the proposal's, and none has been settled by
-the practitioner.
+**Status:** tried, one spike; a second drafted, not run. A research proposal, kept for review. The first piece is
+tried: a Supabase key made by the practitioner and checked from Fieldwork's Credentials dialog, which Supabase accepted
+(2026-11-27, below). The second is a draft of the game's data model, checked by unit tests against a TypeScript copy of
+its rules, and not run on any database (2026-11-28, below). Nothing else is built: no game, no hosted session, no
+learner trial. Every other design choice below is the proposal's, and none has been settled by the practitioner.
 
 ## The question
 
@@ -270,7 +271,139 @@ Outbreak at Watersedge. PDFs not opened include WHO's simulation exercise manual
 author's copy and the Skryabina review. Nothing here shows that a cooperative turn-based mission teaches analysis
 better than a staged case study: that comparison has not been made in anything found.
 
+## Spike 2: the game's data model, drafted (2026-11-28)
+
+Agreed by the practitioner on 2026-11-27 as the third item of the next batch: *"the cooperative game's data model
+drafted in 233 as a second spike: schema, each role's read rules as testable checks, the turn-ending function, every
+move timestamped and attributed, provenance; nothing created in Supabase until the practitioner agrees it"*.
+
+**Nothing was created in Supabase or anywhere else.** No database was run. The SQL is a draft for review.
+
+| Part | Where |
+| --- | --- |
+| The tables, who may read each, and the functions that write, for Postgres as Supabase hosts it | [233/game-model.sql](233/game-model.sql) |
+| The same rules and functions in TypeScript, so tests can exercise them | [src/game-model.ts](../../src/game-model.ts) (nothing in the app uses it) |
+| The tests | [tests/game-model.test.mjs](../../tests/game-model.test.mjs) |
+
+### The record
+
+The words are the proposal's: a **mission** is one session of the exercise, a **membership** is one person in one
+role, a **move** is a proposal or a decision, a **resolution** is what a turn's end accepted. None of these is in the
+[glossary](../glossary.md) yet.
+
+| Table | Holds | Changes after it is written? |
+| --- | --- | --- |
+| mission | Title, number of turns, the current turn, the pinned template (repository and commit) and the kernel's digest | Status and current turn, through the functions only |
+| mission_secret | The model's seed and parameters, and the answer key | No |
+| team, role | The teams, and the roles: the facilitator, and the players' parts (field officer, laboratory lead, …) | No |
+| membership | One person in one role in one mission; a player's has a team, the facilitator's has none | No |
+| evidence | Each item of synthetic evidence, with its digest, the turn it is for, and optionally one team or one role | No |
+| release | When each item was released | Never (append-only) |
+| turn, turn_end | When each turn opened and ended, who ended it, and the request that ended it | Never (append-only) |
+| move | The team, role, person, turn and time, the action, and for a decision its reason, its evidence with a digest, and what would make the team reconsider | Never (append-only) |
+| resolution | Each team's accepted decision for a turn, or none | Never (append-only) |
+
+The person, role, team and time of a move come from the server, never from what the browser sends. A decision missing
+its reason, its evidence, its digest or what would change it is refused by the database (a hard stop). A proposal needs
+only an action.
+
+### Who reads what
+
+Enforced by row-level security in the SQL, and by the same rules in the TypeScript model.
+
+| | Facilitator | A player, own team | A player, another team's | Someone with no membership, or another mission's facilitator |
+| --- | --- | --- | --- | --- |
+| The mission, its roles, its turns | Yes | Yes | Yes, the same rows | No |
+| Teams, memberships | All | Own team's | No | No |
+| Moves and resolutions | All | Own team's | No | No |
+| Evidence and its release | All, unreleased included | Released, for their team (or all teams) and their role (or all roles) | No | No |
+| The secret | Yes | At the debrief only | At the debrief only | No |
+
+A player never reads the facilitator's membership. Before the mission starts, players read no evidence.
+
+### Ending a turn
+
+| Question | What the draft does |
+| --- | --- |
+| Who may end a turn | Only a facilitator of that mission. Everyone else is refused |
+| What it does, in one transaction | Records the end; for each team, takes its last decision made before the end, or records none; opens the next turn and releases its evidence; after the last turn, moves the mission to its debrief |
+| A move made after the end | Kept, marked late, never counted. A move and a turn's end cannot interleave: the end locks the mission, and a move waits for the lock and then reads its time |
+| The same request twice | Answers the same and changes nothing. Each press of End turn has its own request id, resent until acknowledged |
+| Two presses at once | The second is refused as stale. The turn advances once |
+
+### Provenance
+
+A mission's record is written in PROV-O with the terms a run's receipts already use. No term is coined.
+
+| In the mission | In PROV-O | Already used by |
+| --- | --- | --- |
+| The mission | `prov:Activity`, `prov:used` the template (a `prov:Plan` at its commit) and the kernel (with `<urn:fieldwork:sha256>`) | Run plans; digests on study areas |
+| A turn, and its end | `prov:Activity` with `prov:startedAtTime`, `prov:endedAtTime` | Each run step's receipt |
+| A move | `prov:Activity`, `prov:wasAssociatedWith` the person, `prov:qualifiedAssociation` with `prov:hadRole` the role; `prov:used` the turn's snapshot and the evidence cited | — (`prov:Role` is used for reference roles) |
+| A decision | `prov:Entity`, `prov:wasAttributedTo` the person, `prov:generatedAtTime` | A drawn study area's author |
+| A person | `prov:Agent`, their GitHub account where known, `fw:githubLogin`, `fw:identityBasis` | `fw:Author` |
+| A snapshot | `prov:Collection`, `prov:hadMember` each released item; the turn's end `prov:generated` it, and `prov:used` the accepted decisions | — |
+| Evidence cited | A Fieldwork run's receipt (`urn:fieldwork:run:…`) or an https address, with its digest | Run receipts |
+
+The record is built from what the reader may read, so a player's copy holds only their team's moves and the evidence
+they saw. The secret, account ids and the evidence files' locations are never written.
+
+**Found:** `fw:githubLogin` and `fw:identityBasis` are declared for `fw:Author`, "a person who authored part of an
+investigation". A reasoner reading a mission's record will conclude every player is an author. Not changed here.
+
+### Choices this draft made, for the practitioner
+
+1. **A move after the turn ends** is kept and marked late, so the debrief can show it. The proposal says stale
+   decisions are refused. Keep, or refuse?
+2. **Evidence by role.** The draft lets an item go to one role only (the laboratory lead's results), the pattern
+   against one player steering. Use it in the pilot, or give every role everything?
+3. **The secret at the debrief.** Players read the seed, parameters and answer key once the last turn ends. Is that
+   what the debrief should show?
+4. **Other teams at the debrief.** Players never read another team's moves, even then. Should the debrief compare
+   teams?
+5. **Who records a decision.** Any player in the team may. Should each role sign its part?
+6. **A decision without all its parts** is refused. Should it be kept and flagged instead?
+7. **Joining.** Here the facilitator adds each membership, which needs the person's account id. A join link is not
+   drafted.
+8. **Signing in with GitHub through Supabase** would make a player's identity `attested`, as `fw:identityBasis`
+   defines it. Is that the sign-in to use?
+9. **The `game` schema.** Supabase serves only its `public` schema until another is added in its settings. Keep a
+   schema of its own?
+10. **Scoring** is not drafted, as whether to score is still open.
+
+### Observation to make, written before it is known
+
+Reading the "Who reads what" table and the SQL, can the practitioner say, without help, what a laboratory lead in
+Team A sees at the start of turn 2? Record what they said and where it differed.
+
+### Validation record
+
+Node 22.23.3, no browser, no database, 2026-11-28:
+
+- **27 unit tests pass** in `tests/game-model.test.mjs`. Nine are read rules, by role, with the negative cases: what
+  the facilitator, each player, another mission's facilitator and an outsider cannot read. Four are moves. Eight are
+  starting and ending turns. Three are provenance, parsed as Turtle. Three read the SQL file and check it has the same
+  tables, one read policy each with row-level security on, the append-only triggers, no update or delete grants, and
+  the writing functions locking before they read the time.
+- The full unit suite: 2,124 tests, 2,120 pass, 0 fail, 4 skipped.
+- **Deliberate defects**, each put into the model and then removed: ignoring an item's role failed 2 tests; letting a
+  player read another team's moves and resolutions failed 3; dropping the request-id check failed 2. Counting a late
+  move failed none. That check is a second guard: in a single-threaded model the end's resolution is written before
+  any late move exists, so only a real concurrent database could show whether it is needed.
+
+### What this spike does not establish
+
+- **That the SQL runs.** It has not been run on Postgres or Supabase. The tests read it as text; they do not execute
+  it. Syntax errors, a policy that recurses, or a lock that behaves differently from the comment are all possible.
+- **That the TypeScript and the SQL agree** beyond what the three text checks cover. They were written side by side.
+- **Concurrency.** The model is single-threaded. Two moves and an end arriving at once is argued from the locks, not
+  tested.
+- **That nothing unreleased reaches a browser.** Row-level security covers the tables. The evidence files themselves,
+  Supabase's storage and its live updates are not drafted.
+- That the roles, the read rules or the turn's steps suit a real exercise. No facilitator or learner has seen them.
+
 ## What this does not establish
 
 That learners want this, that a facilitator can run it, that Supabase is the right service, or that turns teach better
-than a discussed worked example. Nothing has been built or tried.
+than a discussed worked example. *Corrected 2026-11-28:* this read "Nothing has been built or tried", which stopped
+being true with the first spike. What is built is the key check and a draft data model; no game has been played.

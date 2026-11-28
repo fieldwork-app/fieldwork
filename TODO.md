@@ -104,10 +104,10 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   and what a directly evaluated ruleset concludes; one that goes to the reasoner says why not. **Left:** 9 transforms
   neither draw nor show rows, each with a reason recorded. **Raster input** shows numbers with no reason. Measure: transforms that neither render nor say why.
 - **Next batch, agreed 2026-11-27, in order:** (1) ~~an edit applied during a run~~, done in 0.204.7: Apply waits for the
-  run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) the
+  run and then applies; (2) ~~the write-up's and the export's tables to the table standard~~, done in 0.205.0; (3) ~~the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a
-  second spike: schema, each role's read rules as testable checks, the turn-ending function, every move timestamped
-  and attributed, provenance; nothing created in Supabase until the practitioner agrees it; (4)
+  second spike~~, drafted in 0.206.0 and not created anywhere; the SQL has not been run on a database, and ten questions
+  for the practitioner are in 233's Spike 2; (4)
   `find_literature_for_terms` from [232](docs/experiments/232-terms-looked-up-and-appraised.md)'s design, its two
   syntaxes read against their current documentation first.
 - **A cooperative, turn-based training mission** ([233](docs/experiments/233-a-cooperative-turn-based-training-mission.md)):
