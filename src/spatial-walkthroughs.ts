@@ -46,7 +46,7 @@ const KEY:Record<Kind,string>={input:'Grey outline: what the step is given',area
   look:'Thick outline: what this step looks at',result:'Filled: what the step makes',gone:'Faint: left out'};
 
 /** The shapes drawn in a 360 by 240 box, longitude across and latitude up, at the scale of the widest shape. */
-function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string[];scale?:Scale}{
+function draw(shapes:Shape[],label:string,shading?:Scale,said?:Partial<Record<Kind,string>>):{svg:string;key:string[];scale?:Scale}{
   // THE BOUNDS IN ONE PASS (review of #5, 2026-11-27): every coordinate spread into Math.min and Math.max threw RangeError
   // on an 80,000-vertex ring, well inside the input budget.
   let w=Infinity,e=-Infinity,south=Infinity,n=-Infinity;
@@ -67,7 +67,7 @@ function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string
       return `<text class="walk-shape-label" data-at="${lx.toFixed(1)}" x="${(lx+8).toFixed(1)}" y="${(y(at[1])-8).toFixed(1)}">${escapeHtml(s.label!)}</text>`;}).join('');
   const kinds=[...new Set(shapes.map(s=>s.kind))];
   return {svg:`<svg class="walk-drawing" viewBox="0 0 360 240" role="img" aria-label="${label}">${body}</svg>`,
-    key:kinds.map(k=>k==='result'&&shading?KEY_SCALED:KEY[k]),...(shading?{scale:shading}:{})};
+    key:kinds.map(k=>said?.[k]??(k==='result'&&shading?KEY_SCALED:KEY[k])),...(shading?{scale:shading}:{})};
 }
 /** A DIALOG'S PREVIEW, DRAWN AS SHOW ME HOW DRAWS (2026-11-27): the practitioner, of Clip polygons' Preview, which gave
  *  counts and no shapes: *"the preview does not show the resulting Voronoi polygons, clipped by the study area."* The
@@ -77,7 +77,9 @@ export type PreviewScale=Scale;
 /** WITH A SCALE (2026-11-27), for a step whose result carries a value: Summarize points to polygons, whose Preview
  *  counted and did not draw (the practitioner: *"Summarize points to polygon for Voronoi catchment still with no
  *  preview"*). The scale is keyed as the walkthrough player keys it (table-walkthrough.ts), so the two read alike. */
-export function previewDrawing(shapes:PreviewShape[],label:string,scale?:PreviewScale):string{
+/** WITH ITS OWN WORDS FOR A KIND (2026-11-28), where the walkthroughs' key would misname what is drawn: a faint point in
+ *  Move points in a donut is where a point WAS, not one left out, and a line in Measure distance is not filled. */
+export function previewDrawing(shapes:PreviewShape[],label:string,scale?:PreviewScale,said?:Partial<Record<Kind,string>>):string{
   // LARGEST FILLED SHAPE FIRST (2026-11-27). The practitioner, of Summarize's Preview on Snow's isochrone: *"The larger
   // polygon (longer travel) should not be at the top surface, it covers the other smaller isochrone band polygons."*
   // Nested bands arrive shortest first, so the 15-minute band was drawn last over the 1, 5 and 10. Shapes that do not
@@ -86,7 +88,7 @@ export function previewDrawing(shapes:PreviewShape[],label:string,scale?:Preview
     for(let i=0;i<r.length-1;i++)a+=r[i]![0]*r[i+1]![1]-r[i+1]![0]*r[i]![1];return t+Math.abs(a)/2;},0);
   const filled=shapes.filter(s=>s.kind==='result'&&s.rings).sort((a,b)=>extent(b)-extent(a));
   let next=0;shapes=shapes.map(s=>s.kind==='result'&&s.rings?filled[next++]!:s);
-  const {svg,key}=draw(shapes,escapeHtml(label),scale);
+  const {svg,key}=draw(shapes,escapeHtml(label),scale,said);
   const scaleKey=scale?`<div class="walk-scale"><p class="walk-scale-title">${escapeHtml(scale.title)}</p><ul>`
     +scale.entries.map(e=>`<li><span class="walk-swatch" style="background:${escapeHtml(e.color)}" aria-hidden="true"></span>${escapeHtml(e.label)}</li>`).join('')
     +'</ul></div>':'';

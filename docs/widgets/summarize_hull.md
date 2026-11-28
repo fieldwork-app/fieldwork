@@ -58,6 +58,11 @@ recomputes the outline and the area with Shapely and compares them to this widge
 
 ## History
 
+### 2026-11-28 · The Preview draws the outline (0.5.0)
+
+**Configure…**'s Preview draws the outline it measures, filled, with the points over it, as **Show me how** ends.
+It had given only the area and how many points the outline passes through.
+
 ### 2026-11-23 · Show me how (0.3.0)
 
 **Configure…** offers **Show me how it works**: six made-up cases: the band caught on the outermost, the one inside that does not shape it, and the outline the step makes with its area and widest span.

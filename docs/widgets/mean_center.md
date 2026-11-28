@@ -39,6 +39,13 @@ The lab's [mean centre notebook](https://digital-twin-ph.github.io/validation-la
 
 ## History
 
+### 2026-11-28 · The Preview draws the centre, and follows the weight chosen (0.6.0)
+
+**Configure…**'s Preview draws the points and the centre the step passes on over them. It had given only the
+centre's coordinates. It also ignored the weight being chosen, and showed the saved one; with DEATHS chosen in the
+Snow geoprivacy example it now says *weighted by DEATHS totalling 489*. The hint under the weight was about Snow's
+data; it now says what a weight does.
+
 ### 2026-11-23 · Show me how (0.4.0)
 
 **Configure…** offers **Show me how it works**: four made-up houses: the centre with each counted once, the centre counted by the weight, and the point the step makes as set.

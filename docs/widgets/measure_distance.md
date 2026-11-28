@@ -50,6 +50,12 @@ The sea-level example (each facility's nearest tide gauge).
 
 ## History
 
+### 2026-11-28 · The Preview draws each point to its nearest candidate (0.8.0)
+
+**Configure…**'s Preview draws a line from each point to the candidate it would be measured to, the candidates the
+conditions keep strong and the others faint, so a condition is seen moving the lines. It had given only the counts
+and distances.
+
 ### 2026-11-26 · Its code out of app.ts (0.7.1)
 
 The Inspector, its sentence and Configure… moved into `src/distance-ui.ts`. Nothing they show or do changed.

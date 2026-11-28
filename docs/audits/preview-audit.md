@@ -119,7 +119,7 @@ displays, reads in or configures.
 | Widget | Preview built at | Shows | When | T/D | Reason recorded for not drawing or showing rows |
 | --- | --- | --- | --- | --- | --- |
 | Append rows | append-ui.ts:104, :143 | Table, Before and After | after a run with every table; before, each table's value column | T | — |
-| Study area (countries) | area-countries-ui.ts:45 | None | — | D | none found |
+| Study area (countries) | area-countries-ui.ts:17 | None (a table of countries and shares in Settings, once found) | — | D | this audit, 2026-11-28: it sets a list of countries, shown in Settings with the shares found (area-countries-ui.ts:29) |
 | Join a table to the study area | area-join-ui.ts:103, :124 | Table, Before and After | Before only, until table, parts and key are known | T | — |
 | Geometry buffer | area-steps-ui.ts:232 | Drawing + numbers + WT | when points, lines or polygons arrive | T | — |
 | Calculate area | area-steps-ui.ts:364 | Numbers + WT | when a boundary is reachable | T | area-steps-ui.ts:294, "The measurement IS this step's result" |
@@ -129,25 +129,25 @@ displays, reads in or configures.
 | Chart | chart-ui.ts:286 | Drawing (the chart) | after a run, or when a table has arrived | D | — |
 | Deduplicate records | deduplicate-step-ui.ts:88 | Sentence | always | T | deduplicate-step-ui.ts:79, what a run found "stay[s] in the Inspector's Result" |
 | Detect unusual counts | detect-ui.ts:186 | Drawing + table | after a run; nothing before | T | — |
-| Measure distance | distance-ui.ts:92 | Numbers | when both layers are reachable | T | none found |
+| Measure distance | distance-ui.ts:92 | Drawing + numbers (drawn since 2026-11-28; was Numbers) | when both layers are reachable | T | — |
 | Find health facilities | facilities-ui.ts:82, :111 | Sentence (study area); numbers (list, after a run) | — | D | facilities-ui.ts:78, retrieval "is in Result" |
-| Move points in a donut | geoprivacy-ui.ts:109 | Numbers + WT | when points are reachable | T | none found |
-| Aggregate points to H3 cells | geoprivacy-ui.ts:137 | Numbers + WT | when points are reachable | T | none found |
-| Georeferenced map image | georeference-ui.ts:129 | None (its map is in Settings) | — | D | none found |
-| Point data, editor | input-data-ui.ts:52 | None (a pin map and the first records in the body) | — | D | none found |
+| Move points in a donut | geoprivacy-ui.ts:129 | Drawing + numbers + WT (since 2026-11-28; was Numbers + WT) | when points are reachable | T | — |
+| Aggregate points to H3 cells | geoprivacy-ui.ts:158 | Drawing + numbers + WT (since 2026-11-28; was Numbers + WT) | when points are reachable | T | — |
+| Georeferenced map image | georeference-ui.ts:101 | None (its map is in Settings) | — | D | this audit, 2026-11-28: the placement is drawn in Settings, where the pairs are set, and over today's map on request (georeference-ui.ts:264) |
+| Point data, editor | input-data-ui.ts:51 | None (a pin map and the first records in the body) | — | D | this audit, 2026-11-28: the editor is the body, with its map and its records (input-data-ui.ts:73) |
 | Total within groups | group-ui.ts:99 | Table, Before and After | after a run with keys chosen | T | — |
 | Line layer | line-input-ui.ts:114, :236, :255 | Drawing + table | file read, or two areas connected | D | — |
 | Map | map-ui.ts:128 | Drawing (the map) | after a run | D | — |
-| Convex hull | metric-steps-ui.ts:208 | Numbers + WT | when points are reachable | T | none found |
+| Convex hull | metric-steps-ui.ts:246 | Drawing + numbers + WT (since 2026-11-28; was Numbers + WT) | when points are reachable | T | — |
 | Voronoi catchments | metric-steps-ui.ts:229 | Drawing + numbers + WT (since 0.204.6; was Numbers + WT) | when sites and area are reachable | T | — |
 | Network isochrone | metric-steps-ui.ts:280 | Drawing + numbers + WT (since 0.204.6; was Sentence + WT) | when the network is held in the page | T | for a network kept outside the page only; the reason as first recorded did not hold for Snow, below |
-| Mean center | metric-steps-ui.ts:320 | Numbers + WT | when points are reachable | T | none found |
+| Mean center | metric-steps-ui.ts:435 | Drawing + numbers + WT (since 2026-11-28; was Numbers + WT) | when points are reachable | T | — |
 | Reachable junctions | metric-steps-ui.ts:387 | Sentence; numbers if the network is held in the page | — | T | metric-steps-ui.ts:113 and this audit, as Network isochrone |
-| Street network | network-input-ui.ts:172 | None (its drawing is in the Inspector's Result) | — | D | none found |
-| Space-time scan | outbreak-steps-ui.ts:123 | Numbers (the scan is not run) | when cases are reachable | T | none found |
+| Street network | network-input-ui.ts:148 | None (its drawing is in the Inspector's Result) | — | D | this audit, 2026-11-28: the settings take effect at the next download or file read, made from the Inspector (network-input-ui.ts:125); the network held is drawn in its Result |
+| Space-time scan | outbreak-steps-ui.ts:98 | Numbers (the scan is not run) | when cases are reachable | T | outbreak-steps-ui.ts:46, "it shuffles the dates hundreds or thousands of times, which belongs in the run" (found 2026-11-28) |
 | Transmission chains | outbreak-steps-ui.ts:164 | Table | after a run | T | — |
 | Point data, from a table | point-data-ui.ts:71 | Sentence | always | D | this audit: "reachable, not yet built" |
-| Compare point sets | point-comparison-ui.ts:40 | None | — | T | none found |
+| Compare point sets | point-comparison-ui.ts:82 | Drawing + numbers (since 2026-11-28; was None) | when the original, moved and pump points are reachable | T | — |
 | Polygon layer | polygon-input-ui.ts:279, :284 | Drawing + rows; table of parts | once read | D | — |
 | Raster input | raster-ui.ts:117 | Numbers (cells, window, metadata) | — | D | none found |
 | Clip raster | raster-ui.ts:291 | Sentence | always | T | this audit, as Network isochrone |
@@ -155,11 +155,11 @@ displays, reads in or configures.
 | Apply ruleset, published | ruleset-ui.ts:368 | Sentence (its rules, no records) | — | T | none found |
 | Apply ruleset, rule editor | rule-editor.ts:621, :645 | Table, Before, Sorted and After | when records are reachable | T | — |
 | Sample a raster | sample-raster-ui.ts:109 | Sentence + WT | always | T | this audit, as Network isochrone |
-| Sample a raster, satellite files | sample-raster-ui.ts:214 | None | — | T | none found |
+| Sample a raster, satellite files | sample-raster-ui.ts:192 | None | — | T | this audit, 2026-11-28: the files are fetched and read in the run (run-raster.ts:54, `readGridFiles(…, fetch, …)`) |
 | Select rows by value | select-ui.ts:133 | Table | after a run | T | — |
-| Cases by period | series-rate-ui.ts:122 | Numbers (no curve drawn) | when cases are reachable | T | none found |
+| Cases by period | series-rate-ui.ts:121 | Drawing (the curve) + numbers (since 2026-11-28; was Numbers) | when cases are reachable | T | — |
 | Rate with a denominator | series-rate-ui.ts:190 | Table | when a table is reachable | T | — |
-| Study design | study-design-dialog.ts:226 | None | — | D | none found |
+| Study design | study-design-dialog.ts:224 | None | — | D | this audit, 2026-11-28: it declares a design and changes no records; its pages carry the checklist of what the workflow declares (study-design-dialog.ts:227) |
 | Table | table-output-ui.ts:154 | Table | when the input has rows | D | — |
 | Regression | table-steps-ui.ts:215 | Numbers (the rows a fit would use) | when a table is reachable | T | CHANGELOG, 0.197.0: "a fit is iterative and belongs in the run" |
 | Travel time over ground | travel-ground-ui.ts:86 | Sentence | always | T | this audit, as Network isochrone |
@@ -207,6 +207,31 @@ it held the page for 3.4 s. Remaining: 17 transforms that neither draw nor show 
 (0.204.0). Four of those listed under *Shows the data* do not: Compare point sets has no Preview, Find health
 facilities' study-area mode and the published Apply ruleset dialog are sentences, and Tabular data has no Configure
 dialog at all.
+
+**2026-11-28: seven drawn, two reasons found, five recorded.** Convex hull, Mean center, Move points in a donut,
+Aggregate points to H3 cells, Measure distance and Compare point sets now draw with `previewDrawing`, each from the
+step's own function on the points connected; Cases by period draws its curve. Each was checked in Chromium on a worked
+example (`tests/transform-previews-draw.browser.mjs`, `tests/measure-distance-preview.browser.mjs`), and each test
+failed on the code before. Drawing them found two faults the numbers had hidden: Mean center's Preview ignored the
+weight being chosen and showed the saved one, and read points without their values, so a weight would have been
+refused there while the run took it; and the donut's and the H3 cells' Previews read at most 500 points.
+
+Space-time scan had a reason in the code that this audit missed: *"it shuffles the dates hundreds or thousands of
+times, which belongs in the run"* (outbreak-steps-ui.ts:46). Not measured: how long a scan of Hagelloch's cases would
+take in a worker, as Network isochrone's Preview now runs. Sample a raster's satellite files are fetched from the
+catalog and read in the run (run-raster.ts:54), so the dialog has nothing to read; recorded here. Five of the six
+display steps get a reason, each from the code: see their rows.
+
+**Left, 2026-11-28.** Transforms that neither draw nor show rows: **10 widgets, 11 dialogs** — Calculate area, Keep
+points inside the area, Deduplicate records, Reachable junctions, Space-time scan, Clip raster, Apply ruleset
+(published), Sample a raster (both dialogs), Regression, Travel time over ground. **One has no reason recorded:** Apply
+ruleset (published). Its rows are reachable: `rulePreview` (ruleset-ui.ts:125) reads the table connected, and the rule
+editor shows Before, Sorted and After from it; the published dialog shows the rules and not what they decide over these
+records. Not attempted in this pass. Of the display steps, **Raster input** is left with numbers and no reason: the kept
+window's cells could be drawn, and were not attempted.
+
+**Counts, by the most each dialog can show, 2026-11-28:** drawing 17, table 11, numbers 6, sentence 7, none 6 (47
+dialogs).
 
 ### Claims in the record that the code does not bear out
 

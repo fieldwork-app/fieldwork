@@ -59,7 +59,7 @@
   {
    "id": "urn:fieldwork:widget:aggregate_points_to_h3_cell",
    "nodeType": "aggregate_points_to_h3_cell",
-   "currentVersion": "0.7.0",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -100,6 +100,11 @@
      "version": "0.7.0",
      "path": "widgets/releases/aggregate_points_to_h3_cell/0.7.0.json",
      "sha256": "ac06d9f141abb8ec5875c99c82f29b9e115bd770ab894db4e40e089c1814b09a"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/aggregate_points_to_h3_cell/0.8.0.json",
+     "sha256": "302df3bbc7ab66514f1705c9942ebe342c0a2b6f66f4ed5d34ebe932c9575602"
     }
    ],
    "previousNodeTypes": [
@@ -312,7 +317,7 @@
   {
    "id": "urn:fieldwork:widget:case_series",
    "nodeType": "case_series",
-   "currentVersion": "0.10.0",
+   "currentVersion": "0.11.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -373,6 +378,11 @@
      "version": "0.10.0",
      "path": "widgets/releases/case_series/0.10.0.json",
      "sha256": "9671048ede53de0e59bb10de287803213eacec354fc7bfd20b0d442bb9c7e172"
+    },
+    {
+     "version": "0.11.0",
+     "path": "widgets/releases/case_series/0.11.0.json",
+     "sha256": "ef2f04f560274012efc8af5dc1b1ce102bb72d087d5a68c14e9f5174f0f1d259"
     }
    ]
   },
@@ -729,7 +739,7 @@
   {
    "id": "urn:fieldwork:widget:compare_point_sets",
    "nodeType": "compare_point_sets",
-   "currentVersion": "0.3.0",
+   "currentVersion": "0.4.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -745,6 +755,11 @@
      "version": "0.3.0",
      "path": "widgets/releases/compare_point_sets/0.3.0.json",
      "sha256": "3dd6cca8639268dca4c02e498a8fe06af2d475fd834a42efba2423b9d3d82f9b"
+    },
+    {
+     "version": "0.4.0",
+     "path": "widgets/releases/compare_point_sets/0.4.0.json",
+     "sha256": "209a751197ab421ad94e2206cbadc0751ae14330218ea07f5670ec3d665b258f"
     }
    ]
   },
@@ -834,7 +849,7 @@
   {
    "id": "urn:fieldwork:widget:donut_geomask",
    "nodeType": "donut_geomask",
-   "currentVersion": "0.4.0",
+   "currentVersion": "0.5.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -855,6 +870,11 @@
      "version": "0.4.0",
      "path": "widgets/releases/donut_geomask/0.4.0.json",
      "sha256": "e78e81a7e486495b6842e2e6874b6ba3f3f004765df403985251f29c5cd56748"
+    },
+    {
+     "version": "0.5.0",
+     "path": "widgets/releases/donut_geomask/0.5.0.json",
+     "sha256": "0cf250cef234fa38d5b273b8de9c654d276e3f01fdca96069df76975422d9bf3"
     }
    ]
   },
@@ -1656,7 +1676,7 @@
   {
    "id": "urn:fieldwork:widget:mean_center",
    "nodeType": "mean_center",
-   "currentVersion": "0.5.0",
+   "currentVersion": "0.6.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -1682,6 +1702,11 @@
      "version": "0.5.0",
      "path": "widgets/releases/mean_center/0.5.0.json",
      "sha256": "54abfa483372a082164136550ef5f4b9ac3a9958dbbb667564f42770c7128f96"
+    },
+    {
+     "version": "0.6.0",
+     "path": "widgets/releases/mean_center/0.6.0.json",
+     "sha256": "60596cebc7bf7ce334d8047d70ca0b7046d6a9320bdf0aff9c3afbbe02a47d13"
     }
    ]
   },
@@ -1710,7 +1735,7 @@
   {
    "id": "urn:fieldwork:widget:measure_distance",
    "nodeType": "measure_distance",
-   "currentVersion": "0.7.1",
+   "currentVersion": "0.8.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -1746,6 +1771,11 @@
      "version": "0.7.1",
      "path": "widgets/releases/measure_distance/0.7.1.json",
      "sha256": "46733b768f4dba76e01878ae5687eb7e6de6489c66e093949f0461fbc74e5952"
+    },
+    {
+     "version": "0.8.0",
+     "path": "widgets/releases/measure_distance/0.8.0.json",
+     "sha256": "9c004c858c842ec25eb1d9c90d67ee926e1a4d23369302fb903f7b9548a2cba8"
     }
    ],
    "previousNodeTypes": [
@@ -2954,7 +2984,7 @@
   {
    "id": "urn:fieldwork:widget:summarize_hull",
    "nodeType": "summarize_hull",
-   "currentVersion": "0.4.0",
+   "currentVersion": "0.5.0",
    "releases": [
     {
      "version": "0.1.0",
@@ -2975,6 +3005,11 @@
      "version": "0.4.0",
      "path": "widgets/releases/summarize_hull/0.4.0.json",
      "sha256": "ab592279a00f429a8c8f83528ef5cf1352c42b5d313052c70285307ed2fe518d"
+    },
+    {
+     "version": "0.5.0",
+     "path": "widgets/releases/summarize_hull/0.5.0.json",
+     "sha256": "8a8e0b72333c3d427377792a6a27d5c3258add47c0121ac81e4c656b9b2d6e7e"
     }
    ]
   },

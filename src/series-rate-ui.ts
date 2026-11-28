@@ -52,6 +52,28 @@ export function seriesSentence(p:import('./types.js').ParamsByType['case_series'
  *  THE UNDATED RECORDS ARE THE FINDING, and they are stated whenever there are any. A count by date silently drops a
  *  record whose date cannot be read, and Oswego arrives with two such onset times: the number here is the reader's
  *  one chance to see them before the curve is drawn as though they never existed. */
+/** THE CURVE THIS STEP WOULD MAKE, DRAWN (2026-11-28). The preview audit's re-review of 2026-11-27 listed this Preview
+ *  as numbers, no curve, with no reason recorded. The bins are the step's own, zero periods kept, so a gap in the
+ *  outbreak is a gap here. Split by a column, each period is drawn as the sum over its values and the key says so:
+ *  the stacked picture is Chart's, after the step. Drawn in Detect unusual counts' bars, so the two curves read alike. */
+function seriesCurve(series:CaseSeries,esc:(v:string)=>string):string{
+  const totals=new Map<string,{label:string;count:number}>();
+  for(const b of series.bins){const held=totals.get(b.key);if(held)held.count+=b.count;else totals.set(b.key,{label:b.label,count:b.count});}
+  const bins=[...totals.values()],N=bins.length;
+  if(!N)return '';
+  const W=760,H=220,L=48,B=28,top=12,max=Math.max(1,...bins.map(b=>b.count));
+  const x=(i:number)=>L+(i+0.5)*(W-L-8)/N,y=(v:number)=>H-B-(v/max)*(H-B-top),bw=Math.max(1,(W-L-8)/N*0.8);
+  const num=(v:number)=>v.toLocaleString('en-US',{maximumFractionDigits:1});
+  const bars=bins.map((b,i)=>`<rect x="${(x(i)-bw/2).toFixed(1)}" y="${y(b.count).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-B-y(b.count)).toFixed(1)}" `
+    +`class="detect-bar"><title>${esc(b.label)}: ${num(b.count)}</title></rect>`).join('');
+  const ticks=[0,max/2,max].map(v=>`<text x="${L-6}" y="${(y(v)+5).toFixed(1)}" text-anchor="end" class="detect-axis">${num(v)}</text>`).join('');
+  const labels=[0,Math.floor((N-1)/2),N-1].filter((v,i,a)=>a.indexOf(v)===i)
+    .map(i=>`<text x="${(i===0?L:i===N-1?W-8:x(i)).toFixed(1)}" y="${H-8}" text-anchor="${i===0?'start':i===N-1?'end':'middle'}" class="detect-axis">${esc(bins[i]!.label)}</text>`).join('');
+  return `<figure class="detect-chart series-curve"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${series.unit??'Cases'} by ${PERIOD_WORDS[series.period]}`)}">`
+    +`<line x1="${L}" y1="${H-B}" x2="${W-8}" y2="${H-B}" class="detect-axis-line"/>${ticks}${labels}${bars}</svg>`
+    +`<figcaption><ul class="walk-key"><li>${esc(`Bars: the ${series.unit??'cases'} in each ${PERIOD_WORDS[series.period]}`
+      +(series.splitBy?`, every value of ${series.splitBy} together`:''))}.</li></ul></figcaption></figure>`;
+}
 function seriesPreview(kit:SeriesRateKit,nodeId:string,d:import('./types.js').ParamsByType['case_series'],
   esc:(v:string)=>string):string{
   if(!d.dateField)return '<p class="muted">Name the date column, and what this step would count is shown here.</p>';
@@ -72,7 +94,7 @@ function seriesPreview(kit:SeriesRateKit,nodeId:string,d:import('./types.js').Pa
   const peak=series.bins.reduce<typeof series.bins[number]|null>((best,b)=>!best||b.count>best.count?b:best,null);
   const word=PERIOD_WORDS[series.period];
   const n=(v:number)=>v.toLocaleString('en-US');
-  return `<p class="standard-result"><strong>${n(series.total)}</strong> `
+  return seriesCurve(series,esc)+`<p class="standard-result"><strong>${n(series.total)}</strong> `
     +`${esc(series.unit??'cases')} in <strong>${n(periods)}</strong> ${esc(word)}${periods===1?'':'s'}`
     +(series.firstPeriod&&series.lastPeriod
       ?`, ${esc(series.firstPeriod)} to ${esc(series.lastPeriod)}`:'')

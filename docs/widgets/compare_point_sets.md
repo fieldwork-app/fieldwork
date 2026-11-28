@@ -27,7 +27,7 @@ centres to a Map to see them: a Mean center is drawn as one point, named by its 
 
 1. **Connect** the original points, the moved points and the pumps, and, if you want them, a Mean center on each set.
 2. **Configure…** sets the UTM zone the distances are measured in: the zone the points lie in. Each Mean center step
-   connected must use the same zone.
+   connected must use the same zone. Its Preview draws the two mean centres, the line between them and the pumps.
 3. **Run the workflow.** The panel's Result says how far the mean centre moved.
 
 ## What it will not do
@@ -45,6 +45,12 @@ centres to a Map to see them: a Mean center is drawn as one point, named by its 
 | **John Snow: can the locations be shared safely?** | measures what donut geomasking did to the 250 death locations |
 
 ## History
+
+### 2026-11-28 · A Preview, drawn (0.4.0)
+
+**Configure…** had no Preview. It now runs the comparison on the points connected and draws the two mean centres, the
+line between them and the pumps, with how far the centre moved, each centre's nearest pump and how far the points
+moved. Where two Mean center steps are connected, each centre is computed with that step's own settings.
 
 ### 2026-11-20 · A table of distances (0.3.0)
 

@@ -1,0 +1,79 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:summarize_hull",
+ "version": "0.5.0",
+ "nodeType": "summarize_hull",
+ "title": "Convex hull",
+ "released": "2026-11-28",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['summarize_hull']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "shaclShapes": [],
+  "validationStatus": "application-only"
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "points",
+    "type": "points"
+   }
+  ],
+  "output": "polygons"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:ConvexHull",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "Emits an fw:ConvexHull activity carrying fw:recordCount, fw:hullVertexCount, fw:hullAreaSquareMetres, fw:hullSpanMetres and fw:metricCRS, and prov:used the point source. The area and span are emitted rather than a threshold applied: points lying on one meridian are collinear in degrees and not in metres, so they yield a correct hull of a few square metres spanning kilometres, and a cutoff would also refuse a genuinely thin distribution.",
+  "emits": {
+   "classes": [
+    "ConvexHull"
+   ],
+   "properties": [
+    "areaKnown",
+    "areaSquareMetres",
+    "hullAreaSquareMetres",
+    "hullSpanMetres",
+    "hullVertexCount",
+    "recordCount",
+    "spanMetres"
+   ]
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/convex-hull.ts",
+   "src/core.ts",
+   "src/palette.ts",
+   "src/metric-steps-ui.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/table-walkthrough.ts"
+  ],
+  "definition": "src/convex-hull.ts"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The Preview draws the outline it measures, filled, with the points over it, as Show me how ends. It had given only the area and the corners."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Seven unit checks cover the monotone chain keeping corners and dropping interior and on-edge points; refusal of two points, of duplicates and of collinear input; refusal of a layer with fewer than three located points, naming how many it had; unlocated records taking no part and being reported; computation in a projected CRS with coordinates returned as longitude and latitude; the stated area and span for a near-collinear layer, measured at 3.6 square metres across 2,225 metres; and the limitation travelling in both the notes and the receipt. Not established: that a hull is the right boundary for anything. It is the smallest convex one, which is a mathematical property and not a claim that the phenomenon is convex. 0.3.0: tests/spatial-walkthroughs.browser.mjs, Show me how stepped to its last sentence; Chromium, 2026-11-23.\n\nTHE PREVIEW (2026-11-25). Browser tested on Chromium through the dialogs that open it. NOT established: that the numbers it reports are checked against the run's own, which would need a test holding both.\n\nTHE PREVIEW DRAWS (2026-11-28). tests/transform-previews-draw.browser.mjs, on the John Snow extent example: one outline and 250 points; Chromium, 2026-11-28, failing on the code before. NOT established: WebKit, which CI runs."
+ }
+}

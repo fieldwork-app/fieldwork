@@ -41,6 +41,11 @@ No lab notebook checks it yet. The browser test asserts that every point moved w
 
 ## History
 
+### 2026-11-28 · The Preview draws where the points move (0.5.0)
+
+**Configure…**'s Preview draws where each point was, faint, and where this seed moves it. It had given only how far
+the points moved. It reads the whole layer where the source holds one, where it had read the first 500.
+
 ### 2026-11-23 · Show me how (0.3.0)
 
 **Configure…** offers **Show me how it works**: a made-up home: the distance it will not stay within, the distance it will not pass, and where the seed set moves it.

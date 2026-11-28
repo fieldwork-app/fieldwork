@@ -4323,7 +4323,12 @@ function relateKit():RelateKit{
 }
 /** COMPARE POINT SETS' KIT (point-comparison-ui.ts): the step kit, with the table of distances its last run made. */
 function compareKit():CompareKit{
-  return {...stepKit(),made:id=>result?.tables?.[id]};
+  return {...stepKit(),made:id=>result?.tables?.[id],
+    pointsOn:(id,port)=>{
+      const held=layerOnPort(id,port);if(held)return held;
+      const e=workflow.edges.find(x=>x.to===id&&x.port===port),made=e&&!dirty?result?.computed?.[e.from]:undefined;
+      return made?.features.length?{type:'FeatureCollection',features:made.features.map((f,i)=>({type:'Feature',id:`p${i+1}`,
+        properties:{name:f.name},geometry:f.geometry as {type:'Point';coordinates:[number,number]}}))}:undefined;}};
 }
 /** JOIN'S KIT (area-join-ui.ts): the step kit, with what feeds each port, the table's columns, the parts joined to, and
  *  what the last run joined. */

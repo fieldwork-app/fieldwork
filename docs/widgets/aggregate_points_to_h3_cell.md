@@ -38,6 +38,12 @@ The lab's [hex notebook](https://digital-twin-ph.github.io/validation-lab/lab/in
 
 ## History
 
+### 2026-11-28 · The Preview draws the cells (0.8.0)
+
+**Configure…**'s Preview draws the cells it would keep, shaded by their count on the scale Map uses, and the points
+in the cells it leaves out, faint. It had given only the counts. It reads the whole layer where the source holds one,
+where it had read the first 500.
+
 ### 2026-11-26 · Map shades the cells by their count (0.7.0)
 
 Each cell carries its count of points, and Map shades and keys the cells by it, as **Points in the cell**, instead of

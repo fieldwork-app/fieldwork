@@ -96,6 +96,11 @@ the date and time put together from the line list's two columns by Apply ruleset
 
 ## History
 
+### 2026-11-28 · The Preview draws the curve (0.11.0)
+
+**Configure…**'s Preview draws the curve the step would make, one bar per period with empty periods kept, above the
+counts it gave before. Split by a column, each bar is the sum over its values; Chart draws them stacked.
+
 ### 2026-11-26 · The Preview follows the input type you are choosing (0.10.0)
 
 Switching this step from points to a table left the Preview counting the points still connected — a reading of

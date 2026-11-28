@@ -1,15 +1,60 @@
 /** COMPARE POINT SETS ON THE STANDARD (experiment 186; 2026-11-20, when Comparison map retired into Map). Its name, its
  *  inputs, one sentence of what it compares, the UTM zone in Configure…, and what the last run found. The points go to a
- *  Map and the distances it hands on to a Table; the comparison draws nothing of its own. */
+ *  Map and the distances it hands on to a Table. Its Preview draws the two centres (2026-11-28). */
 import type {WorkflowNode} from './types.js';
 import type {OwnInspector,StepKit} from './inspector-kit.js';
 import type {DataTable} from './data-table.js';
 import {openConfigDialog} from './config-dialog.js';
+import type {PointCollection,Position} from './types.js';
+import {comparePointSets} from './point-comparison.js';
+import {computeMeanCenter,type MeanCenter} from './mean-center.js';
+import {previewDrawing} from './spatial-walkthroughs.js';
 
 type CompareParams=WorkflowNode<'compare_point_sets'>['params'];
 export interface CompareKit extends StepKit {
   /** The table of distances the last run made. */
   made:(nodeId:string)=>DataTable|undefined;
+  /** The points on one of the step's ports: a layer a step holds, or one a step upstream computed in a run that still
+   *  matches the workflow. */
+  pointsOn:(nodeId:string,port:string)=>PointCollection|undefined;
+}
+
+/** WHAT THE COMPARISON WOULD FIND, DRAWN (2026-11-28). The preview audit's re-review of 2026-11-27 found this dialog with
+ *  no Preview at all, and no reason recorded. Everything it compares is reachable while the dialog draws: the original
+ *  points and the pumps are held on their steps, and the moved points are what the donut computed in the last run. So
+ *  this runs `comparePointSets`, the run's own function. Where two Mean center steps are connected, each centre is
+ *  computed as that step computes it, from its own input and its own settings, so a weighted centre is not previewed
+ *  as an unweighted one.
+ *
+ *  Drawn: the pumps as references, the two centres, and the line between them, which is the distance the step's first
+ *  row reports. The 250 points themselves are left out of the drawing: drawn, they bury the two centres it is about. */
+function comparePreview(kit:CompareKit,n:WorkflowNode<'compare_point_sets'>,params:CompareParams):string{
+  const esc=kit.esc;
+  const original=kit.pointsOn(n.id,'original'),moved=kit.pointsOn(n.id,'moved'),pumps=kit.pointsOn(n.id,'pumps');
+  const missing=[!original&&'the original points',!moved&&'the moved points',!pumps&&'the pumps'].filter(Boolean) as string[];
+  if(missing.length)return `<p class="muted">${esc(`${missing.join(', ').replace(/, ([^,]*)$/,' and $1')} ${missing.length===1?'arrives':'arrive'} when the workflow runs, and what this step finds is drawn here then.`).replace(/^./,c=>c.toUpperCase())}</p>`;
+  const centreFrom=(port:string):MeanCenter|undefined=>{
+    const w=kit.workflow(),e=w.edges.find(x=>x.to===n.id&&x.port===port),up=e&&w.nodes.find(x=>x.id===e.from);
+    if(up?.type!=='mean_center')return undefined;
+    const input=kit.pointsOn(up.id,'points');
+    return input?computeMeanCenter(input,up.params):undefined;
+  };
+  try{
+    const found=comparePointSets(original!,moved!,pumps!,params,
+      params.centers?centreFrom('originalCenter'):undefined,params.centers?centreFrom('movedCenter'):undefined);
+    const m=(v:number)=>`${v.toLocaleString('en',{maximumFractionDigits:1})} m`;
+    const drawing=previewDrawing([
+      {kind:'result',rings:[[[found.originalMean,found.movedMean,found.originalMean]]]},
+      ...found.pumps.features.filter(f=>f.geometry).map(f=>({kind:'input' as const,point:f.geometry!.coordinates as Position})),
+      {kind:'look',point:found.originalMean,label:'Original centre'},
+      {kind:'result',point:found.movedMean,label:'Moved centre'}],
+      'The two mean centres, the line between them, and the pumps',undefined,
+      {input:'Open circle: a pump',look:'Strong: the original mean centre',result:'Filled: the moved mean centre, and the line it moved along'});
+    return drawing+`<p class="standard-result">The mean centre would move <strong>${esc(m(found.centerShiftM))}</strong>. `
+      +`Nearest pump to the original centre: ${esc(found.originalNearestPump.name)}, ${esc(m(found.originalNearestPump.distanceM))}; `
+      +`to the moved centre: ${esc(found.movedNearestPump.name)}, ${esc(m(found.movedNearestPump.distanceM))}. `
+      +`Each point moved between ${esc(m(found.displacementBandM.minimum))} and ${esc(m(found.displacementBandM.maximum))}.</p>`;
+  }catch(error){return `<p class="muted">This cannot be previewed yet: ${esc(error instanceof Error?error.message:String(error))}</p>`;}
 }
 
 export function compareSentence(p:CompareParams):string{
@@ -42,6 +87,7 @@ export const compareInspector:OwnInspector<'compare_point_sets'>={
             +`<div class="field"><label class="field-label" for="comparison-zone">WGS84 UTM zone</label><input id="comparison-zone" type="number" min="1" max="60" value="${esc(d.zone)}"></div>`
             +`<div class="field"><label class="field-label" for="comparison-hemisphere">Hemisphere</label><select id="comparison-hemisphere">`
             +`<option value="north"${d.hemisphere==='north'?' selected':''}>North</option><option value="south"${d.hemisphere==='south'?' selected':''}>South</option></select></div>`,
+            preview:ok?comparePreview(kit as CompareKit,node,{...node.params,zone,hemisphere:d.hemisphere}):'',
             ...(ok?{}:{message:{tone:'refusal' as const,text:'Choose a UTM zone from 1 to 60.'},blocked:true})};},
         wire:(root2,d,redraw)=>{
           root2.querySelector<HTMLInputElement>('#comparison-zone')?.addEventListener('change',e=>{d.zone=(e.target as HTMLInputElement).value;redraw();});

@@ -148,8 +148,21 @@ function reachPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'reach
   }catch(error){return said+cannotYet(kit,error);}
 }
 
+/** THE POINTS WITH THEIR PROPERTIES where the source holds them, the picker's located points otherwise (2026-11-28).
+ *  `pointsOn` keeps a name and a location, so Mean center weighted by DEATHS was refused in its Preview, "absent" on
+ *  every point, while the run, which reads the records, weighted them: the fault Summarize's Preview met on 2026-11-27.
+ *  The picker's points remain the way to a layer a step computed upstream, such as the donut's moved points. */
+const recordsOrPoints=(kit:InspectorKit,nodeId:string,port='points'):import('./types.js').PointCollection|null=>{
+  const records=(kit as AreaStepKit).recordsOn(nodeId,port);
+  return records?.features.some(f=>f.geometry)?records:pointsOn(kit,nodeId,port);
+};
+const at=(f:{geometry?:unknown})=>(f.geometry as {coordinates:import('./types.js').Position}).coordinates;
+
+/** DRAWN, NOT ONLY MEASURED (2026-11-28). The preview audit's re-review of 2026-11-27 listed this Preview as numbers
+ *  with no reason recorded for not drawing: the outline was already computed here and only its area said. Drawn as Show
+ *  me how ends: the outline filled, the points over it, unlabelled because 250 names pile on one another. */
 function hullPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'summarize_hull'>['params']):string{
-  const input=pointsOn(kit,n.id);
+  const input=recordsOrPoints(kit,n.id);
   if(!input)return waitingFor('the points')+SHOW_ME;
   try{
     const {value}=convexHull(input,{...n,type:'summarize_hull',params} as WorkflowNode<'summarize_hull'>,'preview',n.id);
@@ -158,8 +171,13 @@ function hullPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'summar
     // THE POINTS ON THE OUTLINE ARE THE FINDING: a hull is decided by its corners, and how few there are says how
     // much of the layer is doing the work.
     const corners=ring&&ring.geometry.type==='Polygon'?Math.max(0,(ring.geometry.coordinates[0]?.length??1)-1):0;
-    return `<p class="standard-result"><strong>${kit.esc(km2(area))}</strong> inside the outline, `
-      +`drawn through ${corners.toLocaleString('en')} of the ${input.features.length.toLocaleString('en')} points. `
+    const located=input.features.filter(f=>f.geometry);
+    const drawing=ring?previewDrawing([
+      {kind:'result' as const,rings:(ring.geometry.type==='MultiPolygon'?ring.geometry.coordinates:[ring.geometry.coordinates]) as import('./types.js').Position[][][]},
+      ...located.map(f=>({kind:'input' as const,point:at(f)}))],
+      'The outline this step would draw around the points'):'';
+    return drawing+`<p class="standard-result"><strong>${kit.esc(km2(area))}</strong> inside the outline, `
+      +`drawn through ${corners.toLocaleString('en')} of the ${located.length.toLocaleString('en')} points. `
       +`The rest fall inside it.</p>`+SHOW_ME;
   }catch(error){return cannotYet(kit,error)+SHOW_ME;}
 }
@@ -195,13 +213,19 @@ function voronoiPreview(kit:InspectorKit,n:WorkflowNode,params:{zone:number;hemi
   }catch(error){return cannotYet(kit,error)+SHOW_ME;}
 }
 
+/** DRAWN (2026-11-28), as Show me how ends: the points, and the one point the step passes on over them. Listed by the
+ *  re-review of 2026-11-27 as numbers with no reason recorded for not drawing. */
 function meanCenterPreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'mean_center'>['params']):string{
-  const input=pointsOn(kit,n.id);
+  const input=recordsOrPoints(kit,n.id);
   if(!input)return waitingFor('the points')+SHOW_ME;
   try{
     const centre=computeMeanCenter(input,params);
     const [lon,lat]=centre.coordinates;
-    return `<p class="standard-result"><strong>${lat.toFixed(5)}, ${lon.toFixed(5)}</strong> from `
+    const drawing=previewDrawing([
+      ...input.features.filter(f=>f.geometry).map(f=>({kind:'input' as const,point:at(f)})),
+      {kind:'result' as const,point:centre.coordinates,label:'Centre'}],
+      'The points, and the centre this step would pass on');
+    return drawing+`<p class="standard-result"><strong>${lat.toFixed(5)}, ${lon.toFixed(5)}</strong> from `
       +`${centre.count.toLocaleString('en')} points`
       +(centre.weight?`, weighted by ${kit.esc(centre.weight.field)} totalling ${centre.weight.total.toLocaleString('en')}`:', each counted once')
       +'.</p>'+SHOW_ME;
@@ -414,8 +438,9 @@ export const meanCenterInspector:OwnInspector<'mean_center'>={
           +(fields.length?`<select id="mean-center-weight"><option value="">None: each point counted once</option>`
             +[...new Set([...fields,...(d.weightField&&!fields.includes(d.weightField)?[d.weightField]:[])])].map(f=>`<option value="${kit.esc(f)}"${f===d.weightField?' selected':''}>${kit.esc(f)}</option>`).join('')+'</select>'
             :`<input id="mean-center-weight" maxlength="60" value="${kit.esc(d.weightField)}" placeholder="for example deaths">`)
-          +'<small>250 addresses carrying 489 deaths have two different centres.</small></div>'
-          +zoneFields(kit as AreaStepKit,d,'mean-center'),preview:meanCenterPreview(kit,n,{...(nodeIn(kit,n)?.params as WorkflowNode<'mean_center'>['params']),...zoneOf(d)}),
+          +'<small>Each point counts as many times as its value in that column.</small></div>'
+          +zoneFields(kit as AreaStepKit,d,'mean-center'),// THE DRAFT'S WEIGHT (2026-11-28): the Preview took the step's saved weight, so choosing one here changed nothing in it.
+          preview:meanCenterPreview(kit,n,{...(nodeIn(kit,n)?.params as WorkflowNode<'mean_center'>['params']),...zoneOf(d),weightField:d.weightField||undefined}),
           ...refusal(()=>validateMeanCenterNode({...node,params:{...node.params,...zoneOf(d),weightField:d.weightField}}))}),
         wire:(r,d,redraw)=>{
           r.querySelector<HTMLInputElement|HTMLSelectElement>('#mean-center-weight')!.onchange=e=>{d.weightField=(e.target as HTMLInputElement).value.trim();redraw();};
