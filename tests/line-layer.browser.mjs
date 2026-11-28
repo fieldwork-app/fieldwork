@@ -8,9 +8,10 @@ const square=(x,y,s=1)=>[[[x,y],[x+s,y],[x+s,y+s],[x,y+s],[x,y]]];
 const area=(id,label,x,y)=>({id,type:'study_area',x:20,y:y*100,params:{label,source:'drawn',selectionMode:'polygon',geometry:{type:'MultiPolygon',coordinates:[square(x,y)]}}});
 const route={kind:'lines',source:'GeoJSON',features:[{type:'Feature',id:'team-1',properties:{name:'Team 1, day 1'},
   geometry:{type:'LineString',coordinates:[[30.1,1.1],[30.5,1.4],[30.9,1.2]]}}]};
-// APPLY, AND AGAIN ONCE THE RUN IS DONE where the dialog says one is in flight (tests/config-apply-during-run.browser.mjs).
+// APPLY, and where a run is in flight, wait for the dialog to apply once it is done (tests/config-apply-during-run.browser.mjs).
 const apply=async(page,dialog)=>{await dialog.locator('#config-apply').click();
-  if(await dialog.locator('[data-run-in-flight]').count()){await expect(page.locator('#run-button')).toBeEnabled({timeout:30000});await dialog.locator('#config-apply').click();}
+  // DURING A RUN, APPLY WAITS AND THEN APPLIES ITSELF (0.204.7): clicking it again after the run found the dialog closed.
+  await expect(dialog).toBeHidden({timeout:30000});
   await expect(dialog).toHaveCount(0);};
 const seed=async(page,flow)=>{
   await page.route(/tile\.openstreetmap\.org|basemaps|tiles/,route=>route.abort('failed'));

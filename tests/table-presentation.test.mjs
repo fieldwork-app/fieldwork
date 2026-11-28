@@ -131,3 +131,9 @@ test('a heading\'s note number and the note below it are the same note, a folded
   assert.equal(markOf('Rate'),rateNote,'Rate\'s heading names Rate\'s note');
   assert.match(html,new RegExp(`Cases \\(Percent\\) <span class="table-note-mark">\\[note ${percentNote}\\]</span>`),'the folded Percent note is on the paired heading');
 });
+test('a hidden count hides its percentage too, wherever a pair is drawn',async()=>{
+  const {dataTableMarkup}=await import('../build/data-table-ui.js');
+  const present={pairs:[{count:'Cases',percent:'Percent'}],suppress:{below:5,columns:['Cases'],reason:'confidentiality'}};
+  assert.equal(pairedValue(4,8.7,'Cases','Percent',present,esc).html.includes('8.7'),false);
+  assert.doesNotMatch(dataTableMarkup(DISTRICTS,esc,{present}),/8\.7/,'North\'s 8.7% would give its 4 away');
+});

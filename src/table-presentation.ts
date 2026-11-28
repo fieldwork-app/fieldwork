@@ -174,7 +174,8 @@ export function pairedColumns(columns:readonly string[],p:TablePresentation|unde
 /** A count and its percentage in one cell: "120 (34.5)", each written as its own column would write it. */
 export function pairedValue(count:unknown,percent:unknown,countColumn:string,percentColumn:string,p:TablePresentation|undefined,esc:Escape):{html:string;number:boolean;absent:boolean}{
   const c=presentValue(count,countColumn,p,esc),pc=presentValue(percent,percentColumn,p,esc);
-  if(c.absent)return c;
+  // A HIDDEN COUNT HIDES ITS PERCENTAGE TOO (2026-11-28): "[c] (1.2)" gives the count away to anyone who knows the total.
+  if(c.absent||suppressedMark(count,countColumn,p)!==undefined)return c;
   return {html:pc.absent?c.html:`${c.html} (${pc.html})`,number:true,absent:false};
 }
 

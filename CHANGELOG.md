@@ -41,7 +41,9 @@ shown in a local build is not a claim that it has been published.
   number box reports a malformed entry as empty; the box is now text with a numeric keyboard, and only a truly empty
   box is Off. A two-key table keyed the other way round, Measure then District, with a reading of District by Measure,
   was drawn with the districts across, so a count hidden under Cases was shown; the cross-tab now puts the measures
-  across wherever the table says which key holds them, and Configure offers the columns Results draws.
+  across wherever the table says which key holds them, and Configure offers the columns Results draws. And a hidden
+  count's percentage was still shown beside its mark, "[c] (1.2)", which gives the count away to anyone who knows the
+  total; a hidden count now hides its percentage too.
 - Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
   table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
   alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed
