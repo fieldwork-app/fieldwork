@@ -1262,7 +1262,12 @@ export function crossTab(table:DataTable,{assertCommensurable=false}={}):{rowKey
   rows:{label:string;cells:(number|null|undefined)[];total:number|null}[];
   columnTotals:(number|null)[];grandTotal:number|null}|null{
   if(table.keys.length!==2)return null;
-  const [rowKey,colKey]=table.keys;
+  // THE MEASURES ARE THE COLUMNS where the table says which key holds them (review of #8): a table keyed Measure, District
+  // with a reading of District by Measure was drawn with the districts across, so Configure offered Cases, Results had no
+  // Cases column, and a count hidden under Cases was shown.
+  const reading=table.wide??table.shownWide;
+  const [rowKey,colKey]=reading&&table.keys.includes(reading.measureKey)
+    ?[table.keys.find(k=>k!==reading.measureKey)!,reading.measureKey]:table.keys as [string,string];
   const columns=[...new Set(table.rows.map(r=>String(r.key[colKey])))];
   if(!columns.length||columns.length>CROSSTAB_MAX_COLUMNS)return null;
   const labels=[...new Set(table.rows.map(r=>String(r.key[rowKey])))];
@@ -1354,6 +1359,18 @@ export const FRAME_PAGE_ROWS=200;
 /** HOW MANY ROWS `dataTableMarkup` DRAWS for a table, by the same choice it makes: a cross-tab where the shape allows,
  *  else the wide frame, else the rows as stored (PR 10's review: a preview counted from the frame offered "All 2" over a
  *  cross-tab of 12). */
+/** THE COLUMNS `dataTableMarkup` DRAWS, unsearched, by the same choice: the cross-tab's row key and its columns, else the
+ *  wide frame's subject, attributes and measures, else the keys and the value. Configure offers these, and the notes and
+ *  the small-count rule are read against them, so a rule is set on a column a reader sees. `measureKey` is the key whose
+ *  values head the measure columns, which a searched row is presented by. */
+export function drawnColumns(table:DataTable):{columns:{name:string;number:boolean}[];measureKey?:string}{
+  const grid=crossTab(table);
+  if(grid)return {columns:[{name:grid.rowKey,number:false},...grid.columns.map(name=>({name,number:true}))],measureKey:grid.colKey};
+  const frame=wideFrame(table);
+  if(frame)return {columns:[{name:frame.subject,number:false},...frame.attributes.map(name=>({name,number:false})),
+    ...frame.columns.map(name=>({name,number:true}))],measureKey:frame.measureKey};
+  return {columns:[...table.keys.map(name=>({name,number:false})),...table.valueField?[{name:table.valueField,number:true}]:[]]};
+}
 export function shownRows(table:DataTable,assertTotals=false):number{
   const grid=crossTab(table,{assertCommensurable:assertTotals});
   if(grid)return grid.rows.length;
@@ -1450,7 +1467,7 @@ export function dataTableMarkup(table:DataTable,esc:Escape,{query='',page=0,page
   const valued=!!table.valueField;
   // A SEARCHED ROW IS PRESENTED BY ITS MEASURE (review of #8): searching shows the long rows, where the value's column is
   // the table's value field; a count hidden in the wide table under its measure's name was shown raw once searched.
-  const measureKey=wideFrame(table)?.measureKey??crossTab(table,{assertCommensurable:false})?.colKey;
+  const measureKey=drawnColumns(table).measureKey;
   const columnOf=(row:{key:Record<string,unknown>})=>measureKey&&row.key[measureKey]!==undefined?String(row.key[measureKey]):table.valueField;
   return `<div class="table-meta muted">${matching.length} of ${recordsSaid(table)}${valued&&table.missingValueCount?` · ${table.missingValueCount} values absent and kept as unknown`:''}${valued?` · value in ${unit}`:''}</div>`
     +`<table><thead><tr>${table.keys.map(k=>roleHead(roles,k,esc)).join('')}${valued?roleHead(roles,table.valueField,esc):''}</tr></thead><tbody>`

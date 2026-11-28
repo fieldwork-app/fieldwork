@@ -37,6 +37,11 @@ shown in a local build is not a claim that it has been published.
   beside its source near the edge was scrolled to only when its corner was out of view; now when any of it is, and
   the canvas moves only as far as brings it in, rather than centring it: centring moved the steps beside it out of view
   (`tests/area-measurement.browser.mjs`, caught by the gate).
+- **From the follow-up review of #8, two more.** A lone "-" typed over a saved threshold turned hiding off, because a
+  number box reports a malformed entry as empty; the box is now text with a numeric keyboard, and only a truly empty
+  box is Off. A two-key table keyed the other way round, Measure then District, with a reading of District by Measure,
+  was drawn with the districts across, so a count hidden under Cases was shown; the cross-tab now puts the measures
+  across wherever the table says which key holds them, and Configure offers the columns Results draws.
 - Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
   table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
   alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed

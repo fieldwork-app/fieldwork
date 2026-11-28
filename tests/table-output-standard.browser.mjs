@@ -194,6 +194,11 @@ test('a small-count threshold that cannot be used refuses Apply and keeps the ru
   await expect(dialog.locator('#config-apply')).toBeDisabled();
   await expect(dialog.locator('#present-suppress-below')).toHaveValue('1');
   await expect(dialog.locator('#present-suppress-below')).toHaveAttribute('aria-invalid','true');
+  // A LONE MINUS SIGN TYPED AT THE KEYBOARD (review of #8): a number input reported it as empty, so it was taken for Off.
+  await dialog.locator('#present-suppress-below').fill('5');
+  await dialog.locator('#present-suppress-below').selectText();await page.keyboard.type('-');await page.keyboard.press('Tab');
+  await expect(dialog.locator('.config-message-refusal')).toContainText('"-" cannot be used');
+  await expect(dialog.locator('#config-apply')).toBeDisabled();
   await threshold('');
   await expect(dialog.locator('#config-apply')).toBeEnabled();
   await dialog.locator('#config-apply').click();await expect(dialog).toBeHidden();

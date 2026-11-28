@@ -10,7 +10,7 @@ import {nodeInputs,portAccepts,outputOf,shownMode} from './core.js';
 import {MAX_POINT_LAYERS} from './point-layers.js';
 import {zoneFields,wireZone,type ZoneAdvice} from './metric-steps-ui.js';
 import {projectFromCRS84} from './reproject.js';
-import {shownRows,dataTableMarkup,wideFrame} from './data-table-ui.js';
+import {shownRows,dataTableMarkup,drawnColumns} from './data-table-ui.js';
 import type {DataTable} from './data-table.js';
 import {isProjectedReference,type PointCollection,type AnySpatialReference} from './types.js';
 import {presentCell,presentedTable,presentationFields,headingMarks,noteNumbers,type TablePresentation,type PresentableColumn,type ColumnPresentation} from './table-presentation.js';
@@ -75,7 +75,9 @@ function wireColumnPresentation(root:ParentNode,p:TablePresentation,redraw:()=>v
   // AN UNUSABLE NUMBER IS NOT OFF (review of #8): 1, typed over a saved 5, had turned hiding off and shown the counts it
   // hid. Only an empty box turns it off; anything else that is not a whole number from 2 to 1,000 keeps the rule as it was
   // and is held, as typed, for Apply to refuse.
-  const update=()=>{const raw=below?.value.trim()??'',n=Number(raw);
+  // A LONE "-" IS NOT AN EMPTY BOX (review of #8): a number input reports malformed keyboard input as an empty value, so
+  // it read as Off. The box is text with a numeric keyboard, and the raw entry is what is checked.
+  const update=()=>{const raw=below?.value.trim()??'',n=/^\d+$/.test(raw)?Number(raw):NaN;
     if(!raw){delete p.suppress;typed(undefined);}
     else if(Number.isInteger(n)&&n>=2&&n<=1000){p.suppress={below:n,columns:columnsChecked(),reason:(reason?.value??'confidentiality') as 'confidentiality'|'reliability'};typed(undefined);}
     else typed(raw);
@@ -158,10 +160,9 @@ function tablePreview(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:
  *  its keys and value; each with its declared unit, where its meaning is not already written beside it. */
 export function dataTableColumns(t:DataTable):PresentableColumn[]{
   const unitOf=(c:string)=>t.headings?.[c]?undefined:t.columns?.[c]?.confirmed?t.columns[c]!.unit:undefined;
-  const frame=wideFrame(t);
-  const named=(name:string,number:boolean)=>({name,number,...unitOf(name)?{declaredUnit:unitOf(name)!}:{}});
-  if(frame)return [named(frame.subject,false),...frame.attributes.map(a=>named(a,false)),...frame.columns.map(c=>named(c,true))];
-  return [...t.keys.map(k=>named(k,false)),named(t.valueField,true)];
+  // THE COLUMNS RESULTS DRAWS (review of #8): this read the wide frame while Results drew the cross-tab first, so a
+  // transposed table offered measures Results did not have as columns.
+  return drawnColumns(t).columns.map(({name,number})=>({name,number,...unitOf(name)?{declaredUnit:unitOf(name)!}:{}}));
 }
 /** THE COLUMNS CONFIGURE… OFFERS, as the preview draws them. */
 function columnsShown(kit:TableOutputKit,node:WorkflowNode<'table_output'>,mode:ReturnType<typeof shownMode>):PresentableColumn[]{

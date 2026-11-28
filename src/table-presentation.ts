@@ -218,7 +218,7 @@ function columnFields(p:TablePresentation,columns:readonly PresentableColumn[],e
     +`</tr></thead><tbody>${rows}</tbody></table></div></details>`
     +(numbers.length?`<details class="present-suppress"${q?' open':''}><summary>Small counts not shown</summary>`
       +`<div class="field"><label class="field-label" for="present-suppress-below">Hide a count from 1 up to, but not including</label>`
-      +`<input id="present-suppress-below" type="number" min="2" max="1000" step="1" value="${esc(typedThreshold??String(q?.below??''))}" placeholder="Off"${typedThreshold!==undefined?' aria-invalid="true"':''}></div>`
+      +`<input id="present-suppress-below" type="text" inputmode="numeric" autocomplete="off" value="${esc(typedThreshold??String(q?.below??''))}" placeholder="Off"${typedThreshold!==undefined?' aria-invalid="true"':''}></div>`
       +`<div class="field"><label class="field-label" for="present-suppress-reason">Why</label><select id="present-suppress-reason">`
       +Object.entries(SUPPRESSION_REASONS).map(([k,r])=>`<option value="${k}"${(q?.reason??'confidentiality')===k?' selected':''}>${r.mark} ${esc(r.said.replace(/^not shown(, |: )/,''))}</option>`).join('')+'</select></div>'
       +`<fieldset class="field"><legend class="field-label">In these columns</legend>`

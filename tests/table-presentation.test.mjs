@@ -96,6 +96,20 @@ test('a count hidden in the table stays hidden when Results is searched',async()
   assert.match(searched,/\[c\]/,'the searched North row hides its 4');
   assert.doesNotMatch(searched,/>4</);
 });
+/** THE SAME MEASURE WHICHEVER WAY THE KEYS ARE ORDERED (review of #8): keyed Measure, District with a reading of District
+ *  by Measure, Configure offered Cases while Results drew the districts across, and North's 4 was shown under a rule for
+ *  Cases. Configure's columns, the drawn table and a search now agree. */
+test('a count hidden under its measure stays hidden when the table\'s keys are the other way round',async()=>{
+  const {dataTableMarkup,drawnColumns}=await import('../build/data-table-ui.js');
+  const T={...DISTRICTS,keys:['measure','district'],shownWide:{measureKey:'measure',subjectKeys:['district']}};
+  const present={suppress:{below:5,columns:['Cases'],reason:'confidentiality'}};
+  assert.deepEqual(drawnColumns(T).columns.map(c=>c.name),['district','Cases','Percent','Rate'],'the measures are the columns offered');
+  const drawn=dataTableMarkup(T,esc,{present});
+  assert.match(drawn,/<th scope="col">Cases/,'Results draws the measures across too');
+  assert.match(drawn,/\[c\]/);
+  assert.doesNotMatch(drawn,/>4</,'North\'s 4 is hidden unsearched');
+  assert.doesNotMatch(dataTableMarkup(T,esc,{present,query:'North'}),/>4</,'and searched');
+});
 test('a table hiding a count shows no totals, which would give it away, and says why',async()=>{
   const {dataTableMarkup}=await import('../build/data-table-ui.js');
   const T={kind:'data-table',keys:['district','sex'],valueField:'cases',rowCount:8,missingValueCount:0,unit:'cases',
