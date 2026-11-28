@@ -66,6 +66,13 @@ export const CONFIG_APPLY='config-apply', CONFIG_CANCEL='config-cancel', CONFIG_
  *  one Apply in ten made just after another). Now Apply says why, and the dialog keeps the draft until the run is done. */
 let runInFlight:()=>boolean=()=>false;
 export function setRunInFlight(check:()=>boolean):void{runInFlight=check;}
+/** APPLY WAITS FOR THE RUN, AND THEN APPLIES (2026-11-28). The practitioner chose, of an edit applied during a run: keep
+ *  the dialog open and say to wait. It said so, and then kept saying so after the run was done, and nothing was applied
+ *  until Apply was pressed again: an edit left there was lost when the dialog was closed (TODO, found 2026-11-27, Table's
+ *  Presentation on Snow's geoprivacy example, 2 of 3 tries). Now Apply reads "Waiting for the run…" and applies the
+ *  draft, as it stands then, when the application says the run is done. Cancel still cancels. */
+const waitingForRun=new Set<()=>void>();
+export function runSettled():void{for(const resume of [...waitingForRun])resume();}
 
 export function openConfigDialog<D>(spec:ConfigDialog<D>,esc:Escape):void{
   document.getElementById(spec.id)?.remove();
@@ -77,9 +84,16 @@ export function openConfigDialog<D>(spec:ConfigDialog<D>,esc:Escape):void{
   const held=JSON.stringify(spec.draft);
   let confirming=false;
   const changed=()=>JSON.stringify(draft)!==held;
-  let applied=false;
-  const close=()=>{spec.beforeRedraw?.();dialog.close();dialog.remove();if(!applied)spec.onClose?.();};
-  const requestClose=()=>{if(changed()&&!confirming){confirming=true;draw();return;}close();};
+  let applied=false,waiting=false;
+  const resume=()=>{if(!waiting)return;if(runInFlight())return;waiting=false;waitingForRun.delete(resume);
+    applyButton.textContent=applyLabel;applyButton.disabled=false;applyButton.click();};
+  const close=()=>{waiting=false;waitingForRun.delete(resume);spec.beforeRedraw?.();dialog.close();dialog.remove();if(!applied)spec.onClose?.();};
+  const WAIT_TEXT='The workflow is running. These settings will be applied when the run is done; Cancel keeps things as they were.';
+  const waitMessage=()=>`<div class="config-message config-message-warning" role="status" data-run-in-flight><p>${WAIT_TEXT}</p></div>`;
+  // CANCEL WHILE WAITING STOPS THE WAIT: nothing is applied when the run is done, and the draft is then kept or discarded
+  // as any unapplied change is.
+  const requestClose=()=>{if(waiting){waiting=false;waitingForRun.delete(resume);applyButton.textContent=applyLabel;}
+    if(changed()&&!confirming){confirming=true;draw();return;}close();};
 
   const section=(name:string,body?:string)=>body
     ?`<section class="config-section" data-config-section="${name.toLowerCase()}"><h3>${name}</h3>${body}</section>`:'';
@@ -103,10 +117,11 @@ export function openConfigDialog<D>(spec:ConfigDialog<D>,esc:Escape):void{
   dialog.querySelector<HTMLButtonElement>(`#${CONFIG_CLOSE}`)!.onclick=requestClose;
   dialog.querySelector<HTMLButtonElement>(`#${CONFIG_CANCEL}`)!.onclick=requestClose;
   const cancelButton=dialog.querySelector<HTMLButtonElement>(`#${CONFIG_CANCEL}`)!;
+  const applyLabel=applyButton.textContent??'Apply';
   applyButton.onclick=async()=>{
     if(applyButton.disabled||spec.readOnly)return;
-    if(runInFlight()){slot.innerHTML='<div class="config-message config-message-warning" role="status" data-run-in-flight>'
-      +'<p>The workflow is running. Apply once the run is done: your settings are kept here until then.</p></div>';return;}
+    if(runInFlight()){waiting=true;waitingForRun.add(resume);slot.innerHTML=waitMessage();
+      applyButton.disabled=true;applyButton.textContent='Waiting for the run\u2026';return;}
     if(!spec.applyAsync){applied=true;spec.apply(draft);close();return;}
     // A SHARE, WHERE THE WORK KNOWS ONE, IS DRAWN AS A BAR under the words (2026-11-14).
     const say=(text:string,tone:'info'|'failure'='info',share?:number)=>{slot.innerHTML=text
@@ -150,8 +165,8 @@ export function openConfigDialog<D>(spec:ConfigDialog<D>,esc:Escape):void{
         +`<button class="button danger" id="config-discard">Discard changes</button></div></div>`
       :parts.message
         ?`<div class="config-message config-message-${parts.message.tone}" role="alert"><p>${esc(parts.message.text)}</p></div>`
-        :'';
-    applyButton.disabled=!!parts.blocked||confirming;
+        :waiting?waitMessage():'';
+    applyButton.disabled=!!parts.blocked||confirming||waiting;
     const keep=slot.querySelector<HTMLButtonElement>('#config-keep-editing');
     if(keep){keep.onclick=()=>{confirming=false;draw();};keep.focus();}
     const discard=slot.querySelector<HTMLButtonElement>('#config-discard');

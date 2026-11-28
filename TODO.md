@@ -103,17 +103,13 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   area's countries, Georeferenced map image, Point data's editor, Street network, Study design, Raster input. For each: draw or show rows, or record why not. The
   drawing helper Clip polygons now uses (`previewDrawing`) is the way in for the spatial ones. Measure: transforms
   that neither render nor say why.
-- **Next batch, agreed 2026-11-27, in order:** (1) an edit applied during a run: the dialog stays open, Apply waits and
-  says so (the practitioner chose this); (2) the write-up's and the export's tables to the table standard; (3) the
+- **Next batch, agreed 2026-11-27, in order:** (1) ~~an edit applied during a run~~, done in 0.204.7: Apply waits for the
+  run and then applies; (2) the write-up's and the export's tables to the table standard; (3) the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a
   second spike: schema, each role's read rules as testable checks, the turn-ending function, every move timestamped
   and attributed, provenance; nothing created in Supabase until the practitioner agrees it; (4)
   `find_literature_for_terms` from [232](docs/experiments/232-terms-looked-up-and-appraised.md)'s design, its two
   syntaxes read against their current documentation first.
-- **An edit applied during a run is dropped without a word** (found 2026-11-27, fixing PR 10's review). `change()` returns
-  false while a run is in progress, and a configuration dialog's Apply closes as if it had applied: Table's Presentation,
-  set while Snow's geoprivacy example ran its first pass, was lost in 2 of 3 tries. Older than 0.204.0, and every dialog
-  that applies through `change()` meets it. To decide: keep the dialog open and say to wait, or queue the edit.
 - **Widgets added from the library land on top of one another** (found 2026-11-27, writing the blank-port test): three
   added in a row overlapped, and a notice covered the third's port. A placement finding for the canvas.
 - **A cooperative, turn-based training mission** ([233](docs/experiments/233-a-cooperative-turn-based-training-mission.md)):

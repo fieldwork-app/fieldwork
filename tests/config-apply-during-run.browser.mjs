@@ -23,11 +23,55 @@ test('an Apply made while a run is in flight says so and keeps the draft, and no
     if(i%2===0){await d.locator('#line-method').selectOption('file');await d.locator('#line-file').setInputFiles({name:'t.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(gpx)});await expect(d.locator('[data-line-sentence]')).toContainText('1 line');}
     else await d.locator('#line-method').selectOption('border');
     await d.locator('#config-apply').click();
-    if(await d.locator('[data-run-in-flight]').count()){held++;await expect(page.locator('#run-button')).toBeEnabled({timeout:30000});await d.locator('#config-apply').click();}
-    await expect(d).toHaveCount(0);
+    // APPLY WAITS, THEN APPLIES (2026-11-28): no second press; the dialog closes itself when the run is done.
+    if(await d.locator('[data-run-in-flight]').count()){held++;await expect(d.locator('#config-apply')).toHaveText('Waiting for the run\u2026');}
+    await expect(d).toHaveCount(0,{timeout:30000});
     const want=i%2===0?'file':'border';
     if(i%2===0)continue;
     await page.waitForTimeout(3000);const got=await stored();if(got!==want)lost++;
   }
   expect(lost).toBe(0);void held;
+});
+
+/** THE CASE THE PRACTITIONER'S EDIT WAS LOST IN (TODO, found 2026-11-27): Table's Presentation, set while Snow's geoprivacy
+ *  example ran its first pass. The dialog said to wait and then waited for a second press that the practitioner had no
+ *  reason to make. Now Apply waits for the run and applies; and Cancel, pressed while it waits, applies nothing. */
+const tableDuringRun=async page=>{
+  await page.goto('/?example=snow-geoprivacy');await page.waitForSelector('html[data-ready]');
+  await page.locator('[data-view="workflow"]').click();
+  await page.locator('.react-flow__node[data-id="before-table"]').click();
+  await page.locator('#inspector-content #configure-step').click();
+  const d=page.locator('#table-config');await expect(d).toBeVisible();
+  await d.locator('#present-caption').fill('Pumps before the move');await d.locator('#present-caption').blur();
+  return d;
+};
+const caption=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('fieldwork-workflow-v1')).nodes.find(n=>n.id==='before-table').params.presentation?.caption);
+
+test('Table\'s Presentation applied during the first run waits for it, then is applied',async({page})=>{
+  const d=await tableDuringRun(page);
+  // Read in the same task as the press, so a run that ends a moment later cannot close the dialog before it is read.
+  const seen=await page.evaluate(()=>{const d=document.querySelector('#table-config');const apply=d.querySelector('#config-apply');
+    apply.click();const said=d.querySelector('[data-run-in-flight]');
+    return said?{said:said.textContent,label:apply.textContent,disabled:apply.disabled,open:d.isConnected}:null;});
+  if(seen){
+    expect(seen.said).toContain('will be applied when the run is done');
+    expect(seen).toMatchObject({label:'Waiting for the run\u2026',disabled:true,open:true});
+  }
+  await expect(d).toHaveCount(0,{timeout:60000});
+  await expect.poll(()=>caption(page),{timeout:10000}).toBe('Pumps before the move');
+});
+
+test('Cancel while Apply waits for the run applies nothing',async({page})=>{
+  const d=await tableDuringRun(page);
+  // In one task of the page's own, so the run cannot end between Apply and Cancel and make the wait moot.
+  const waited=await page.evaluate(()=>{const d=document.querySelector('#table-config');
+    d.querySelector('#config-apply').click();
+    const waiting=!!d.querySelector('[data-run-in-flight]');
+    if(waiting){d.querySelector('#config-cancel').click();d.querySelector('#config-discard').click();}
+    return waiting;});
+  test.skip(!waited,'the run was done before Apply; nothing to wait for');
+  await expect(d).toHaveCount(0);
+  await expect(page.locator('#workflow-state')).toContainText('Run complete',{timeout:60000});
+  await page.waitForTimeout(500);
+  expect(await caption(page)).toBeUndefined();
 });

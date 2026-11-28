@@ -47,7 +47,7 @@ import {tidyLayout,alreadyTidy} from './layout.js';
 import {openStepViewer,openTableViewer,shapeChange,stepLabels,tableViewOf,type TableView} from './table-viewer.js';
 import {relateInspector,type RelateKit} from './relate-ui.js';
 import {joinInspector,type JoinKit} from './area-join-ui.js';
-import {openConfigDialog,setRunInFlight} from './config-dialog.js';
+import {openConfigDialog,setRunInFlight,runSettled} from './config-dialog.js';
 import {ISSUE_LABEL,unreadHeadline} from './data-issues.js';
 import {facilitiesInspector,type FacilitiesKit} from './facilities-ui.js';
 import type {RegisterEntry} from './facility-matching.js';
@@ -3908,7 +3908,7 @@ async function run(){if(busy)return;
   // a state line that says what is true -- not "Run failed", which claims something went wrong.
   try{executionPlan(workflow);}catch(e){
     if(e instanceof IncompleteWorkflow){runIncomplete=true;showIncomplete(e);render();return;}
-    toast(errorMessage(e),{tone:'failure'});runFailed=true;render();console.error(e);return;}busy=true;runStartedAt=performance.now();statuses={};justFinished.clear();lastRunMs=null;/* THE LAST RUN'S RASTER IS LET GO AS THIS ONE STARTS (2026-11-17): held while the next run loaded its own, two windows were in memory at once, measured on Nigeria at 100 m. */if(result?.outputs.some(o=>o.raster)){result=null;renderResults();}{const key=storageKey(workflow);if(key&&runsByWorkflow.get(key)?.run.outputs.some(o=>o.raster))runsByWorkflow.delete(key);}render();try{await fillPlacedImages();}catch(e){busy=false;toast(errorMessage(e),{tone:'failure'});runFailed=true;render();return;}const snapshot=structuredClone(workflow);const started=performance.now();try{const next=await executeWorkflow(snapshot,reason,(id,state)=>{statuses[id]=state;if(state==='done'){justFinished.add(id);setTimeout(()=>{justFinished.delete(id);if(!busy||statuses[id]==='done')flow?.update(playbackView(),selected,statuses);},FINISH_GLOW_MS);}flow?.update(playbackView(),selected,statuses);});lastRunMs=performance.now()-started;
+    toast(errorMessage(e),{tone:'failure'});runFailed=true;render();console.error(e);return;}busy=true;runStartedAt=performance.now();statuses={};justFinished.clear();lastRunMs=null;/* THE LAST RUN'S RASTER IS LET GO AS THIS ONE STARTS (2026-11-17): held while the next run loaded its own, two windows were in memory at once, measured on Nigeria at 100 m. */if(result?.outputs.some(o=>o.raster)){result=null;renderResults();}{const key=storageKey(workflow);if(key&&runsByWorkflow.get(key)?.run.outputs.some(o=>o.raster))runsByWorkflow.delete(key);}render();try{await fillPlacedImages();}catch(e){busy=false;queueMicrotask(runSettled);toast(errorMessage(e),{tone:'failure'});runFailed=true;render();return;}const snapshot=structuredClone(workflow);const started=performance.now();try{const next=await executeWorkflow(snapshot,reason,(id,state)=>{statuses[id]=state;if(state==='done'){justFinished.add(id);setTimeout(()=>{justFinished.delete(id);if(!busy||statuses[id]==='done')flow?.update(playbackView(),selected,statuses);},FINISH_GLOW_MS);}flow?.update(playbackView(),selected,statuses);});lastRunMs=performance.now()-started;
     // THE CANVAS CAN MOVE WHILE A RUN IS IN FLIGHT, and this run is then nobody's results.
     //
     // `renderResults` discards a result whose workflow is no longer the open one -- the rule
@@ -3973,7 +3973,7 @@ async function run(){if(busy)return;
         catch(error){toast(errorMessage(error),{tone:'failure'});}})();}}}:{})});
     runFailed=true;console.error(e);}
   finally{
-    busy=false;
+    busy=false;queueMicrotask(runSettled);
     // A FINISHED RUN DOES NOT MOVE THE PRACTITIONER. The first version of the tab switched to
     // Results when a run completed, on the reasoning that the split had always shown them. It
     // reads differently in use: someone adding a node, running, and adjusting it is thrown off
