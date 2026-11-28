@@ -3,6 +3,13 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.3 — In development
+
+- **The Credentials manual names the new address where it matters.** DHIS2's CORS allowlist needs
+  `https://fieldwork-app.github.io`; and when CARTO or Esri maps, or a DHIS2 server, stop working after the move, the
+  manual says to add the new address beside the old one (`digital-twin-ph.github.io`). The local DHIS2 test server
+  allows only Fieldwork's local test addresses and is not affected.
+
 ## 0.204.2 — In development
 
 - **The worked examples re-pinned** to their commits naming Fieldwork's new address: ten examples' READMEs and the

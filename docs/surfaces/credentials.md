@@ -191,8 +191,8 @@ Before the key expires, make a new one on the same page (Esri lets a key hold tw
    reads. (A server/script context token works too.)
 3. Copy the token: DHIS2 shows it once.
 
-The server must also list Fieldwork's address in its CORS allowlist (**System Settings**, **Access**), which its
-administrator sets. Without it the page cannot read the server, and DHIS2's own exports can be read under Your file
+The server must also list Fieldwork's address, `https://fieldwork-app.github.io`, in its CORS allowlist (**System
+Settings**, **Access**), which its administrator sets. Without it the page cannot read the server, and DHIS2's own exports can be read under Your file
 instead.
 
 ## Fill in the form for a DHIS2 token
@@ -260,11 +260,19 @@ Then:
 - **GitHub refuses the token**: it may have expired, or still be waiting for the organization's approval, or have
   been given the wrong **Resource owner**. Make a new one.
 - **CARTO maps do not appear**: check **Provider identifier** is `carto` and **Allowed HTTPS origin** is exactly
-  `https://basemaps.cartocdn.com`. A key limited to Fieldwork's address works only there.
+  `https://basemaps.cartocdn.com`. A key limited to Fieldwork's address works only there. Fieldwork moved to
+  `fieldwork-app.github.io` on 27 November 2026: a key limited to `digital-twin-ph.github.io` needs
+  `fieldwork-app.github.io` added on CARTO's dashboard.
 - **Esri maps do not appear**: the key may have expired, or the free tiles for the month are used up. Check
   **Provider identifier** is `esri` and **Allowed HTTPS origin** is exactly `https://static-map-tiles-api.arcgis.com`.
-- **DHIS2 says it could not be reached**: the server does not list this page's address in its CORS allowlist. Ask its
-  administrator, or export a table from DHIS2 and read it under Your file.
+  A key whose **Referrer URLs** list only `https://digital-twin-ph.github.io`, Fieldwork's address before 27 November
+  2026, needs `https://fieldwork-app.github.io` added in its settings on Esri's site.
+- **DHIS2 says it could not be reached**: Fieldwork says this whenever the request fails, for any reason, so check in
+  this order. First, the server's address: it is spelled as **Allowed HTTPS origin**, and opens in a browser tab.
+  Second, that this computer is online and can reach the server, which may be on a private network. Then ask the
+  server's administrator to confirm that its CORS allowlist names this page's address, `https://fieldwork-app.github.io`:
+  a server set up before 27 November 2026 may list `https://digital-twin-ph.github.io` only. Meanwhile, a table
+  exported from DHIS2 can be read under Your file.
 - **DHIS2 refuses the token**: it may have expired or been revoked. Make a new one in your DHIS2 profile.
 - **Fieldwork says "This is a Supabase secret key"**: you copied the secret key. Copy the publishable key instead,
   which starts `sb_publishable_`.
