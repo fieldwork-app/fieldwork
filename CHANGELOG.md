@@ -22,7 +22,10 @@ shown in a local build is not a claim that it has been published.
   Presentation's decimal places, since Table 0.15.0, never reached it. Found by this release's browser test.
 - **Widgets added from the library land clear of one another.** Each was placed 80 px from the last by a count of the
   nodes, while a node is about 340 by 230 px on screen, so three added in a row overlapped (found 2026-11-27). A new
-  widget now takes the first place, down its column and then across, that touches no node as the canvas drew it.
+  widget now takes the first free place in the part of the canvas on screen, clear of every node as drawn; where there
+  is none, it goes beside the others and the canvas scrolls to it. Adding no longer zooms the whole canvas to fit,
+  which on a large workflow left the new widget too small to read. The first version looked down the column and put a
+  widget below a full canvas, out of sight; the gate caught it (`tests/write-your-own-rules.browser.mjs`).
 - Validation, Chromium only: `tests/table-presentation.test.mjs`, `tests/write-up-figures.test.mjs` (the write-up's
   table and its CSV failed on the old figure), `tests/table-output-standard.browser.mjs` (the preview and Results
   alike on Snow's geoprivacy example), `tests/layout.test.mjs` and `tests/added-widgets-clear.browser.mjs` (failed

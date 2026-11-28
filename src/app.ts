@@ -2067,7 +2067,15 @@ function renderLibrary(search=''){
     const id=`${type}-${Date.now()}`;
     const didAdd=change(w=>{const source=['measure_area','raster_input'].includes(type)?w.nodes.find(n=>n.type==='study_area'):type==='clip_raster'?w.nodes.find(n=>n.type==='raster_input'):null;const sizes=drawnSizes(),largest=[...sizes.values()].reduce((m,v)=>({width:Math.max(m.width,v.width),height:Math.max(m.height,v.height)}),{width:0,height:0});
       // The new node is not drawn yet: it is given the room of the largest drawn one, or the default.
-      const at=freeSpot(w.nodes,source?{x:source.x+310,y:source.y}:{x:180,y:90},sizes,largest.width?largest:undefined);const added={...required(sample),id,x:at.x,y:at.y};if(added.type==='output')added.params={view:'bars',label:`Bar chart ${w.nodes.filter(n=>n.type==='output').length+1}`};w.nodes.push(added);if(added.type==='raster_input'||added.type==='clip_raster'){const area=w.nodes.find(n=>n.type==='study_area');if(area)setConnection(w,area.id,id,'area');}selected=id;});if(didAdd===false)return;flow?.fit();toast(type==='study_area'?'Study area added. Select its boundary in the Inspector.':`${TYPES[type].title} added. Connect its ports to the workflow.`);
+      // Beside its source where it has one; otherwise in the part of the canvas on screen.
+      const at=freeSpot(w.nodes,source?{x:source.x+310,y:source.y}:{x:180,y:90},sizes,largest.width?largest:undefined,source?null:flow?.visibleArea());const added={...required(sample),id,x:at.x,y:at.y};if(added.type==='output')added.params={view:'bars',label:`Bar chart ${w.nodes.filter(n=>n.type==='output').length+1}`};w.nodes.push(added);if(added.type==='raster_input'||added.type==='clip_raster'){const area=w.nodes.find(n=>n.type==='study_area');if(area)setConnection(w,area.id,id,'area');}selected=id;});if(didAdd===false)return;
+    // SEEN WHERE IT LANDS (2026-11-28): a node placed in view leaves the practitioner's zoom alone; one that had to go
+    // outside it is scrolled to. Fitting the whole canvas on every add zoomed a large workflow out until the new node was
+    // too small to read.
+    {const view=flow?.visibleArea(),n=workflow.nodes.find(x=>x.id===id);
+      if(n&&view&&!(n.x>=view.x&&n.y>=view.y&&n.x<=view.x+view.width&&n.y<=view.y+view.height))flow?.reveal(id);
+      else if(!view)flow?.fit();}
+    toast(type==='study_area'?'Study area added. Select its boundary in the Inspector.':`${TYPES[type].title} added. Connect its ports to the workflow.`);
   });
 }
 function title(n:WorkflowNode){const t=TYPES[n.type];return `<div class="inspector-title ${t.color}"><span class="node-icon">${iconMarkup(n.type,t.icon,22)}</span><div><h2>${esc(n.params.label||t.title)}</h2><p>${esc(t.group)}</p></div></div>`;}

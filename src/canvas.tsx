@@ -13,7 +13,11 @@ export interface NodeDescription extends Record<string,unknown> {definition:Node
   canAdd?:boolean;takes?:string;type:NodeType;label:string;subtitle:string;detail:string;status?:string;glow?:boolean;alert?:string}
 export interface InputIn {port:string;kind:string;from:string}
 type OperationFlowNode=Node<NodeDescription,'operation'>;
-export interface CanvasAPI {update:(graph:Workflow,selection:string|null|undefined,statuses?:Record<string,string>)=>void;fit:()=>void;zoomIn:()=>void;zoomOut:()=>void;setBusy:(busy:boolean)=>void}
+export interface CanvasAPI {update:(graph:Workflow,selection:string|null|undefined,statuses?:Record<string,string>)=>void;fit:()=>void;zoomIn:()=>void;zoomOut:()=>void;setBusy:(busy:boolean)=>void;
+  /** The part of the canvas on screen, in canvas units, or null before it is laid out. */
+  visibleArea:()=>{x:number;y:number;width:number;height:number}|null;
+  /** Scrolls the canvas, at its zoom, to bring a node into the middle of the view. */
+  reveal:(id:string)=>void}
 export interface CanvasCallbacks {selectEdge:(id:string)=>void;ready:(api:CanvasAPI)=>void;describe:(node:WorkflowNode,status?:string)=>NodeDescription;select:(id:string)=>void;clear:()=>void;move:(id:string,position:{x:number;y:number})=>void;connect:(connection:Connection)=>void;valid:(connection:Connection|Edge)=>boolean;remove:(ids:string[])=>void;removeEdges:(ids:string[])=>void;zoom:(zoom:number)=>void}
 import {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -86,7 +90,7 @@ function OperationNode({id,data,selected}:NodeProps<OperationFlowNode>) {
 const nodeTypes={operation:OperationNode};
 export function mountCanvas(container:HTMLElement,callbacks:CanvasCallbacks):CanvasAPI{
   const notReady=()=>{throw new Error('Canvas is not mounted yet');};
-  const api:CanvasAPI={update:notReady,fit:notReady,zoomIn:notReady,zoomOut:notReady,setBusy:notReady};
+  const api:CanvasAPI={update:notReady,fit:notReady,zoomIn:notReady,zoomOut:notReady,setBusy:notReady,visibleArea:()=>null,reveal:()=>{}};
   function Flow(){
     const [nodes,setNodes,onNodesChange]=useNodesState<OperationFlowNode>([]),[edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]),[busy,setBusy]=useState(false);
     const flow=useReactFlow<OperationFlowNode,Edge>();
@@ -111,6 +115,15 @@ export function mountCanvas(container:HTMLElement,callbacks:CanvasCallbacks):Can
           selected:e.id===chosenEdge,style:e.id===chosenEdge?{stroke:'#0f4a3d',strokeWidth:4}:{stroke:'#9fb5a5',strokeWidth:1.7},interactionWidth:8})));
       };
       api.fit=()=>setFitRequested(true);api.zoomIn=()=>flow.zoomIn();api.zoomOut=()=>flow.zoomOut();api.setBusy=setBusy;
+      // A NEW NODE IS PLACED WHERE IT CAN BE SEEN (2026-11-28): the visible area, so a free place is looked for there first,
+      // and a reveal for when there was none.
+      api.visibleArea=()=>{const r=container.getBoundingClientRect();if(!r.width||!r.height)return null;
+        const a=flow.screenToFlowPosition({x:r.left,y:r.top}),b=flow.screenToFlowPosition({x:r.right,y:r.bottom});
+        return {x:a.x,y:a.y,width:b.x-a.x,height:b.y-a.y};};
+      api.reveal=id=>{let tries=0;const go=()=>{const n=flow.getNode(id);
+        if(!n?.measured?.width){if(++tries<10)requestAnimationFrame(go);return;}
+        void flow.setCenter(n.position.x+n.measured.width/2,n.position.y+(n.measured.height??0)/2,{zoom:flow.getZoom(),duration:200});};
+        requestAnimationFrame(go);};
       callbacks.ready(api);
     },[]);
     return <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}

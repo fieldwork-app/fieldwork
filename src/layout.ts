@@ -89,10 +89,19 @@ export const DEFAULT_NODE_SIZE={width:COLUMN_WIDTH-40,height:ROW_HEIGHT};
  *  gone, steps down its column, then across to the next, and takes the first place whose box, with a gap all round,
  *  touches no node's box. Sizes are measured where the canvas has drawn the node, and the default otherwise. */
 export function freeSpot(nodes:readonly {id:string;x:number;y:number}[],want:{x:number;y:number},
-    sizes:ReadonlyMap<string,{width:number;height:number}>=new Map(),size=DEFAULT_NODE_SIZE):{x:number;y:number}{
+    sizes:ReadonlyMap<string,{width:number;height:number}>=new Map(),size=DEFAULT_NODE_SIZE,
+    /** The part of the canvas on screen: a free place inside it is taken first, so the new node is seen where it lands. */
+    visible?:{x:number;y:number;width:number;height:number}|null):{x:number;y:number}{
   const boxes=nodes.map(n=>({x:n.x,y:n.y,...(sizes.get(n.id)??DEFAULT_NODE_SIZE)}));
   const gap=ROW_GAP;
   const clear=(x:number,y:number)=>boxes.every(b=>x+size.width+gap<=b.x||b.x+b.width+gap<=x||y+size.height+gap<=b.y||b.y+b.height+gap<=y);
+  // ON SCREEN FIRST (2026-11-28): placed below everything, a node added to a full canvas landed out of sight, and the
+  // practitioner would have added it without seeing it. Inside the view, from its top left, a gap in from the edges.
+  if(visible){
+    for(let x=visible.x+gap;x+size.width<=visible.x+visible.width-gap;x+=size.width+gap)
+      for(let y=visible.y+gap;y+size.height<=visible.y+visible.height-gap;y+=Math.round((size.height+gap)/2))
+        if(clear(x,y))return {x:Math.round(x),y:Math.round(y)};
+  }
   // Down the column first, as far as twelve rows, then the next column over: a canvas is read left to right.
   for(let column=0;column<40;column++)
     for(let row=0;row<12;row++){

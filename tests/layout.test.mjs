@@ -71,3 +71,10 @@ test('a measured tall node is cleared by its height, not the default',()=>{
 test('a free place is taken where it is asked for',()=>{
   assert.deepEqual(freeSpot([{id:'far',x:2000,y:2000}],{x:180,y:90}),{x:180,y:90});
 });
+
+test('a free place on screen is taken before one out of sight',()=>{
+  const view={x:1000,y:500,width:900,height:600};
+  const at=freeSpot([{id:'a',x:1030,y:530}],{x:180,y:90},new Map(),undefined,view);
+  assert.ok(at.x>=view.x&&at.y>=view.y&&at.x+260<=view.x+view.width&&at.y+150<=view.y+view.height,JSON.stringify(at));
+  assert.ok(!(at.x<1030+260&&1030<at.x+260&&at.y<530+150&&530<at.y+150),'and clear of the node there');
+});
