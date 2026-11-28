@@ -3,6 +3,20 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.7 — In development
+
+- **Apply waits for the run, then applies** (the practitioner's choice for an edit applied during a run: *keep the
+  dialog open, say to wait*). It said to wait, but kept saying so after the run was done, and nothing was applied
+  until Apply was pressed again; an edit left there was lost when the dialog was closed. Found on Table's
+  Presentation, set while Snow's geoprivacy example ran its first pass, lost in 2 of 3 tries. Apply now reads
+  *Waiting for the run…* and applies the draft, as it then stands, when the run is done, and the dialog closes.
+  Cancel while it waits applies nothing. Every configuration dialog shares this. From the review of #7: on resume
+  the field being typed in commits first, so text typed while waiting is what is applied, and a setting refused
+  while waiting (an isochrone time of 0) keeps the dialog open with its refusal rather than closing on an edit the
+  workflow refuses. Validation: `tests/config-apply-during-run.browser.mjs`, Chromium only. The tests hold the run
+  with a stand-in catchment worker, so the waiting is certain. The Table case, the typed caption and the refused
+  setting each failed before. Not run on WebKit.
+
 ## 0.204.6 — In development
 
 - **Review of #3 to #6, five repairs, each with a test that failed before it.** The Credentials manual's DHIS2 entry

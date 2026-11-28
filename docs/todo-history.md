@@ -790,3 +790,9 @@ and no single default serves both.
 `../fieldwork-gate` on port 4184, so the main tree stays usable for the 25 minutes and what is
 validated is what would be pushed. [CONTRIBUTING.md](../CONTRIBUTING.md) carries the pipeline and
 the merge policy for human developers; AGENTS.md carries the same for agents.
+
+**DONE 2026-11-28 — an edit applied during a run is no longer dropped** (0.204.7). Found 2026-11-27 fixing PR 10's
+review: Table's Presentation, set while Snow's geoprivacy example ran its first pass, was lost in 2 of 3 tries. The
+dialog already said the workflow was running (since 0.171.0) but did not apply when the run was done. The practitioner
+chose to keep the dialog open and say to wait; Apply now waits for the run and then applies, and Cancel while it waits
+applies nothing. `tests/config-apply-during-run.browser.mjs`.
