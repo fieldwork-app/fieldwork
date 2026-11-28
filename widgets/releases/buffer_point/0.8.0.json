@@ -1,0 +1,92 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:buffer_point",
+ "version": "0.8.0",
+ "nodeType": "buffer_point",
+ "title": "Geometry buffer",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['buffer_point']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "shaclShapes": [],
+  "validationStatus": "application-only"
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "points",
+    "type": "points"
+   },
+   {
+    "name": "lines",
+    "type": "lines"
+   },
+   {
+    "name": "polygons",
+    "type": "polygons"
+   }
+  ],
+  "output": "area",
+  "note": "Points, lines and a polygon layer share one group on the canvas, as Sample a raster's do. None is required on its own; the run says so when nothing is connected. The output follows `yields`: an area when the buffers are combined, a polygon layer when they are kept apart."
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:PointBuffer",
+    "file": "ontology/fieldwork.ttl"
+   },
+   {
+    "role": "entity",
+    "iri": "urn:fieldwork:StudyArea",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "Emits fw:PointBuffer with the source point, the radius as a QUDT quantity and the fraction of the true circle area the polygon covers. The output is fw:StudyArea: a derived scope is still a scope, and the derivation rather than the class is what distinguishes it from a surveyed boundary. 0.4.0 adds fw:sourceFeature, for an area drawn around something that is not a point, and fw:partCount, for how many were drawn; fw:sourcePoint keeps the single-point form it has always described.",
+  "emits": {
+   "classes": [
+    "PointBuffer",
+    "StudyArea"
+   ],
+   "properties": [
+    "bufferDistance",
+    "circleAreaFraction",
+    "method",
+    "partCount",
+    "sourceFeature",
+    "sourcePoint"
+   ]
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/buffer-point.ts",
+   "src/core.ts",
+   "src/app.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/inspector-kit.ts"
+  ],
+  "definition": "src/buffer-point.ts"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "The manual and Show me how say the step draws around several points; both still said one only."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Five unit checks cover the circle approximation against the true area, naming a point by id or by name, the recorded source point and radius with its unit, refusal of blank, unknown and unlocated points, and the distance bound. The radius is an assumption of the question and no threshold is established as defensible; see docs/experiments/68-area-around-a-point.md. Composition is established by tests/composition-elevation.test.mjs, which wires this to Clip raster and Sample raster at points and shows that a tighter scope windows the grid, so an uncovered facility is reported as outside the raster rather than as no-data. 0.3.0: tests/buffer-point-inspector.browser.mjs (one point arriving is chosen and Apply records it; three are offered in the layer's order behind a Choose a point entry, with the refusal standing until one is picked; an empty source still asks for a name and says a run will populate it); Chromium, 2026-11-23. 0.4.0: tests/buffer-point.test.mjs (a single buffer stays a Polygon; an unnamed step is runnable and draws around everything; nothing connected refuses; an unknown name refuses). tests/buffer-point-inspector.browser.mjs (one feature chosen and applied at 50,000 m; three offered behind Every one of them; the picture drawn; combine or keep apart recorded; nothing connected still asks for a name). Exercised at node level: one point unchanged at 99.96% of the true circle; three combined into 2 pieces with 53,766,253 m² covered more than once; 12 roosts at 20 km and 40 km across 4.21° drawn as a layer and refused as a scope. Chromium, 2026-11-23. 0.5.0: the rename reaches the palette title, the default label, the Inspector and dialog headings, the walkthrough's title and the step's own refusals; validate:names holds the ledger's fingerprint against the live row. tests/buffer-point.test.mjs, composition-elevation and port-inventory (14 unit checks), and buffer-point-inspector, buffer-ports and spatial-walkthroughs (15, Chromium), 2026-11-23."
+ }
+}

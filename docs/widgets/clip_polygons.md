@@ -40,6 +40,10 @@ The John Snow examples clip their pump catchments to the illustrative Soho repor
 
 ## History
 
+### 2026-11-27 · The Preview draws the cut (0.6.0)
+
+**Configure…**'s Preview draws the cut: the study area dashed, each polygon as it arrives in grey, and what the cut keeps filled, as **Show me how** draws, with the counts and areas beneath.
+
 ### 2026-11-21 · Configure…, with Show me how (0.3.0)
 
 **Configure…** says there is nothing to set and holds **Show me how it works**, which was in the panel; its drawing,

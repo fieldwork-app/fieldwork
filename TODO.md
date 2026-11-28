@@ -93,6 +93,15 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
   settle with the practitioner: what every example carries and in what order a learner meets it (the question and
   what it teaches, a manual for each workflow, a README to one outline, the widgets it teaches, where its numbers are
   checked, what to try next), and whether built-in examples get manuals. Measure: examples with each surface.
+- **Previews that change something and show only words** ([audit](docs/audits/preview-audit.md), re-review
+  2026-11-27; the practitioner: *"re-review / audit all the previews that are supposed to both render and not render
+  previews and recorded reason for not rendering"*). 20 widgets change data or shapes and neither draw nor show rows;
+  11 have no recorded reason: Measure distance, Move points in a donut, Aggregate points to H3 cells, Convex hull,
+  Voronoi catchments, Mean center, Space-time scan, Compare point sets, Apply ruleset (published), Sample a raster
+  (satellite files), Cases by period. Six display steps show no Preview or only numbers, with no reason either: Study
+  area's countries, Georeferenced map image, Point data's editor, Street network, Study design, Raster input. For each: draw or show rows, or record why not. The
+  drawing helper Clip polygons now uses (`previewDrawing`) is the way in for the spatial ones. Measure: transforms
+  that neither render nor say why.
 - **Next batch, agreed 2026-11-27, in order:** (1) an edit applied during a run: the dialog stays open, Apply waits and
   says so (the practitioner chose this); (2) the write-up's and the export's tables to the table standard; (3) the
   cooperative game's data model drafted in [233](docs/experiments/233-a-cooperative-turn-based-training-mission.md) as a

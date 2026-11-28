@@ -11,6 +11,7 @@ import {MAX_BUFFER_M} from './area-buffer.js';
 import {clipPointsToArea} from './clip-points.js';
 import {clipPolygons,summarizePolygons} from './catchments.js';
 import {previewBuffers} from './buffer-point.js';
+import {previewDrawing,type PreviewShape} from './spatial-walkthroughs.js';
 import {bufferPointWalkthrough,measureAreaWalkthrough,clipPolygonsWalkthrough,clipPointsWalkthrough,summarizePointsWalkthrough} from './spatial-walkthroughs.js';
 import {areaUnitOptions} from './area-measurement.js';
 import {calculateArea,formatArea} from './area-computation.js';
@@ -298,8 +299,11 @@ function measureAreaPreview(kit:AreaStepKit,n:WorkflowNode,unit:AreaUnit):string
   catch(error){return cannot(kit,error);}
 }
 
-/** WHAT THE CUT LEAVES: how many polygons survive it, and how much ground. A polygon that falls wholly outside is
- *  gone, and one that straddles the edge is kept smaller -- neither is visible from the setting alone. */
+/** WHAT THE CUT LEAVES, DRAWN AND COUNTED: the area, each polygon as it arrives, and what the cut keeps; then how many
+ *  survive and how much ground. A polygon that falls wholly outside is gone, and one that straddles the edge is kept
+ *  smaller -- neither is visible from the setting alone. Drawn since 2026-11-27 (the practitioner: *"the preview does
+ *  not show the resulting Voronoi polygons, clipped by the study area"*; TODO, Comprehensibility 5, "Start with Clip
+ *  polygons"). */
 function clipPolygonsPreview(kit:AreaStepKit,n:WorkflowNode):string{
   const boundary=boundaryOn(kit,n.id),polygons=polygonsOn(kit,n.id);
   if(!boundary)return waiting('The study area');
@@ -310,7 +314,19 @@ function clipPolygonsPreview(kit:AreaStepKit,n:WorkflowNode):string{
     // Summed in square metres and said once in km2, so two measurements are never added in different units.
     const area=(p:import('./catchments.js').Polygons)=>p.features.reduce((t,f)=>t+calculateArea(f.geometry,'km2').squareMetres,0);
     const said=(m2:number)=>`${new Intl.NumberFormat('en',{maximumSignificantDigits:4}).format(m2/1e6)} km\u00b2`;
-    return `<p class="standard-result"><strong>${after.toLocaleString('en')} of ${before.toLocaleString('en')} polygons kept.</strong> `
+    const parts=(g:Boundary)=>(g.type==='MultiPolygon'?g.coordinates:[g.coordinates]) as import('./types.js').Position[][][];
+    const shapes:PreviewShape[]=[
+      ...polygons.features.map(f=>({kind:'input' as const,rings:parts(f.geometry as Boundary)})),
+      // UNLABELLED: eight catchments' names piled on one another at their first corners; the shapes are what is previewed.
+      ...cut.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as Boundary)})),
+      {kind:'area' as const,rings:parts(boundary)}];
+    // THE COUNT STAYS IF THE DRAWING CANNOT BE MADE (review of #5): the drawing comes first on the page, and an error in
+    // it had taken the count and the area with it.
+    let drawing='';
+    try{drawing=previewDrawing(shapes,`The polygons before the cut, the study area, and what the cut keeps`);}
+    catch{drawing='<p>These polygons are too detailed to draw here. The count and area below are what the cut keeps.</p>';}
+    return drawing
+      +`<p class="standard-result"><strong>${after.toLocaleString('en')} of ${before.toLocaleString('en')} polygons kept.</strong> `
       +`${kit.esc(said(area(polygons)))} before the cut, ${kit.esc(said(area(cut)))} after.</p>`;
   }catch(error){return cannot(kit,error);}
 }

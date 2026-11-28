@@ -1438,13 +1438,13 @@ th .column-label{display:block;font-weight:400;color:var(--muted);font-size:14px
    as well as an outline, never colour alone; nothing under 14px; no motion where reduced motion is asked for. */
 #table-walkthrough{border:0;padding:0;background:transparent;max-width:min(68rem,calc(100vw - 32px));width:100%;max-height:calc(100vh - 32px);overflow:auto}
 #table-walkthrough::backdrop{background:rgba(0,0,0,.45)}
-#table-walkthrough .walk-panel{background:var(--surface-raised,#fff);color:var(--ink,#111);max-width:68rem;width:100%;border-radius:8px;padding:16px 20px;box-shadow:0 4px 18px rgba(0,0,0,.3);font-size:16px}
-#table-walkthrough .walk-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+:is(#table-walkthrough,.preview-drawing) .walk-panel{background:var(--surface-raised,#fff);color:var(--ink,#111);max-width:68rem;width:100%;border-radius:8px;padding:16px 20px;box-shadow:0 4px 18px rgba(0,0,0,.3);font-size:16px}
+:is(#table-walkthrough,.preview-drawing) .walk-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
 #table-walkthrough h2{font-size:20px;margin:0}
-#table-walkthrough .walk-made-up{display:inline-block;margin:8px 0;padding:2px 10px;border:2px dashed currentColor;font-weight:700;font-size:15px}
-#table-walkthrough .walk-tables{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-#table-walkthrough .walk-table{margin:0;flex:1 1 15rem}
-#table-walkthrough .walk-table figcaption{font-weight:700;font-size:15px;margin-bottom:4px}
+:is(#table-walkthrough,.preview-drawing) .walk-made-up{display:inline-block;margin:8px 0;padding:2px 10px;border:2px dashed currentColor;font-weight:700;font-size:15px}
+:is(#table-walkthrough,.preview-drawing) .walk-tables{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+:is(#table-walkthrough,.preview-drawing) .walk-table{margin:0;flex:1 1 15rem}
+:is(#table-walkthrough,.preview-drawing) .walk-table figcaption{font-weight:700;font-size:15px;margin-bottom:4px}
 #table-walkthrough table{border-collapse:collapse;width:100%;font-size:15px}
 #table-walkthrough th,#table-walkthrough td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
 #table-walkthrough tr{transition:background-color .3s ease,outline-color .3s ease}
@@ -1453,41 +1453,41 @@ th .column-label{display:block;font-weight:400;color:var(--muted);font-size:14px
 #table-walkthrough tr.walk-matched,#table-walkthrough tr.walk-kept,#table-walkthrough tr.walk-several{background:rgba(23,107,89,.12);color:inherit}
 #table-walkthrough tr.walk-unmatched,#table-walkthrough tr.walk-stopped{background:rgba(180,40,40,.10);color:inherit;outline-style:dashed}
 #table-walkthrough tr[data-walk-state] td{color:inherit;opacity:1}
-#table-walkthrough .walk-none{font-weight:700;border:2px dashed currentColor;padding:8px 10px;margin:0}
+:is(#table-walkthrough,.preview-drawing) .walk-none{font-weight:700;border:2px dashed currentColor;padding:8px 10px;margin:0}
 #table-walkthrough tr.walk-unused{opacity:.75;outline-style:dotted}
-#table-walkthrough .walk-word{font-weight:700;white-space:nowrap}
-#table-walkthrough .walk-result{border-left:3px solid var(--line);padding-left:12px}
+:is(#table-walkthrough,.preview-drawing) .walk-word{font-weight:700;white-space:nowrap}
+:is(#table-walkthrough,.preview-drawing) .walk-result{border-left:3px solid var(--line);padding-left:12px}
 /* THE RESULT THAT WILL NOT SURVIVE (2026-11-24): the rows stay, because the step goes on matching them, and the
    edge says they are going nowhere. NOT dimmed: lowering opacity lowers contrast, and the practitioner reads fine
    print poorly. The sentence under the table is what carries the meaning; this is the second signal, not the only
    one. */
-#table-walkthrough .walk-result-doomed{border-left-color:var(--warning)}
-#table-walkthrough .walk-result-doomed .walk-none{margin-top:8px}
+:is(#table-walkthrough,.preview-drawing) .walk-result-doomed{border-left-color:var(--warning)}
+:is(#table-walkthrough,.preview-drawing) .walk-result-doomed .walk-none{margin-top:8px}
 /* THE SPATIAL WALKTHROUGHS' DRAWINGS (2026-11-21). Drawn with these classes since 0.154.0 and never styled, so every shape
    filled black: the practitioner found Join's black throughout. Each kind as its key says, in the theme's colours. */
-#table-walkthrough .walk-drawing{display:block;width:100%;max-width:40rem;height:auto;margin:8px auto;background:var(--surface-raised,#fff)}
-#table-walkthrough .walk-shape{fill:none;stroke:var(--text-muted,#555);stroke-width:1.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
-#table-walkthrough .walk-shape-area{stroke:var(--text,#222);stroke-width:2;stroke-dasharray:6 4}
-#table-walkthrough .walk-shape-look{stroke:var(--accent,#176b59);stroke-width:4}
-#table-walkthrough .walk-shape-result{fill:var(--accent-soft,#cfe6df);fill-opacity:.85;stroke:var(--accent,#176b59);stroke-width:2}
-#table-walkthrough .walk-shape-gone{stroke:var(--text-faint,#888);stroke-dasharray:2 4}
-#table-walkthrough .walk-point{fill:var(--surface-raised,#fff)}
-#table-walkthrough .walk-point.walk-shape-look,#table-walkthrough .walk-point.walk-shape-result{fill:var(--accent,#176b59)}
-#table-walkthrough .walk-key{margin:4px 0 0;padding-left:1.2em}
-#table-walkthrough .walk-scale{margin:8px 0 0}
-#table-walkthrough .walk-scale-title{margin:0 0 4px;font-size:16px;font-weight:700;color:var(--text,#111)}
-#table-walkthrough .walk-scale ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px}
-#table-walkthrough .walk-scale li{display:flex;align-items:center;gap:8px;font-size:16px;color:var(--text,#111)}
-#table-walkthrough .walk-swatch{display:inline-block;width:22px;height:16px;border:1px solid var(--text,#111)}
-#table-walkthrough .walk-with-figure{align-items:center}
-#table-walkthrough .walk-with-figure .walk-figure{flex:2 1 22rem;margin:0}
-#table-walkthrough .walk-key li{font-size:16px;line-height:1.5;color:var(--text,#111)}
-#table-walkthrough .walk-shape-label{fill:var(--text,#111);font-size:14px;font-weight:700;paint-order:stroke;stroke:var(--surface-raised,#fff);stroke-width:3px;stroke-linejoin:round}
+:is(#table-walkthrough,.preview-drawing) .walk-drawing{display:block;width:100%;max-width:40rem;height:auto;margin:8px auto;background:var(--surface-raised,#fff)}
+:is(#table-walkthrough,.preview-drawing) .walk-shape{fill:none;stroke:var(--text-muted,#555);stroke-width:1.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+:is(#table-walkthrough,.preview-drawing) .walk-shape-area{stroke:var(--text,#222);stroke-width:2;stroke-dasharray:6 4}
+:is(#table-walkthrough,.preview-drawing) .walk-shape-look{stroke:var(--accent,#176b59);stroke-width:4}
+:is(#table-walkthrough,.preview-drawing) .walk-shape-result{fill:var(--accent-soft,#cfe6df);fill-opacity:.85;stroke:var(--accent,#176b59);stroke-width:2}
+:is(#table-walkthrough,.preview-drawing) .walk-shape-gone{stroke:var(--text-faint,#888);stroke-dasharray:2 4}
+:is(#table-walkthrough,.preview-drawing) .walk-point{fill:var(--surface-raised,#fff)}
+:is(#table-walkthrough,.preview-drawing) .walk-point.walk-shape-look,:is(#table-walkthrough,.preview-drawing) .walk-point.walk-shape-result{fill:var(--accent,#176b59)}
+:is(#table-walkthrough,.preview-drawing) .walk-key{margin:4px 0 0;padding-left:1.2em}
+:is(#table-walkthrough,.preview-drawing) .walk-scale{margin:8px 0 0}
+:is(#table-walkthrough,.preview-drawing) .walk-scale-title{margin:0 0 4px;font-size:16px;font-weight:700;color:var(--text,#111)}
+:is(#table-walkthrough,.preview-drawing) .walk-scale ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px}
+:is(#table-walkthrough,.preview-drawing) .walk-scale li{display:flex;align-items:center;gap:8px;font-size:16px;color:var(--text,#111)}
+:is(#table-walkthrough,.preview-drawing) .walk-swatch{display:inline-block;width:22px;height:16px;border:1px solid var(--text,#111)}
+:is(#table-walkthrough,.preview-drawing) .walk-with-figure{align-items:center}
+:is(#table-walkthrough,.preview-drawing) .walk-with-figure .walk-figure{flex:2 1 22rem;margin:0}
+:is(#table-walkthrough,.preview-drawing) .walk-key li{font-size:16px;line-height:1.5;color:var(--text,#111)}
+:is(#table-walkthrough,.preview-drawing) .walk-shape-label{fill:var(--text,#111);font-size:14px;font-weight:700;paint-order:stroke;stroke:var(--surface-raised,#fff);stroke-width:3px;stroke-linejoin:round}
 #table-walkthrough tr.walk-fresh{animation:walk-in .4s ease-out}
 @keyframes walk-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-#table-walkthrough .walk-say{font-size:17px;line-height:1.5;margin:14px 0 8px;min-height:3em}
-#table-walkthrough .walk-count{font-weight:700}
-#table-walkthrough .walk-controls{display:flex;gap:8px;flex-wrap:wrap}
+:is(#table-walkthrough,.preview-drawing) .walk-say{font-size:17px;line-height:1.5;margin:14px 0 8px;min-height:3em}
+:is(#table-walkthrough,.preview-drawing) .walk-count{font-weight:700}
+:is(#table-walkthrough,.preview-drawing) .walk-controls{display:flex;gap:8px;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){#table-walkthrough tr{transition:none}#table-walkthrough tr.walk-fresh{animation:none}}
 .publication-page .pub-attached,.publication-page .pub-annex-note{font:15px/1.45 system-ui,sans-serif;color:#111;margin:12px 0}
 .publication-page h2,.publication-page h3{clear:both}
@@ -1875,3 +1875,4 @@ tr.detect-signal-row td{font-weight:700}
 .port-symbol{flex-shrink:0;margin-right:7px}.port-symbol .f{fill:currentColor}.port-symbol .s{fill:none;stroke:currentColor}.node-icon .port-symbol,.palette-icon .port-symbol{margin:0}
 .react-flow__handle.node-output .node-output-tip{display:none;position:absolute;left:18px;top:50%;transform:translateY(-50%);white-space:nowrap;align-items:center;gap:6px;padding:5px 9px;font-size:14px;color:var(--ink);background:var(--surface-raised-1);border:1px solid var(--line);border-radius:6px;box-shadow:0 2px 6px var(--shadow-3);pointer-events:none;z-index:20}.react-flow__handle.node-output:hover .node-output-tip{display:flex}.node-output-tip .port-symbol{margin:0}
 #table-panel table,.table-standard{border-collapse:collapse;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}#table-panel th,.table-standard th{background:var(--surface-raised-1);color:var(--ink);font-weight:650;border-bottom:1.5px solid var(--ink);padding:9px 12px;vertical-align:bottom}#table-panel td,.table-standard td{color:var(--ink);padding:9px 12px;border-bottom:1px solid var(--surface-tint-8)}#table-panel tbody tr:last-child td,.table-standard tbody tr:last-child td{border-bottom:0}#table-panel td[data-number],#table-panel th.number,.table-standard td.number,.table-standard th.number{text-align:right;font-variant-numeric:tabular-nums}#table-panel th.number .column-sort{justify-content:flex-end;width:100%}#table-panel td.absent-cell,.table-standard td.absent-cell{color:var(--muted)}#table-panel tfoot td,#table-panel tfoot th{border-top:1.5px solid var(--ink);font-weight:650}#table-panel.table-shaded tbody tr:nth-child(even) td,.table-shaded .table-standard tbody tr:nth-child(even) td{background:var(--surface-tint-9)}.table-caption{font-size:16px;font-weight:650;color:var(--ink);margin:4px 0 10px}.table-notes{font-size:14px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+.preview-drawing{margin:4px 0 10px}.preview-drawing svg{width:100%;max-width:520px;height:auto;display:block}.preview-drawing .walk-key{margin:6px 0 0;padding-left:20px;font-size:14px}

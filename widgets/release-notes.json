@@ -118,12 +118,12 @@
    "migrationFrom": []
   },
   "buffer_point": {
-   "version": "0.7.0",
-   "released": "2026-11-24",
+   "version": "0.8.0",
+   "released": "2026-11-27",
    "changes": [
     {
-     "kind": "fixed",
-     "description": "The one-degree scope limit now applies only where the workflow actually reads a raster through the scope, and the refusal names the steps it is protecting. It was unconditional, so a workflow holding no raster at all was refused by a rule whose own sentence is about rasters: reported with two study areas, a border, a buffer and a Map, told that “a study area windows every raster this workflow reads” when it read none. The same error the polygon-layer fix of 2026-11-23 was written about, one level up — a guard applied past what it guards."
+     "kind": "changed",
+     "description": "The manual and Show me how say the step draws around several points; both still said one only."
     }
    ],
    "breaking": false,
@@ -185,12 +185,12 @@
    "migrationFrom": []
   },
   "clip_polygons": {
-   "version": "0.5.0",
-   "released": "2026-11-25",
+   "version": "0.6.0",
+   "released": "2026-11-27",
    "changes": [
     {
-     "kind": "fixed",
-     "description": "The preview said \"the polygon layer arrives when the workflow runs\" after the workflow had run. A layer a step COMPUTES is stored on no node, and unless it is an output it is in no `outputs` entry either, so a clip below Voronoi catchments could reach its polygons nowhere. `result.computed` has held such layers all along; the preview now reads it, after a stored layer and a current run, which carry more of the layer than it does."
+     "kind": "changed",
+     "description": "The Preview draws the cut: the area, each polygon as it arrives, and what is kept, as Show me how draws; the counts and areas beneath."
     }
    ],
    "breaking": false,
@@ -957,12 +957,12 @@
    "migrationFrom": []
   },
   "voronoi": {
-   "version": "0.6.0",
-   "released": "2026-11-26",
+   "version": "0.7.0",
+   "released": "2026-11-27",
    "changes": [
     {
      "kind": "changed",
-     "description": "Show me how no longer shades the catchments from light to dark. The cells carry no value, so the ramp ranked what has no order, and the key said \"darker for a larger total\" of a total there is none of. They are now one fill, told apart by the lines between them."
+     "description": "Show me how no longer follows a house to its nearest pump: the step is given pumps and an area, and the house step said removed in 0.5.0 had not been."
     }
    ],
    "breaking": false,

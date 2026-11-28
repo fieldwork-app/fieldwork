@@ -45,9 +45,11 @@ const KEY:Record<Kind,string>={input:'Grey outline: what the step is given',area
 
 /** The shapes drawn in a 360 by 240 box, longitude across and latitude up, at the scale of the widest shape. */
 function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string[];scale?:Scale}{
-  const all=shapes.flatMap(s=>[...(s.rings??[]).flat(2),...(s.point?[s.point]:[])]);
-  const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);
-  const w=Math.min(...xs),e=Math.max(...xs),south=Math.min(...ys),n=Math.max(...ys);
+  // THE BOUNDS IN ONE PASS (review of #5, 2026-11-27): every coordinate spread into Math.min and Math.max threw RangeError
+  // on an 80,000-vertex ring, well inside the input budget.
+  let w=Infinity,e=-Infinity,south=Infinity,n=-Infinity;
+  const take=(p:Position)=>{if(p[0]<w)w=p[0];if(p[0]>e)e=p[0];if(p[1]<south)south=p[1];if(p[1]>n)n=p[1];};
+  for(const s of shapes){for(const poly of s.rings??[])for(const r of poly)for(const p of r)take(p);if(s.point)take(s.point);}
   // ROOM FOR A LABEL on the right and above: a label is drawn up and to the right of its shape, and one on the widest
   // shape's edge was cut off (Summarize's "H6", 2026-11-22). The shapes take 260 by 180 of the 360 by 240 box.
   const scale=Math.min(260/((e-w)||1e-3),180/((n-south)||1e-3));
@@ -65,6 +67,14 @@ function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string
   return {svg:`<svg class="walk-drawing" viewBox="0 0 360 240" role="img" aria-label="${label}">${body}</svg>`,
     key:kinds.map(k=>k==='result'&&shading?KEY_SCALED:KEY[k]),...(shading?{scale:shading}:{})};
 }
+/** A DIALOG'S PREVIEW, DRAWN AS SHOW ME HOW DRAWS (2026-11-27): the practitioner, of Clip polygons' Preview, which gave
+ *  counts and no shapes: *"the preview does not show the resulting Voronoi polygons, clipped by the study area."* The
+ *  same drawing and key as the walkthroughs, so a preview and a walkthrough read alike. */
+export type PreviewShape=Shape;
+export function previewDrawing(shapes:PreviewShape[],label:string):string{
+  const {svg,key}=draw(shapes,escapeHtml(label));
+  return `<figure class="walk-figure preview-drawing">${svg}<figcaption><ul class="walk-key">${key.map(k=>`<li>${escapeHtml(k)}</li>`).join('')}</ul></figcaption></figure>`;
+}
 const ring=(points:Position[]):Position[][][]=>[[[...points,points[0]!]]];
 const partsOf=(g:Boundary):Position[][][]=>g.type==='MultiPolygon'?g.coordinates as Position[][][]:[g.coordinates as Position[][]];
 const step=(text:string,shapes:Shape[],final=false,marks:WalkStep['marks']=[],scale?:Scale):WalkStep=>({text,marks,figure:draw(shapes,text,scale),...(final?{final:true}:{})});
@@ -80,7 +90,7 @@ export function bufferPointWalkthrough(distanceM:number):Walkthrough{
   const made=bufferPoint(points,node,'walkthrough').value.boundary;
   const edge:Position=[WELL[0]+d/111320,WELL[1]];
   return {title:'Geometry buffer, step by step',tables:[],resultColumns:[],steps:[
-    step('The point the area is drawn around: Well A, chosen by its name. One point, never several.',[{kind:'look',point:WELL,label:'Well A'}]),
+    step('The point the area is drawn around: Well A, chosen by its name. Given several, each is drawn around the same way.',[{kind:'look',point:WELL,label:'Well A'}]),
     step(`Everything within ${metres(d)} of it, in every direction${d!==distanceM?' (shown with 500 m, because the distance set is not one the step accepts)':''}.`,
       [{kind:'input',point:WELL,label:'Well A'},{kind:'look',rings:[[[WELL,edge,WELL]]],label:metres(d),at:[(WELL[0]+edge[0])/2,WELL[1]]}]),
     step(`The step draws that as a polygon of ${4*BUFFER_POINT_STEPS} sides, ${BUFFER_POINT_STEPS} to each quarter, and it becomes the study area: `
@@ -340,13 +350,14 @@ const PUMPS:{name:string;at:Position}[]=[{name:'Pump A',at:[30.008,-1.008]},{nam
 export function voronoiWalkthrough():Walkthrough{
   const area:Boundary={type:'Polygon',coordinates:ring(AREA)[0]!};
   const made=voronoi(pointsOf(PUMPS),area,ZONE36S.zone,ZONE36S.hemisphere);
-  const house:Position=[30.024,-1.017];
-  const nearest=[...PUMPS].sort((a,b)=>apart(house,a.at)-apart(house,b.at))[0]!;
   const pumps=(kind:Kind):Shape[]=>PUMPS.map(p=>({kind,point:p.at,label:p.name}));
   return {title:'Voronoi catchments, step by step',tables:[],resultColumns:[],steps:[
     step('A study area and three made-up pumps.',[{kind:'area',rings:ring(AREA)},...pumps('input')]),
-    step(`A house in the area goes to the pump nearest it in a straight line: ${nearest.name}, ${metres(Math.round(apart(house,nearest.at)))} away.`,
-      [{kind:'area',rings:ring(AREA)},...pumps('input'),{kind:'look',point:house,label:'A house'},{kind:'look',rings:lineTo(house,nearest.at)}]),
+    // NO HOUSE (2026-11-27). The practitioner: *"it shows 'A house', but the house has got nothing to do with setting up
+    // the catchment areas (they are what fall into catchment areas)."* The step takes the pumps and the area; houses are
+    // put into the cells by Summarize points to polygons. The house step was said removed on 2026-11-25 (manual,
+    // History, 0.5.0) and was not.
+    //
     // TWO PUMPS BEFORE THREE (2026-11-25). The practitioner: *"the show me how it works does not really make sense
     // from a step by step perspective."* It did not: step 2 followed ONE house to its nearest pump, and step 3 then
     // showed every dividing line and every finished cell at once. The construction -- which is the thing being

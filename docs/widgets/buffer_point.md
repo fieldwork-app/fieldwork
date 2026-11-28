@@ -21,7 +21,7 @@ quarter. That polygon becomes a study area, which any step that takes a study ar
 
 | Setting | What it decides |
 | --- | --- |
-| **Point in ‹layer‰ that defines the area** | chosen from the points the connected layer carries. One point arriving is the choice; several, and the list opens on *Choose a point*. A layer that holds no records of its own and has not run offers none, and the name is typed in until it has |
+| **Point in ‹layer‰ that defines the area** | chosen from the points the connected layer carries. One point arriving is the choice; several, and the list opens on *Every one of them*, or name one to draw around it alone. A layer that holds no records of its own and has not run offers none, and the name is typed in until it has |
 | **Radius in metres** | above 0 and up to 50,000. The radius is a claim about reach, so give the figure your evidence supports and say where it came from in Methods |
 | **Where several areas are drawn** | combine them into one study area, or keep each one separate as a polygon layer |
 
@@ -40,6 +40,13 @@ you have set.
 ## Where it is used
 
 No worked example uses it today.
+
+## History
+
+### 2026-11-27 · Several points said as several (0.8.0)
+
+The manual and **Show me how** say what the step has done since 2026-11-23: with several points the list opens on
+*Every one of them*, and each is drawn around the same way. Both still said one point only.
 
 ### 2026-11-24 · The preview shows the ground and the point (0.6.0)
 

@@ -34,7 +34,7 @@ test('Calculate area says the area, in the unit chosen',async({page})=>{
   await expect(d).toContainText('ha');
 });
 
-test('Clip polygons says how many survive the cut, and how much ground',async({page})=>{
+test('Clip polygons draws the cut and says how many survive it, and how much ground',async({page})=>{
   const w=base([
     {id:'layer',type:'polygon_input',x:20,y:200,params:{label:'Polygon layer',
       data:{features:[poly('in','Inside',1,1,3,3),poly('edge','Straddling',8,8,12,12),poly('out','Outside',20,20,22,22)]}}},
@@ -43,6 +43,12 @@ test('Clip polygons says how many survive the cut, and how much ground',async({p
   const d=await open(page,w,'cut','#clip-polygons-dialog');
   await expect(d).toContainText('of 3 polygons kept');
   await expect(d).toContainText('before the cut');
+  // DRAWN, NOT ONLY COUNTED (2026-11-27): the area dashed, the three polygons as given, and what the cut keeps filled.
+  const drawing=d.locator('.preview-drawing');
+  await expect(drawing.locator('.walk-shape-area')).toHaveCount(1);
+  await expect(drawing.locator('.walk-shape-input')).toHaveCount(3);
+  await expect(drawing.locator('.walk-shape-result')).toHaveCount(await d.textContent().then(t=>Number(t.match(/(\d+) of 3 polygons kept/)[1])));
+  await expect(drawing.locator('.walk-key')).toContainText('Filled: what the step makes');
 });
 
 test('Summarize points to polygons says how the points fall',async({page})=>{

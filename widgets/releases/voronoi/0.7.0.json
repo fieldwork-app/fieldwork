@@ -1,0 +1,73 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:voronoi",
+ "nodeType": "voronoi",
+ "version": "0.7.0",
+ "title": "Voronoi catchments",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['voronoi']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "validationStatus": "application-only",
+  "shaclShapes": []
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "area",
+    "type": "area"
+   },
+   {
+    "name": "sites",
+    "type": "points"
+   }
+  ],
+  "output": "polygons"
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:VoronoiComputation",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "GeoSPARQL geometry, PROV activity and QUDT buffer units. Configuration SHACL is future work.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/catchments.ts",
+   "src/street-network.ts",
+   "src/core.ts",
+   "src/metric-steps-ui.ts",
+   "src/area-steps-ui.ts",
+   "src/spatial-walkthroughs.ts",
+   "src/table-walkthrough.ts"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "Show me how no longer follows a house to its nearest pump: the step is given pumps and an area, and the house step said removed in 0.5.0 had not been."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Synthetic numerical contracts and pinned source regression cases; no independent scientific certification. 0.3.0: tests/spatial-walkthroughs.browser.mjs, Show me how stepped to its last sentence; Chromium, 2026-11-23.\n\nTHE PREVIEW (2026-11-25). Browser tested on Chromium through the dialogs that open it. NOT established: that the numbers it reports are checked against the run's own, which would need a test holding both.\n\nFIVE STEPS (2026-11-25). Browser tested on Chromium; the pinned step count moved from four with its reason recorded beside it.\n\nONE FILL (2026-11-26). Browser tested on Chromium: tests/spatial-walkthroughs.browser.mjs checks that the last step shows no scale and no label runs outside the drawing."
+ }
+}
