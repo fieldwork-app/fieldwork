@@ -185,12 +185,12 @@
    "migrationFrom": []
   },
   "clip_polygons": {
-   "version": "0.6.0",
+   "version": "0.7.0",
    "released": "2026-11-27",
    "changes": [
     {
      "kind": "changed",
-     "description": "The Preview draws the cut: the area, each polygon as it arrives, and what is kept, as Show me how draws; the counts and areas beneath."
+     "description": "The Preview shades walking-time bands apart, each its matplotlib tab10 colour, see-through, keyed, longest first; nested bands had been one fill."
     }
    ],
    "breaking": false,
@@ -387,12 +387,12 @@
    "migrationFrom": []
   },
   "isochrone": {
-   "version": "0.7.0",
-   "released": "2026-11-25",
+   "version": "0.8.0",
+   "released": "2026-11-27",
    "changes": [
     {
      "kind": "changed",
-     "description": "Show me how draws the streets the walk actually covers. The practitioner: \"The show me how it works is incomplete as use of a street network is usually point to point.\" The step said \"along the streets in every direction\" and drew only the finished region, so the one thing that tells a network isochrone from a circle -- that every metre is counted ALONG a street, from the origin to somewhere -- was asserted and never shown. The walked streets come from `costsWithin`, the same reachability the isochrone runs: a street is drawn as walked where both its junctions were reached within the budget."
+     "description": "The Preview draws where each site reaches along the streets, each time a band in its matplotlib tab10 colour, see-through, as Map draws it, computed by the run's own worker so the page is never held. It had given minutes times speed, the same number whatever the streets."
     }
    ],
    "breaking": false,
@@ -423,12 +423,12 @@
    "migrationFrom": []
   },
   "map_output": {
-   "version": "0.50.0",
-   "released": "2026-11-26",
+   "version": "0.51.0",
+   "released": "2026-11-27",
    "changes": [
     {
-     "kind": "minor",
-     "description": "H3 cells that carry a count are shaded by class and keyed by range, on the figure and on the key beside the interactive map; a layer saved before keeps one blue. Polygons from Summarize points to polygons are shaded by their total or count, which they now carry."
+     "kind": "changed",
+     "description": "Points carried by a polygon layer are a layer of the map: sized, coloured and shaped as Configure sets them, the same in the preview and the result, drawn over the polygons. The interactive map no longer sizes them by a column named in its code."
     }
    ],
    "breaking": false,
@@ -843,12 +843,12 @@
    "migrationFrom": []
   },
   "summarize_points_to_polygon": {
-   "version": "0.7.0",
-   "released": "2026-11-26",
+   "version": "0.8.0",
+   "released": "2026-11-27",
    "changes": [
     {
-     "kind": "minor",
-     "description": "Each polygon carries the value Map shades it by: the total of the chosen field, or the count of points where no field is chosen, named on the key as Total <field> or Points inside. Map had drawn Summarize's polygons one colour per unit, keyed by name. Show me how ends on the same classes, colours and ranges Map draws for its made-up output, and its labels are measured and kept inside the drawing, on the right of their point where they fit. Raised in pull request 6's review."
+     "kind": "changed",
+     "description": "The Preview draws the polygons shaded by what the step gives each, on Map's scale with its key, and the points that fall in none drawn faint. It also reads the points with their values: it had read the picker's names and locations, so a number to add up, such as DEATHS, was missing from every point in the Preview."
     }
    ],
    "breaking": false,
@@ -957,12 +957,12 @@
    "migrationFrom": []
   },
   "voronoi": {
-   "version": "0.7.0",
+   "version": "0.8.0",
    "released": "2026-11-27",
    "changes": [
     {
      "kind": "changed",
-     "description": "Show me how no longer follows a house to its nearest pump: the step is given pumps and an area, and the house step said removed in 0.5.0 had not been."
+     "description": "The Preview draws the catchments it counts: one fill, the study area dashed, the sites as points, as Show me how draws them. It had given only their number and sizes."
     }
    ],
    "breaking": false,

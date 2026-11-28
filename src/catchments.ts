@@ -313,7 +313,11 @@ export interface Polygons {kind?:'hexbin';siteSourceNodeId?:string;
    *  map plays through them, drawing each day's features and the points with a date in `dateField` up to that day.
    *  `captions` says, per day, what the frame shows. */
   timeline?:{days:string[];dateField:string;captions:Record<string,string>};
-  features:Catchment[];sites:PointFeature[];method:string;crs:string;boundary?:Boundary;notes:string[];observations?:PointCollection;summary?:{records:number;matched:number;unmatched:number;missingLocation:number;multiple:number;valueField:string};snaps?:{siteId:string;nodeId:string;distanceM:number}[];unconnected?:UnconnectedSite[];offNetwork?:OffNetworkSite[]}
+  features:Catchment[];sites:PointFeature[];method:string;crs:string;boundary?:Boundary;notes:string[];observations?:PointCollection;
+  /** THE LAYER THE OBSERVATIONS CAME FROM, so a map draws them as that layer, with its symbol (2026-11-27). */
+  observationsFrom?:{id:string;label:string};
+  /** How a map with no area draws them: their layer's symbol, resolved from Map's settings. */
+  observationSymbol?:{colour:string;size:number;sizeBy?:string};summary?:{records:number;matched:number;unmatched:number;missingLocation:number;multiple:number;valueField:string};snaps?:{siteId:string;nodeId:string;distanceM:number}[];unconnected?:UnconnectedSite[];offNetwork?:OffNetworkSite[]}
 export const CATCHMENT_TYPES:Record<'voronoi'|'network_input'|'isochrone'|'clip_polygons'|'summarize_points_to_polygon',NodeDefinition>={
   voronoi:{title:'Voronoi catchments',group:'Spatial operations',icon:'◇',color:'teal',description:'Allocate an extent to the nearest site in a metric CRS',inputs:[['area','area'],['sites','points']],output:'polygons'},
   network_input:{title:'Street network',group:'Sources',icon:'⌁',color:'blue',description:'Download OSM by study area or upload a directed graph',inputs:[['area','area']],output:'network'},

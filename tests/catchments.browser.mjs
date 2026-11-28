@@ -24,7 +24,7 @@ test('Map presentation travels with interactive view, SVG and N3 evidence',async
   await page.locator('[data-view="results"]').click();
   await page.locator('#result-tab-interactive').click();await expect(page.locator('#map-communication-title')).toHaveText('Cholera travel-time coverage');
   await page.locator('[data-view="results"]').click();
-  await expect(page.locator('#map-communication-subtitle')).toHaveText('Illustrative walking network');await expect(page.locator('#map-communication-header-key')).toContainText('Cumulative travel-time region');
+  await expect(page.locator('#map-communication-subtitle')).toHaveText('Illustrative walking network');await expect(page.locator('#map-communication-header-key')).toContainText('Within 15 min');
   await page.locator('[data-view="results"]').click();
   await expect(page.locator('#map-communication-header-source')).toContainText('modern OSM streets');
   await page.screenshot({path:'test-results/standalone-interactive-map.png'});
@@ -32,7 +32,7 @@ test('Map presentation travels with interactive view, SVG and N3 evidence',async
   await page.locator('[data-view="results"]').click();
   await expect(page.locator('#map-communication-title')).toBeVisible();await page.setViewportSize({width:1280,height:800});
   const pending=page.waitForEvent('download');await page.locator('#map-download-svg').click();const file=await pending,svg=await readFile(await file.path(),'utf8');
-  assert.match(svg,/<title>Cholera travel-time coverage<\/title>/);assert.match(svg,/Cumulative travel-time region/);assert.match(svg,/modern OSM streets/);assert.doesNotMatch(svg,/tile\.openstreetmap\.org|tile\.opentopomap\.org/);
+  assert.match(svg,/<title>Cholera travel-time coverage<\/title>/);assert.match(svg,/Within 1 min/);assert.match(svg,/Within 15 min/);assert.match(svg,/modern OSM streets/);assert.doesNotMatch(svg,/tile\.openstreetmap\.org|tile\.opentopomap\.org/);
   await page.locator('[data-view="rules"]').click();await expect(page.locator('#n3-preview')).toContainText('fw:MapSpecification');await expect(page.locator('#n3-preview')).toContainText('fw:mapBasemap "osm"');
 });
 

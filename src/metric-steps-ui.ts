@@ -2,11 +2,14 @@
  *  isochrone and Mean center; Reachable junctions 2026-11-23. Moved out of app.ts and catchment-ui.ts by the rule for any widget touched: Name, Inputs,
  *  Settings in one sentence with Configure…, Result. Each dialog carries the UTM zone with the zone the workflow's data
  *  suggests and what the chosen zone stretches, which the Inspector showed below the step before. */
+import {networkIdentity} from './network-preview.js';
 import type {WorkflowNode} from './types.js';
 import type {InspectorKit,OwnInspector} from './inspector-kit.js';
 import type {AreaStepKit} from './area-steps-ui.js';
 import {openConfigDialog} from './config-dialog.js';
 import {validateCatchmentNode,voronoi} from './catchments.js';
+import {computeIsochrone} from './catchment-executor.js';
+import {bandColour,BAND_OPACITY} from './presentation.js';
 import {validateHullNode,convexHull} from './convex-hull.js';
 import {validateMeanCenterNode,computeMeanCenter} from './mean-center.js';
 import {reachableNodes} from './reachable-nodes.js';
@@ -14,7 +17,7 @@ import {calculateArea} from './area-computation.js';
 import {validateReachNode,MODE_SPEED_BANDS} from './reachable-nodes.js';
 import {errorMessage} from './guards.js';
 import {SHOW_ME,showMeIn} from './table-walkthrough.js';
-import {hullWalkthrough,voronoiWalkthrough,isochroneWalkthrough,meanCenterWalkthrough} from './spatial-walkthroughs.js';
+import {hullWalkthrough,voronoiWalkthrough,isochroneWalkthrough,meanCenterWalkthrough,previewDrawing} from './spatial-walkthroughs.js';
 
 type Hemisphere='north'|'south';
 interface Zoned {zone:string; hemisphere:Hemisphere}
@@ -173,8 +176,21 @@ function voronoiPreview(kit:InspectorKit,n:WorkflowNode,params:{zone:number;hemi
     const made=voronoi(input,boundary,params.zone,params.hemisphere);
     const areas=made.features.map(f=>calculateArea(f.geometry,'km2').squareMetres).sort((a,b)=>a-b);
     if(!areas.length)return cannotYet(kit,new Error('no catchment was drawn'))+SHOW_ME;
+    // DRAWN, NOT ONLY COUNTED (2026-11-27). The practitioner, of this dialog after the 0.204.5 re-audit had recorded
+    // it as "Numbers + WT" with no reason for not drawing: *"Voronoi still with no preview"*. The catchments were
+    // already computed here and only their count and sizes were said. Drawn as Show me how draws them: one fill,
+    // because they carry no value (0.6.0); the area dashed, which shows they fill the box around it rather than its
+    // outline; the sites as points, UNLABELLED, as Clip polygons' Preview leaves its catchments, because eight names
+    // pile on one another at this scale.
+    const parts=(g:import('./types.js').Boundary)=>
+      (g.type==='MultiPolygon'?g.coordinates:[g.coordinates]) as import('./types.js').Position[][][];
+    const drawing=previewDrawing([
+      ...made.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as import('./types.js').Boundary)})),
+      {kind:'area' as const,rings:parts(boundary)},
+      ...input.features.map(f=>({kind:'input' as const,point:(f.geometry as {coordinates:import('./types.js').Position}).coordinates}))],
+      'The catchments this step would draw, the study area, and the sites');
     // SMALLEST AND LARGEST, because what a reader judges about catchments is how uneven they are.
-    return `<p class="standard-result"><strong>${made.features.length.toLocaleString('en')} catchments</strong>, `
+    return drawing+`<p class="standard-result"><strong>${made.features.length.toLocaleString('en')} catchments</strong>, `
       +`one per site, from ${kit.esc(km2(areas[0]!))} to ${kit.esc(km2(areas[areas.length-1]!))}.</p>`+SHOW_ME;
   }catch(error){return cannotYet(kit,error)+SHOW_ME;}
 }
@@ -248,6 +264,87 @@ export function isochroneSentence(p:WorkflowNode<'isochrone'>['params']):string{
   return `${p.direction==='inbound'?'Who can reach each site':'Where each site can reach'} within ${times} minutes along the streets, `
     +`at ${p.speedMPerMin} metres a minute, with ${p.bufferM} m off the street at the end; measured in UTM zone ${zoneName(p.zone,p.hemisphere)}.`;
 }
+/** WHAT THE ISOCHRONE WOULD REACH ON THESE STREETS, drawn (2026-11-27).
+ *
+ *  The practitioner, of this dialog on the Snow isochrone example: *"This one is isochrone, still no preview. We are
+ *  supposed to have addressed this gap already and it remains a gap even after supposed repair."* Its Preview was
+ *  `minutes x speed`, arithmetic on two numbers just typed: the fault `reachPreview` above records of Reachable
+ *  junctions and repaired there on 2026-11-25, and not here. The preview audit's reason for it, that the network is
+ *  kept outside the page, was copied from that repair and is true only of a DOWNLOADED network. Snow's network is held
+ *  in the workflow (738 junctions), so this runs `isochrone`, the run's own function, as `reachPreview` runs
+ *  `reachableNodes`; the same three cases are said where it cannot.
+ *
+ *  Drawn as Map draws bands: longest first, so each shorter one sits inside it, ranked on `orderedSteps` because
+ *  minutes have an order. The sites are drawn on top, and the study area is not drawn: an isochrone does not use it. */
+/** OFF THE PAGE'S THREAD (2026-11-27). Run in place, four bands on Snow's 738 junctions held the page for 3.4 s when
+ *  the dialog opened and again on every change of a setting. So the Preview asks the run's own worker
+ *  (`computeIsochrone`), says it is drawing meanwhile, and redraws the dialog when the answer comes back. Answers are
+ *  kept by the exact settings, sites and network they were computed for, so a redraw never recomputes and a late
+ *  answer for settings since changed is simply not the one shown. */
+type IsoAnswer={state:'pending'}|{state:'done';value:import('./catchments.js').Polygons}|{state:'failed';error:unknown};
+const isoAnswers=new Map<string,IsoAnswer>();
+let isoRedraw:()=>void=()=>{};
+function isochroneAnswer(sites:import('./types.js').PointCollection,network:import('./catchments.js').Network,
+    params:WorkflowNode<'isochrone'>['params']):IsoAnswer{
+  // BY WHAT THE NETWORK IS, not its counts (review of #6): a network edited to the same counts drew the old bands.
+  const key=JSON.stringify([params,sites.features.map(f=>[f.id,f.geometry]),networkIdentity(network)]);
+  const known=isoAnswers.get(key);
+  if(known)return known;
+  isoAnswers.set(key,{state:'pending'});
+  if(isoAnswers.size>24)isoAnswers.delete(isoAnswers.keys().next().value!);
+  computeIsochrone(sites,network,params)
+    .then(value=>isoAnswers.set(key,{state:'done',value}),error=>isoAnswers.set(key,{state:'failed',error}))
+    .finally(()=>{try{isoRedraw();}catch{/* the dialog was closed */}});
+  return {state:'pending'};
+}
+
+function isochronePreview(kit:InspectorKit,n:WorkflowNode,params:WorkflowNode<'isochrone'>['params']):string{
+  const longest=params.thresholds?.length?params.thresholds[params.thresholds.length-1]!:params.minutes;
+  const far=longest*params.speedMPerMin;
+  const said=far>0?`<p>${kit.esc(`${params.thresholds?'The longest time goes':'That goes'} up to ${metres(far)} along the streets at ${params.speedMPerMin} metres a minute.`)}</p>`:'';
+  const sites=(kit as AreaStepKit).recordsOn(n.id,'sites');
+  const network=(kit as AreaStepKit).networkOn(n.id);
+  if(!sites||!network){
+    const connected=(port:string)=>kit.workflow().edges.some(e=>e.to===n.id&&e.port===port);
+    const missing=[!sites&&!connected('sites')?'the sites':'',!network&&!connected('network')?'a street network':'']
+      .filter(Boolean);
+    return said+(missing.length
+      ?`<p class="muted">Connect ${missing.join(' and ')}, and what this step would reach is drawn here.</p>`
+      :'<p class="muted">The street network is kept outside the page and read when the workflow runs, so what this '
+        +'step reached is in the Inspector after a run rather than here.</p>')+SHOW_ME;
+  }
+  try{
+    validateCatchmentNode({...n,type:'isochrone',params} as WorkflowNode<'isochrone'>);
+    const answer=isochroneAnswer(sites,network,params);
+    if(answer.state==='pending')return said+'<p class="muted" data-iso-preview="pending">Drawing what this step would reach on these streets…</p>'+SHOW_ME;
+    if(answer.state==='failed')return said+cannotYet(kit,answer.error)+SHOW_ME;
+    const made=answer.value;
+    if(!made.features.length)return said+cannotYet(kit,new Error('no site reaches a street within the time'))+SHOW_ME;
+    const times=[...new Set(made.features.map(f=>f.minutes??longest))].sort((a,b)=>a-b);
+    const colourOf=(m:number)=>bandColour(m,times);
+    const parts=(g:import('./types.js').Boundary)=>
+      (g.type==='MultiPolygon'?g.coordinates:[g.coordinates]) as import('./types.js').Position[][][];
+    const bands=[...made.features].sort((a,b)=>(b.minutes??longest)-(a.minutes??longest));
+    const drawing=previewDrawing([
+      ...bands.map(f=>({kind:'result' as const,rings:parts(f.geometry as import('./types.js').Boundary),fill:colourOf(f.minutes??longest),fillOpacity:BAND_OPACITY})),
+      ...sites.features.filter(f=>f.geometry).map(f=>({kind:'input' as const,point:(f.geometry as {coordinates:import('./types.js').Position}).coordinates}))],
+      'Where each site reaches along the streets, longest time first',
+      {title:times.length>1?'Minutes, each region holding the shorter ones':'Minutes',entries:times.map(m=>({label:`within ${m} min`,color:colourOf(m)}))});
+    const unconnected=(made as {unconnected?:unknown[]}).unconnected??[];
+    // ONE SITE'S REGION HAS AN AREA; SEVERAL SITES' MAY OVERLAP, so their areas are not added up -- the same caution
+    // Summarize's Preview gives counts in overlapping polygons.
+    const widest=made.features.filter(f=>(f.minutes??longest)===longest);
+    const area=widest.length===1?calculateArea(widest[0]!.geometry,'km2').squareMetres:null;
+    return drawing+said
+      +`<p class="standard-result">${area!==null?`The ${longest}-minute region covers <strong>${kit.esc(km2(area))}</strong>`
+        :`<strong>${widest.length.toLocaleString('en')}</strong> sites each reach a ${longest}-minute region; they may overlap, so their areas are not added`}`
+      +`${times.length>1?`, in ${times.length} nested times`:''}.</p>`
+      +(unconnected.length?`<p class="profile-flag">${unconnected.length.toLocaleString('en')} site${unconnected.length===1?'':'s'} `
+        +`${unconnected.length===1?'reaches':'reach'} nothing: the leg to the nearest street spends the whole time.</p>`:'')
+      +SHOW_ME;
+  }catch(error){return said+cannotYet(kit,error)+SHOW_ME;}
+}
+
 export const isochroneInspector:OwnInspector<'isochrone'>={
   markup:(n,kit)=>{const out=summaryOf(kit,n);
     return kit.section('Name',kit.name('isochrone-label',n.params.label||'Network isochrone'))
@@ -277,10 +374,11 @@ export const isochroneInspector:OwnInspector<'isochrone'>={
             +num('maxSnapM','Snap limit: a site further from a street is marked (metres)',0,1000)
             +`<label class="field-option"><input type="checkbox" id="isochrone-fillHoles"${d.fillHoles?' checked':''}> Fill holes inside each region</label>`
             +zoneFields(kit as AreaStepKit,d,'isochrone'),
-            preview:(()=>{const q=isoParams(d),far=q.minutes*q.speedMPerMin;
-              return (far>0?`<p>${kit.esc(`${q.thresholds?'The longest time goes':'That goes'} up to ${metres(far)} along the streets at ${q.speedMPerMin} metres a minute.`)}</p>`:'')+SHOW_ME;})(),
+            preview:isochronePreview(kit,n,{...p,...isoParams(d)}),
             ...refusal(()=>validateCatchmentNode({...node,params:{...p,...isoParams(d)}}))};},
         wire:(r,d,redraw)=>{
+          // Only while this dialog is open: an answer that returns after it closed has nothing to redraw.
+          isoRedraw=()=>{if(r.isConnected)redraw();};
           r.querySelectorAll<HTMLInputElement>('[data-iso]').forEach(el=>el.onchange=()=>{(d as unknown as Record<string,string>)[el.dataset.iso!]=el.value;redraw();});
           r.querySelector<HTMLInputElement>('#isochrone-times')!.onchange=e=>{d.times=(e.target as HTMLInputElement).value;redraw();};
           r.querySelector<HTMLSelectElement>('#isochrone-direction')!.onchange=e=>{d.direction=(e.target as HTMLSelectElement).value as IsochroneDraft['direction'];redraw();};

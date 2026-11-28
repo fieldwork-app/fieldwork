@@ -27,7 +27,9 @@ import {latLngToCell,cellToLatLng,cellToBoundary,gridDisk,getHexagonEdgeLengthAv
 type Kind='input'|'area'|'look'|'result'|'gone';
 interface Shape {kind:Kind;rings?:Position[][][];point?:Position;label?:string;at?:Position;
   /** A made shape's colour on the scale `classedScale` gives, as Map would shade it. */
-  fill?:string}
+  fill?:string;
+  /** Its fill's opacity, where it is not the walkthroughs' .78: a see-through band (2026-11-27). */
+  fillOpacity?:number}
 /** THE SCALE A RESULT IS SHADED ON (the practitioner, 2026-11-26, on Summarize's last step: "shouldn't the goal be in
  *  summarization to render a shading corresponding to the resulting scale?"). Read off the step's own output by the
  *  functions Map shades and keys a polygon layer with (`polygonShading`, `classRanges` over `shadedValues`), so the
@@ -56,7 +58,7 @@ function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string
   const x=(lon:number)=>20+(lon-w)*scale+(260-(e-w)*scale)/2,y=(lat:number)=>40+(n-lat)*scale+(180-(n-south)*scale)/2;
   const path=(rings:Position[][][])=>rings.map(poly=>poly.map(r=>'M'+r.map(p=>`${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join('L')+'Z').join(' ')).join(' ');
   const body=shapes.map(s=>s.rings
-    ?`<path class="walk-shape walk-shape-${s.kind}" d="${path(s.rings)}" fill-rule="evenodd"${s.fill?` style="fill:${s.fill};fill-opacity:.78"`:''}/>`
+    ?`<path class="walk-shape walk-shape-${s.kind}" d="${path(s.rings)}" fill-rule="evenodd"${s.fill?` style="fill:${s.fill};fill-opacity:${s.fillOpacity??.78}"`:''}/>`
     :s.point?`<circle class="walk-shape walk-shape-${s.kind} walk-point" cx="${x(s.point[0]).toFixed(1)}" cy="${y(s.point[1]).toFixed(1)}" r="5"/>`:'').join('')
     +shapes.filter(s=>s.label).map(s=>{const at=s.at??s.point??s.rings![0]![0]![0]!;
       // A LABEL STAYS IN THE DRAWING (2026-11-26): drawn to the right of its point, and kept inside by the player, which
@@ -71,9 +73,24 @@ function draw(shapes:Shape[],label:string,shading?:Scale):{svg:string;key:string
  *  counts and no shapes: *"the preview does not show the resulting Voronoi polygons, clipped by the study area."* The
  *  same drawing and key as the walkthroughs, so a preview and a walkthrough read alike. */
 export type PreviewShape=Shape;
-export function previewDrawing(shapes:PreviewShape[],label:string):string{
-  const {svg,key}=draw(shapes,escapeHtml(label));
-  return `<figure class="walk-figure preview-drawing">${svg}<figcaption><ul class="walk-key">${key.map(k=>`<li>${escapeHtml(k)}</li>`).join('')}</ul></figcaption></figure>`;
+export type PreviewScale=Scale;
+/** WITH A SCALE (2026-11-27), for a step whose result carries a value: Summarize points to polygons, whose Preview
+ *  counted and did not draw (the practitioner: *"Summarize points to polygon for Voronoi catchment still with no
+ *  preview"*). The scale is keyed as the walkthrough player keys it (table-walkthrough.ts), so the two read alike. */
+export function previewDrawing(shapes:PreviewShape[],label:string,scale?:PreviewScale):string{
+  // LARGEST FILLED SHAPE FIRST (2026-11-27). The practitioner, of Summarize's Preview on Snow's isochrone: *"The larger
+  // polygon (longer travel) should not be at the top surface, it covers the other smaller isochrone band polygons."*
+  // Nested bands arrive shortest first, so the 15-minute band was drawn last over the 1, 5 and 10. Shapes that do not
+  // overlap, a Voronoi's cells, are unchanged by the order.
+  const extent=(s:PreviewShape)=>(s.rings??[]).reduce((t,poly)=>{const r=poly[0]??[];let a=0;
+    for(let i=0;i<r.length-1;i++)a+=r[i]![0]*r[i+1]![1]-r[i+1]![0]*r[i]![1];return t+Math.abs(a)/2;},0);
+  const filled=shapes.filter(s=>s.kind==='result'&&s.rings).sort((a,b)=>extent(b)-extent(a));
+  let next=0;shapes=shapes.map(s=>s.kind==='result'&&s.rings?filled[next++]!:s);
+  const {svg,key}=draw(shapes,escapeHtml(label),scale);
+  const scaleKey=scale?`<div class="walk-scale"><p class="walk-scale-title">${escapeHtml(scale.title)}</p><ul>`
+    +scale.entries.map(e=>`<li><span class="walk-swatch" style="background:${escapeHtml(e.color)}" aria-hidden="true"></span>${escapeHtml(e.label)}</li>`).join('')
+    +'</ul></div>':'';
+  return `<figure class="walk-figure preview-drawing">${svg}<figcaption><ul class="walk-key">${key.map(k=>`<li>${escapeHtml(k)}</li>`).join('')}</ul>${scaleKey}</figcaption></figure>`;
 }
 const ring=(points:Position[]):Position[][][]=>[[[...points,points[0]!]]];
 const partsOf=(g:Boundary):Position[][][]=>g.type==='MultiPolygon'?g.coordinates as Position[][][]:[g.coordinates as Position[][]];

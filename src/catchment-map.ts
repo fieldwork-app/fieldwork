@@ -1,6 +1,6 @@
 import {escapeHtml} from './html-escape.js';
 import {LINE_COLOURS,arrowIconSvg,endBearing,marksDirection} from './map-lines.js';
-import {proportionalRadius,layerRanks,colouredClasses,MERGED_MARKS_FROM,recordAttributesHtml} from './point-layers.js';
+import {proportionalRadius,layerRanks,colouredClasses,MERGED_MARKS_FROM,recordAttributesHtml,observationRadius} from './point-layers.js';
 import {RASTER_POINT_COLOURS} from './raster-panels.js';
 import {GlMarks,type GlMark} from './gl-marks.js';
 /** THE STACK IS PANES, NOT ARITHMETIC (2026-11-23). Leaflet stacks markers within a pane by latitude -- each marker's
@@ -38,7 +38,7 @@ import type {Polygons} from './catchments.js';
 import type {PointCollection,Escape,Position} from './types.js';
 
 import {basemapOptions,BASEMAP_LABELS,basemapKey,keyedProvider,PROVIDER_NAMES,type BasemapChoice} from './basemaps.js';
-import {groupedKey,RING_RED,RING_BLUE,layerSymbol,markPath,markRadius,polygonShading,shadedValues,classRanges,categoricalSteps,FIGURE_ROLE} from './presentation.js';
+import {groupedKey,RING_RED,RING_BLUE,bandColour,BAND_OPACITY,layerSymbol,markPath,markRadius,polygonShading,shadedValues,classRanges,categoricalSteps,FIGURE_ROLE,CARRIED_POINT_COLOUR} from './presentation.js';
 import type {LayerShape,FillClass,FillEncoding} from './presentation.js';
 import {fillClass,SPATIAL_RELATION_FILL,MARK_HALO} from './presentation.js';
 import {rasterImage} from './raster-image.js';
@@ -365,10 +365,11 @@ export function mountCatchmentMap(host:HTMLElement,source:Polygons|MapLayers,con
     // A part with no value is neutral, never the lowest class: pale-for-absent reads as a
     // finding of low incidence, which is the opposite of what it means.
     const hue=hueOf.get(f.id);
-    const fillColor=shaded?(at===null?FIGURE_ROLE.unknown:shaded.colours[at]):hue??'#1f77b4';
+    const band=!shaded&&!hue&&f.minutes!==undefined?bandColour(f.minutes,p.features.map(x=>x.minutes??0)):undefined;
+    const fillColor=shaded?(at===null?FIGURE_ROLE.unknown:shaded.colours[at]):hue??band??'#1f77b4';
     // A categorical fill is readable at the strength a value-bearing one is: the identity wash
     // was tuned for nested catchments drawn over each other, and two named regions are not that.
-    const fillOpacity=shaded?(at===null?.18:.78):hue?.55:.2;
+    const fillOpacity=shaded?(at===null?.18:.78):hue?.55:band?BAND_OPACITY:.2;
     // A RING, outline only, where the polygon stands for one place: a cluster at one house (2026-11-15).
     const layer=L.geoJSON(f.geometry,{style:f.ring?{color:f.ring==='secondary'?RING_BLUE:RING_RED,weight:3.5,fillColor,fillOpacity:0}
       :{color:shaded?FIGURE_ROLE.quietInk:hue??'#39779e',weight:1,fillColor,fillOpacity}});
@@ -497,10 +498,13 @@ export function mountCatchmentMap(host:HTMLElement,source:Polygons|MapLayers,con
       }}
     group.addTo(map);all.addLayer(group);overlays[esc(layer.label)]=group;});
   const observations=L.featureGroup();
-  for(const f of p.observations?.features||[]){if(!f.geometry)continue;const [lon,lat]=f.geometry.coordinates,n=f.properties.DEATHS;
+  // NO COLUMN OF ITS OWN (2026-11-27): these were sized by DEATHS, a column of one example's data named in the map's
+  // code. With a study area wired they are a point layer of the map, sized as Configure… says; without one they are
+  // drawn at one size, as the static figure draws them.
+  for(const f of p.observations?.features||[]){if(!f.geometry)continue;const [lon,lat]=f.geometry.coordinates;
     if(!Number.isFinite(lat)||!Number.isFinite(lon))continue;
-    const radius=typeof n==='number'&&Number.isFinite(n)&&n>0?Math.max(2,Math.min(20,n)):3;
-    L.circleMarker([lat,lon],{radius,color:'#222',weight:1,fillColor:'#d62f2f',fillOpacity:.85}).bindPopup(`<b>${esc(f.properties.name)}</b><br>Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}${typeof n==='number'?`<br>Deaths: ${n}`:''}`).addTo(observations);
+    const said=Object.entries(f.properties??{}).filter(([k])=>k!=='name').map(([k,v])=>`<br>${esc(k)}: ${esc(String(v))}`).join('');
+    L.circleMarker([lat,lon],{radius:p.observationSymbol?observationRadius(p,f.properties):4,color:'#222',weight:1,fillColor:p.observationSymbol?.colour??CARRIED_POINT_COLOUR,fillOpacity:.85}).bindPopup(`<b>${esc(String(f.properties?.name??''))}</b><br>Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}${said}`).addTo(observations);
   }
   // ONLY IF THERE IS SOMETHING IN IT. The practitioner, 2026-10-20, on a map of a border study
   // area and its streets: *"Stale UI artifacts --- Observations (red circles) and Sites (blue
@@ -511,7 +515,7 @@ export function mountCatchmentMap(host:HTMLElement,source:Polygons|MapLayers,con
   // circles)" told a reader the mark and not the meaning, and said it in a control that already
   // draws the mark beside the name.
   if(observations.getLayers().length){if(!hiddenPort('observations')){observations.addTo(map);all.addLayer(observations);}
-    place('observations','Observations',observations);}
+    place('observations',esc(p.observationsFrom?.label??'Observations'),observations);}
   const pumps=L.featureGroup(),points=context?.features||p.sites;
   for(const f of points){if(!f.geometry)continue;const [lon,lat]=f.geometry.coordinates;
     if(!Number.isFinite(lat)||!Number.isFinite(lon))continue;
@@ -1058,7 +1062,7 @@ export function mountCatchmentMap(host:HTMLElement,source:Polygons|MapLayers,con
     :polygonShading(options.classifyOver??p.features).classed
     ?`Polygon shade: ${p.valueName?.trim()||'the joined value'}, in classes shown in the key. Click a part for its number. `
     :p.features.some(f=>f.minutes!==undefined)
-    ?'Blue nested regions: cumulative travel times. Red circles: observations (DEATHS radius capped at 20 px); blue squares: sites/context. '
+    ?'Nested regions, one colour per travel time, each holding the shorter ones. Red circles: observations; blue squares: sites/context. '
     :'')
     +'Use layer controls and click features for details.';
   host.append(note);

@@ -3,6 +3,54 @@
 The application version follows the policy in [AGENTS.md](AGENTS.md). A version
 shown in a local build is not a claim that it has been published.
 
+## 0.204.6 — In development
+
+- **Review of #3 to #6, five repairs, each with a test that failed before it.** The Credentials manual's DHIS2 entry
+  checks the address and the server's reach before the CORS allowlist, since Fieldwork says *could not be reached* for
+  any failed request (#3). The address check holds site links to `homepage` and repository links to `repository`, so a
+  homepage moved to another path or a custom domain finds the old site links (#4). Clip polygons' Preview draws an
+  80,000-vertex ring, which threw RangeError, and keeps its count and area if a drawing cannot be made (#5). Network
+  isochrone's Preview keeps its answers by what the network is, not its counts, so a network edited to the same 738
+  junctions and 1,619 edges is drawn again (#6). A carried layer's largest value is found once, in one pass, rather than
+  for every mark, which was quadratic and threw RangeError at 250,000 points (#6). Chromium only.
+- **Voronoi catchments 0.8.0 and Summarize points to polygons 0.8.0: their Previews draw** (the practitioner, in Snow's
+  Voronoi example after the re-audit: *"Voronoi still with no preview"*, *"Summarize points to polygon for Voronoi
+  catchment still with no preview"*). Voronoi draws the cells it would make, the area dashed and the sites; Summarize
+  draws the polygons shaded on Map's scale with its key, and faint any point that falls in none. Drawing Summarize found
+  a fault its count had hidden: the Preview read each point's name and location but not its other values, so every
+  total came to nothing; it now reads the points whole, as the run does. Both use the drawing Clip polygons' Preview
+  uses. 17 transforms still neither draw nor show rows, 10 with no reason (TODO). Validation:
+  `tests/snow-previews.browser.mjs` on the Snow Voronoi example, Chromium only; the values check failed against the old
+  code and passed after. Not run on WebKit.
+- **Walking-time bands, one colour each, see-through, everywhere** (the practitioner, on Snow's isochrone: *"the layers
+  are almost indistinguishable"*, the longest band *"covers the other smaller isochrone band polygons"*, and: *"the
+  John Snow Cholera notebooks Advanced 1 ... isochrone bands have different transparent colors ... hues from
+  matplotlib"*). NB04 draws each band with no colour named, `alpha=0.2`, so each takes the next of matplotlib's tab10:
+  1 minute blue, 5 orange, 10 green, 15 red. Map's plot, its interactive map, and the Network isochrone and Clip
+  polygons Previews now all use that, at one opacity, 0.3, so a band shows on a dark Preview too; before, every band
+  was the first blue (the plot) or a lightness ramp (the Previews). Every Preview draws its largest filled shape
+  first. The run had kept each computed layer as names and shapes only, so Clip's Preview got the bands without their
+  minutes; it now keeps each feature's minutes, value, total, count and category. Network isochrone's Preview draws
+  what it would reach, by the run's own function off the page; it had said only minutes times speed. The isochrone
+  plot sizes the deaths by its map's setting, as the other maps do.
+  The key under the plot had kept one "travel-time region" entry in a hue no band was drawn in, and the deaths in
+  a red outside the colour-blind-safe palette; it now has one entry per time in that band's colour and opacity, and
+  names the deaths by their layer, in the palette's observation colour unless **Configure…** chooses another
+  (`tests/figure-key-agreement.browser.mjs`, which failed on both).
+- **Map 0.51.0: the points a polygon layer carries are drawn alike in the preview and the result.** The practitioner, on
+  Snow's Voronoi map: the preview sized the deaths and drew them over the catchments, the result drew them small and
+  under the shading, *"These inconsistencies make the worked example not credible."* The interactive map sized them by
+  a column named DEATHS written into its code; the static figure, at one small size. They are now a layer of the map,
+  named for the step they came from, sized, coloured and shaped as **Configure…** sets them, and drawn over the
+  polygons in both. Snow's maps choose *size by DEATHS* themselves. A test holds one size rule for both, the points
+  after the polygons, and no renderer naming a column of an example's data.
+- **Network isochrone 0.8.0: its Preview draws what the sites reach.** The practitioner: *"This one is isochrone, still
+  no preview. We are supposed to have addressed this gap already and it remains a gap even after supposed repair."* It
+  was `minutes × speed`, the fault fixed for Reachable junctions on 2026-11-25 and not here; the audit's reason, a
+  network kept outside the page, does not hold for Snow's, which the workflow holds. It now draws each time as a band,
+  computed in the run's own worker: in place it held the page 3.4 s on opening and on every change; now the dialog
+  opens in 63 ms and the drawing follows in about 4 s. Chromium only.
+
 ## 0.204.5 — In development
 
 - **Two repairs said done and not done, done.** Voronoi catchments 0.7.0: **Show me how** no longer follows a house

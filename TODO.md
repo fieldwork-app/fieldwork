@@ -96,8 +96,9 @@ Finished and declined items are in [docs/todo-history.md](docs/todo-history.md).
 - **Previews that change something and show only words** ([audit](docs/audits/preview-audit.md), re-review
   2026-11-27; the practitioner: *"re-review / audit all the previews that are supposed to both render and not render
   previews and recorded reason for not rendering"*). 20 widgets change data or shapes and neither draw nor show rows;
-  11 have no recorded reason: Measure distance, Move points in a donut, Aggregate points to H3 cells, Convex hull,
-  Voronoi catchments, Mean center, Space-time scan, Compare point sets, Apply ruleset (published), Sample a raster
+  11 have no recorded reason. **2026-11-27, 0.204.6:** Voronoi catchments and Summarize points to polygons now draw
+  (the second had a recorded reason, "the number is the result"; the practitioner asked for it drawn all the same: *"Summarize points to polygon for Voronoi catchment still with no preview"*). Network isochrone draws too; its
+  recorded reason held only for a downloaded network. So 17 and 10 remain: Measure distance, Move points in a donut, Aggregate points to H3 cells, Convex hull, Mean center, Space-time scan, Compare point sets, Apply ruleset (published), Sample a raster
   (satellite files), Cases by period. Six display steps show no Preview or only numbers, with no reason either: Study
   area's countries, Georeferenced map image, Point data's editor, Street network, Study design, Raster input. For each: draw or show rows, or record why not. The
   drawing helper Clip polygons now uses (`previewDrawing`) is the way in for the spatial ones. Measure: transforms

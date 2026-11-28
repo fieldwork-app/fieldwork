@@ -143,3 +143,19 @@ export const PREVIEW_SCALE_NOTE=(coverage:NetworkCoverage):string=>
   coverage.boundaryCovered!==null&&coverage.boundaryCovered<0.999
     ? 'The dashed outline is the study area. Where it runs outside the streets, the download did not reach that ground.'
     : 'The dashed outline is the study area.';
+
+/** WHAT A NETWORK IS, AS A SHORT STRING, for keeping a Preview's answer (review of #6, 2026-11-27). The isochrone Preview
+ *  kept its answers by the network's counts alone, so a network with the same 738 junctions and 1,619 edges but four
+ *  times the lengths was shown the old bands. This reads every junction's place and every edge's ends and length, in one
+ *  pass (FNV-1a), and is kept per network object, so a dialog's redraws do not read it again. */
+const identities=new WeakMap<Network,string>();
+export function networkIdentity(network:Network):string{
+  const known=identities.get(network);if(known)return known;
+  let h=0x811c9dc5;
+  const mix=(text:string)=>{for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,0x01000193);}h^=0x1f;h=Math.imul(h,0x01000193);};
+  for(const node of network.nodes)mix(`${node.id}|${node.coordinates[0]}|${node.coordinates[1]}`);
+  for(const edge of network.edges)mix(`${edge.from}|${edge.to}|${edge.lengthM}`);
+  const identity=`${network.nodes.length}:${network.edges.length}:${(h>>>0).toString(36)}`;
+  identities.set(network,identity);
+  return identity;
+}

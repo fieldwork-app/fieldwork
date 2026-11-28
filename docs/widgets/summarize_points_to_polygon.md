@@ -1,6 +1,6 @@
 # Summarize points to polygons
 
-_Created 2026-11-22 · Updated 2026-11-26_
+_Created 2026-11-22 · Updated 2026-11-27_
 
 **A summary.** It takes polygons and points, and gives back the same polygons, each carrying how many of the points
 fall in it and, where you name one, the total of a number they carry.
@@ -45,6 +45,15 @@ The Validation Lab's check 14 recomputes every polygon's count and total with Sh
 polygons, release 0.2.0.
 
 ## History
+
+### 2026-11-27 · The Preview draws, with the numbers it adds up (0.8.0)
+
+**Configure…**'s Preview draws the polygons shaded by what each is given, on the scale Map uses and with its key, and
+draws faint any point that falls in none. It had only counted.
+
+Drawing it found a fault the count had hidden: the Preview read each point's name and location and not its other
+values, so a number to add up was missing from every point and every total came to nothing. It now reads the points
+whole, as the run does.
 
 ### 2026-11-26 · Map shades the polygons by what was counted (0.7.0)
 

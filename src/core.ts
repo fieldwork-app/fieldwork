@@ -1296,12 +1296,17 @@ export async function executeWorkflow(workflow:Workflow,reasoner:Reasoner,onProg
   const computed:Record<string,{features:{name:string;geometry:{type:string;coordinates:unknown}}[];total:number}>={};
   const NAMEABLE=500;
   const remember=(node:WorkflowNode,value:unknown):void=>{
-    const layer=value as {features?:{id?:unknown;name?:unknown;properties?:{name?:unknown};geometry?:{type:string;coordinates:unknown}|null}[]}|undefined;
+    const layer=value as {features?:({id?:unknown;name?:unknown;properties?:{name?:unknown};geometry?:{type:string;coordinates:unknown}|null}&Record<string,unknown>)[]}|undefined;
     const all=layer?.features;
     if(!Array.isArray(all)||!all.length||all.length>NAMEABLE)return;
+    // AND WHAT EACH CARRIES THAT A PREVIEW SHADES BY (2026-11-27): an isochrone band's minutes, a summary's value,
+    // total, count, category. Kept as names and shapes alone, Clip polygons' Preview drew Snow's 1-, 5-, 10- and
+    // 15-minute bands as one blob, with nothing to tell them apart.
+    const MEASURES=['minutes','value','total','count','category'] as const;
     const features=all.filter(f=>f&&f.geometry).map(f=>({
       name:String(f.properties?.name??f.name??f.id??'').trim(),
-      geometry:f.geometry as {type:string;coordinates:unknown}}));
+      geometry:f.geometry as {type:string;coordinates:unknown},
+      ...Object.fromEntries(MEASURES.filter(k=>typeof f[k]==='number'||typeof f[k]==='string').map(k=>[k,f[k]]))}));
     if(features.length)computed[node.id]={features,total:all.length};
   };
   const joins:Record<string,import('./area-join.js').AreaJoinResult>={};

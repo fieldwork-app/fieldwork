@@ -1,6 +1,6 @@
 # Clip polygons
 
-_Created 2026-11-20 · Updated 2026-11-21_
+_Created 2026-11-20 · Updated 2026-11-27_
 
 **Polygons cut to the study area.** Catchments or districts that spill past the reporting area, kept only where
 they fall inside it.
@@ -39,6 +39,10 @@ three made-up units, one inside, one across the edge and one outside, step by st
 The John Snow examples clip their pump catchments to the illustrative Soho reporting rectangle.
 
 ## History
+
+### 2026-11-27 · The Preview tells bands apart (0.7.0)
+
+Where the polygons are walking-time bands, the Preview shades each in its own colour, matplotlib's tab10 as NB04 draws them, see-through and keyed, the longest drawn first so the shorter show. The cut keeps each band's minutes. On Snow's isochrone the four bands had been one fill.
 
 ### 2026-11-27 · The Preview draws the cut (0.6.0)
 

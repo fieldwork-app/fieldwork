@@ -1,8 +1,9 @@
-import {RING_RED,RING_BLUE,orderedSteps,categoricalSteps,polygonShading,shadedValues,classRanges,type classifyValues,type classifyCategories,FIGURE_ROLE,markPath} from './presentation.js';
+import {RING_RED,RING_BLUE,bandColour,MATPLOTLIB_TAB10,BAND_OPACITY,orderedSteps,categoricalSteps,polygonShading,shadedValues,classRanges,type classifyValues,type classifyCategories,FIGURE_ROLE,markPath,CARRIED_POINT_COLOUR} from './presentation.js';
 import type {Polygons} from './catchments.js';
 import type {DisplayValue,Receipt} from './results.js';
 import {lineLayersSvg,lineVerticesOf,type LineLayerOnMap} from './map-lines.js';
 import type {Boundary,Escape,Position,PointCollection,WorkflowNode} from './types.js';
+import {observationRadius} from './point-layers.js';
 /** POLYGONS ARE DATA, OR THEY ARE THE GROUND A POINT STANDS ON (the practitioner, 2026-11-23: *"polygons can be data
  *  bearing but the polygon can be just context for the points. If there are no points then we must be using the polygon
  *  data if there are any, particularly if we merge a table and a polygon (study area)."*). A hue per feature says "these
@@ -230,7 +231,7 @@ export function polygonSvg(p:Polygons,esc:Escape,area?:Boundary|null,
     return `<path data-catchment="${esc(f.id)}"${f.ring?' data-ring=""':''}${classed&&f.value!==undefined?` data-value="${f.value}"`:''}${grouped&&f.category?` data-category="${esc(f.category)}"`:''} d="${polys.flat().map(r=>'M'+r.map(c=>project(c).join(',')).join('L')+'Z').join('')}" fill="${fill}" fill-opacity="${opacity}" fill-rule="evenodd" stroke="${f.ring?(f.ring==='secondary'?RING_BLUE:RING_RED):classed?FIGURE_ROLE.quietInk:fill}" stroke-width="${f.ring?'3.5':classed?'.6':'1'}"><title>${esc(f.name)}${f.category?` · ${esc(f.category)}`:''}${f.value===undefined?'':` · ${f.value}`}${f.count===undefined?'':` · ${f.count} locations`}</title></path>`;}).join('')
     // OVER THE AREAS AND UNDER THE POINTS, which is where `staticBoundaryMap` draws them: a route is read against
     // the ground it crosses, and a mark it passes through must stay visible.
-    +lineLayersSvg(over?.lines??[],project,over?.markScale??1,over?.lineArrows)+(p.observations?.features||[]).filter(f=>f.geometry).map(f=>{const [x,y]=project(f.geometry!.coordinates);return `<circle cx="${x}" cy="${y}" r="${(1.8*(over?.markScale??1)).toFixed(2)}" fill="#70523a"><title>${esc(f.properties.name)}</title></circle>`;}).join('')+p.sites.filter(f=>f.geometry).map(f=>{const [x,y]=project(f.geometry!.coordinates);return `<rect x="${x-4*(over?.markScale??1)}" y="${y-4*(over?.markScale??1)}" width="${8*(over?.markScale??1)}" height="${8*(over?.markScale??1)}" fill="#174d47"><title>${esc(f.properties.name)}</title></rect>`;}).join('')
+    +lineLayersSvg(over?.lines??[],project,over?.markScale??1,over?.lineArrows)+(p.observations?.features||[]).filter(f=>f.geometry).map(f=>{const [x,y]=project(f.geometry!.coordinates);return `<circle cx="${x}" cy="${y}" r="${(observationRadius(p,f.properties)*(over?.markScale??1)).toFixed(2)}" fill="${p.observationSymbol?.colour??CARRIED_POINT_COLOUR}" fill-opacity=".85" stroke="#222" stroke-width=".6"><title>${esc(f.properties.name)}</title></circle>`;}).join('')+p.sites.filter(f=>f.geometry).map(f=>{const [x,y]=project(f.geometry!.coordinates);return `<rect x="${x-4*(over?.markScale??1)}" y="${y-4*(over?.markScale??1)}" width="${8*(over?.markScale??1)}" height="${8*(over?.markScale??1)}" fill="#174d47"><title>${esc(f.properties.name)}</title></rect>`;}).join('')
     // THE KEY BELONGS TO THE WHOLE MAP. The enlarged part of an inset draws none: two keys on one figure invite a
     // reader to take them as two scales, and the classes are the same either way because both drawings are made
     // from the same features -- only the extent differs.
@@ -351,7 +352,7 @@ export function catchmentPlot(p:Polygons,esc:Escape,context?:PointCollection):st
   '<rect width="850" height="650" fill="white"/>';
   for(let i=0;i<=4;i++){const lon=west+(east-west)*i/4,lat=south+(north-south)*i/4,x=project([lon,south])[0],y=project([west,lat])[1];svg+=`<text x="${x}" y="595" text-anchor="middle" font-size="14">${lon.toFixed(4)}</text><text x="78" y="${y+4}" text-anchor="end" font-size="14">${lat.toFixed(4)}</text>`;}
   svg+='<text x="455" y="617" text-anchor="middle" font-size="14">Longitude</text><text transform="translate(20,310) rotate(-90)" text-anchor="middle" font-size="14">Latitude</text>';
-  for(const f of [...p.features].sort((a,b)=>(b.minutes||0)-(a.minutes||0))){const rings=f.geometry.type==='Polygon'?f.geometry.coordinates:f.geometry.coordinates.flat();svg+=`<path data-catchment="${esc(f.id)}" d="${rings.map(r=>'M'+r.map(c=>project(c).join(',')).join('L')+'Z').join('')}" fill="#1f77b4" fill-opacity=".2" fill-rule="evenodd"><title>${esc(f.name)}</title></path>`;}
+  for(const f of [...p.features].sort((a,b)=>(b.minutes||0)-(a.minutes||0))){const rings=f.geometry.type==='Polygon'?f.geometry.coordinates:f.geometry.coordinates.flat();svg+=`<path data-catchment="${esc(f.id)}" d="${rings.map(r=>'M'+r.map(c=>project(c).join(',')).join('L')+'Z').join('')}" fill="${f.minutes!==undefined?bandColour(f.minutes,p.features.map(x=>x.minutes??0)):MATPLOTLIB_TAB10[0]}" fill-opacity="${BAND_OPACITY}" fill-rule="evenodd"><title>${esc(f.name)}</title></path>`;}
   // THE COLOURS THE KEY NAMES, and the shapes it draws. This plot used `gray` and `red` while the
   // legend beside it named Okabe-Ito's #CC79A7 and #E69F00 and drew the sites as squares, so a
   // reader matching marks to the key matched nothing. Worse than a mismatch: `red` on `gray` is
@@ -364,7 +365,10 @@ export function catchmentPlot(p:Polygons,esc:Escape,context?:PointCollection):st
     [observations,FIGURE_ROLE.secondary,2.7,'circle','observation'],
     [sites,FIGURE_ROLE.site,4,'square','site']] as const)
     for(const f of fs){if(!f.geometry)continue;const [x,y]=project(f.geometry.coordinates);
-      svg+=`<path data-plot-${kind}="${esc(f.id)}" d="${markPath(shape,x,y,r)}" fill="${color}" stroke="white" stroke-width=".8"><title>${esc(f.properties.name)}</title></path>`;}
+      // THE CARRIED POINTS BY THEIR LAYER'S SYMBOL, as on every other map of them (2026-11-27): sized and coloured as Map's
+      // Configure sets the layer, so the isochrone plot agrees with its interactive map and its Preview.
+      const own=kind==='observation'&&p.observationSymbol;
+      svg+=`<path data-plot-${kind}="${esc(f.id)}" d="${markPath(shape,x,y,own?observationRadius(p,f.properties):r)}" fill="${own?p.observationSymbol!.colour:color}" stroke="white" stroke-width=".8"><title>${esc(f.properties.name)}</title></path>`;}
   const times=[...new Set(p.features.flatMap(f=>f.minutes===undefined?[]:[f.minutes]))].sort((a,b)=>a-b);
   return svg+`<text x="425" y="640" text-anchor="middle" font-size="14">${times.length?'Cumulative regions: '+times.join(', ')+' min · ':''}Dots: observations · squares: sites · CRS84</text>`;
 }

@@ -3605,7 +3605,7 @@ function renderMap(){
     // square, so a triangle or a star on the map had no legend entry that matched it.
     const key=spec.legend?spec.items.map(item=>`<span><svg class="map-key-mark" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">`
       +(item.line?`<path d="M1 7H9" stroke="${item.color}" stroke-width="1.6"/><path d="M8 3L14 7L8 11z" fill="${item.color}"/>`
-        :`<path d="${markPath(item.shape||'circle',7,7,5)}" fill="${item.hollow?'none':item.color}" stroke="${item.hollow?item.color:FIGURE_ROLE.quietInk}" stroke-width="1.5"/>`)+`</svg>${esc(item.label)}</span>`).join(''):'';
+        :`<path d="${markPath(item.shape||'circle',7,7,5)}" fill="${item.hollow?'none':item.color}"${item.opacity===undefined?'':` fill-opacity="${item.opacity}"`} stroke="${item.hollow?item.color:FIGURE_ROLE.quietInk}" stroke-width="1.5"/>`)+`</svg>${esc(item.label)}</span>`).join(''):'';
     $('#map-communication-key').innerHTML=key;$('#map-communication-header-key').innerHTML=key;
     $('#map-download-svg').onclick=()=>{const content=result?.polygons&&result.polygonPresentation==='interactive'?(result.polygons.features.some(f=>f.minutes!==undefined)?catchmentPlot(result.polygons,esc,result.contextPoints):polygonFigure(result.polygons)):svg.innerHTML;
       const viewBox=result?.polygons&&result.polygons.features.some(f=>f.minutes!==undefined)?'0 0 850 650':frameBoxOf(content);

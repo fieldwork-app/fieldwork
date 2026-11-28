@@ -19,6 +19,8 @@ import {tableOutput} from './table-output.js';
 import type {PointCollection} from './types.js';
 import type {StepContext} from './core.js';
 import {drawnMode,inMetres,polygonsAsTable,shownMode} from './core.js';
+import {resolveLayerSymbol,CARRIED_POINT_COLOUR} from './presentation.js';
+import {layerSummary} from './point-layers.js';
 
 export async function runChartOutput(ctx:StepContext<'chart_output'>):Promise<unknown>{
   const {inputs,node,receipts,runId,workflow}=ctx;
@@ -194,6 +196,14 @@ export async function runMapOutput(ctx:StepContext<'map_output'>):Promise<unknow
     // 2026-10-23: where an area is wired, the spatial map is built from it and from every
     // point layer beside it, and the polygons join it as a layer rather than replacing it.
     const beside=pointInputs().layers;
+    // THE POINTS THE POLYGONS CARRY ARE A LAYER OF THE MAP (2026-11-27). The practitioner, on Snow's Voronoi map: the
+    // preview sized the deaths and drew them over the catchments, and the result drew them small and lost under them --
+    // *"These inconsistencies make the worked example not credible."* Two renderers drew these points their own way,
+    // one by a column it named itself. As a point layer they are drawn as every point layer is, everywhere, with the
+    // symbol set for that layer in Configure…; the polygons stop carrying them to be drawn a second way.
+    const shownPolygons=shown.polygons as (NonNullable<DisplayValue['polygons']>&{observations?:PointCollection;observationsFrom?:{id:string;label:string}})|undefined;
+    const carried=shownPolygons?.observations?.features?.length&&shownPolygons.observationsFrom&&!beside.some(l=>l.sourceNodeId===shownPolygons.observationsFrom!.id)
+      ?{...structuredClone(shownPolygons.observations),sourceNodeId:shownPolygons.observationsFrom.id,label:shownPolygons.observationsFrom.label,port:'carried'} as import('./types.js').PointLayer:undefined;
     // POINTS WIRED AND NO AREA IS A REFUSAL, NOT A QUIET LOSS. Reported 2026-10-29: a map
     // carrying a polygon layer and a point layer drew the polygons and nothing else, because
     // the composition below is gated on an area and this branch simply fell past it. That is
@@ -219,11 +229,13 @@ export async function runMapOutput(ctx:StepContext<'map_output'>):Promise<unknow
         +`${beside.length===1?'':'s'} connected here have nothing to be placed against. The `
         +`same Study area the rest of this workflow uses will do.`);
     if(inputs.area){
-      const mapped=mapOutput(node,{area:inputs.area,points:pointInputs()},runId);
+      const wired=pointInputs();
+      const mapped=mapOutput(node,{area:inputs.area,points:carried?{...wired,layers:[...wired.layers,carried]}:wired},runId);
       // CONTEXT, WHERE POINTS ARE DRAWN OVER THEM (2026-11-23): the polygons keep their names and their popups and
       // lose the hue per feature, which says "different things" about ground a point is placed on.
       value={...mapped.value,
-        polygons:shadeFeaturesOf(shown.polygons as NonNullable<DisplayValue['polygons']>,
+        // A COPY WITHOUT THE CARRIED POINTS: the run's polygons may feed other outputs, which keep theirs.
+        polygons:shadeFeaturesOf((carried?{...shown.polygons,observations:undefined}:shown.polygons) as NonNullable<DisplayValue['polygons']>,
           // A LINE LAYER COUNTS AS A SUBJECT, as points do (the practitioner, 2026-11-24).
           (beside.length>0||!!node.params.contextPoints
             ||!!(inputs as unknown as {lines?:unknown}).lines)&&shown.polygons?.fromStudyAreas===true,
@@ -244,6 +256,16 @@ export async function runMapOutput(ctx:StepContext<'map_output'>):Promise<unknow
       return value;
     }
     value=shown;
+    // WITH NO AREA, THE SAME RULE (2026-11-27): the carried points are not placed against an area, so they stay with the
+    // polygons, but they are declared a layer of the map, so Configure… offers their symbol, and the symbol set there is
+    // what both renderers draw them with.
+    if(shownPolygons?.observations?.features?.length&&shownPolygons.observationsFrom){
+      const from=shownPolygons.observationsFrom;
+      const chosen=node.params.layerSymbols?.[from.id];
+      // THE PALETTE'S OBSERVATION COLOUR UNLESS CHOSEN: the hue the figure's key names for observations, which stands off a
+      // shaded fill. Red was tried and broke the key's agreement and the colour-blind-safe palette (2026-11-27).
+      value={...shown,polygons:{...shownPolygons,observationSymbol:{...resolveLayerSymbol(0,chosen),colour:chosen?.colour||CARRIED_POINT_COLOUR}},
+        pointLayers:layerSummary([{...shownPolygons.observations,sourceNodeId:from.id,label:from.label,port:'carried'}])} as unknown as DisplayValue;}
     (value as DisplayValue).polygonPresentation=node.params.presentation||'plot';
     if(node.params.contextPoints)(value as DisplayValue).contextPoints=(inputs as unknown as {context:PointCollection}).context;
     receipts.push(receipt);

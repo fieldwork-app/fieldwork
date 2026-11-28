@@ -156,6 +156,10 @@ export async function runCatchmentSteps(ctx:StepContext<'network_input'|'voronoi
   }
   value=node.type==='network_input'?structuredClone(node.params.data):node.type==='voronoi'?voronoi(inputs.sites,inputs.area.boundary,node.params.zone,node.params.hemisphere):node.type==='isochrone'?await computeIsochrone(inputs.sites,inputs.network,node.params):node.type==='clip_polygons'?clipPolygons(inputs.polygons,inputs.area.boundary):summarizePolygons(inputs.polygons,inputs.points,node.params);
   if(node.type==='voronoi'||node.type==='isochrone')(value as Polygons).siteSourceNodeId=workflow.edges.find(e=>e.to===node.id&&e.port==='sites')!.from;
+  // THE POINTS SUMMARIZED, NAMED BY THEIR LAYER (2026-11-27), so a Map draws them as that layer: its size, colour and
+  // shape as set in Map's Configure…, the same in the preview and the result.
+  if(node.type==='summarize_points_to_polygon'){const from=workflow.edges.find(e=>e.to===node.id&&e.port==='points')?.from,source=workflow.nodes.find(n=>n.id===from);
+    if(from)(value as Polygons).observationsFrom={id:from,label:(source?.params as {label?:string}|undefined)?.label||from};}
   receipts.push(catchmentReceipt(node,value as Polygons|Network,runId,workflow.edges.filter(e=>e.to===node.id).map(e=>e.from)));return value;
 }
 

@@ -1,0 +1,137 @@
+{
+ "schema": "fieldwork/widget-release/1",
+ "id": "urn:fieldwork:widget:map_output",
+ "version": "0.51.0",
+ "nodeType": "map_output",
+ "title": "Map",
+ "released": "2026-11-27",
+ "implementationStatus": "implemented",
+ "standardization": "shared",
+ "configuration": {
+  "typescriptFile": "src/types.ts",
+  "typescriptType": "ParamsByType['map_output']",
+  "planClass": "http://www.w3.org/ns/prov#Plan",
+  "shaclShapes": [],
+  "validationStatus": "application-only"
+ },
+ "ports": {
+  "inputs": [
+   {
+    "name": "area",
+    "type": "area"
+   },
+   {
+    "name": "points",
+    "type": "points"
+   },
+   {
+    "name": "polygons",
+    "type": "polygons"
+   },
+   {
+    "name": "context",
+    "type": "points"
+   },
+   {
+    "name": "raster",
+    "type": "raster"
+   },
+   {
+    "name": "ground",
+    "type": "ground"
+   },
+   {
+    "name": "network",
+    "type": "network"
+   },
+   {
+    "name": "lines",
+    "type": "lines"
+   }
+  ],
+  "output": null,
+  "dynamicInputs": {
+   "kind": "point-layers",
+   "minimum": 1,
+   "maximum": 8,
+   "implementation": "src/core.ts#nodeInputs"
+  },
+  "note": "Every layer port, on every map, whatever its parameters say. The ports used to vary with an inputMode parameter -- reasoningInput, rasterInput, polygonInput, networkInput were four separate declarations of that -- so the port a connection needed might not exist on the node. Which renderer draws is now read from what is wired: src/core.ts#drawnMode."
+ },
+ "ontology": {
+  "status": "partial",
+  "mappings": [
+   {
+    "role": "activity",
+    "iri": "urn:fieldwork:MapView",
+    "file": "ontology/fieldwork.ttl"
+   },
+   {
+    "role": "configuration",
+    "iri": "urn:fieldwork:MapSpecification",
+    "file": "ontology/fieldwork.ttl"
+   }
+  ],
+  "note": "Map presentation plan and MapView activity are implemented; broader map artifact and cartographic contracts remain open. 0.11.0 declared fw:MapSpecification and the fifteen encoding properties here. That was wrong: emits records what the module named in implementation.definition asserts, and this widget is defined in src/core.ts#TYPES, which asserts nothing. The encoding terms are asserted by src/map-communication.ts and are gated by validate:ontology-coupling, which holds at zero undeclared. A release file is immutable, so 0.11.0 keeps the over-declaration and this one corrects it.",
+  "emits": {
+   "classes": [],
+   "properties": []
+  }
+ },
+ "implementation": {
+  "files": [
+   "src/app.ts",
+   "src/areas-behind.ts",
+   "src/artifact-notes.ts",
+   "src/basemaps.ts",
+   "src/catchment-map.ts",
+   "src/catchment-output.ts",
+   "src/core.ts",
+   "src/figure-words.ts",
+   "src/line-layer.ts",
+   "src/map-communication.ts",
+   "src/map-inset.ts",
+   "src/map-layer-list.ts",
+   "src/map-lines.ts",
+   "src/map-links.ts",
+   "src/map-output.ts",
+   "src/map-parts-table.ts",
+   "src/map-ui.ts",
+   "src/mean-center.ts",
+   "src/notes.ts",
+   "src/point-layers.ts",
+   "src/polygon-layers.ts",
+   "src/presentation.ts",
+   "src/publication.ts",
+   "src/raster-image.ts",
+   "src/raster-map-plan.ts",
+   "src/raster-panels.ts",
+   "src/static-map.ts",
+   "src/workflow-template.ts",
+   "styles.css"
+  ],
+  "definition": "src/core.ts#TYPES"
+ },
+ "compatibility": {
+  "workflowSchema": "fieldwork/workflow/1",
+  "versionPersistence": "not-yet-persisted",
+  "migrationFrom": [
+   {
+    "nodeType": "output",
+    "adapterVersion": "1",
+    "implementation": "src/output-contract.ts#migrateOutputNodes"
+   }
+  ],
+  "replacementCandidate": null
+ },
+ "changes": [
+  {
+   "kind": "changed",
+   "description": "Points carried by a polygon layer are a layer of the map: sized, coloured and shaped as Configure sets them, the same in the preview and the result, drawn over the polygons. The interactive map no longer sizes them by a column named in its code."
+  }
+ ],
+ "evidence": {
+  "status": "not-individually-certified",
+  "note": "Repository regression coverage exists; this release entry does not certify a widget independently. The self-description added in 0.17.0 is covered by tests/artifact-notes.test.mjs (13 unit checks, including that nothing machined numbers its own artifact or calls itself a caption, that an unnamed artifact is left unnamed rather than titled, and that a unit is stated once) and by tests/equation-notes.browser.mjs over the South London example on Chromium and WebKit. Both were mutation-checked by reintroducing the behaviour they forbid. 0.21.1: tests/value-classes.test.mjs checks that 98 parts of 16 units give the 16 units' breaks, with no equal breaks and no empty class, and that two units sharing a name still count twice. 0.22.0: tests/map-links.test.mjs (4 unit checks: Hagelloch's 188 records as 94 drawn, 90 at one place and 4 naming nothing; every outcome counted exactly once; lines stopped short of the mark and hidden with their layer; the receipt's facts) and tests/map-links.browser.mjs and tests/hagelloch-chains-example.browser.mjs on Chromium. 0.23.0: tests/map-links.test.mjs checks each of Hagelloch's 94 lines carries the tree's generation and its colour; tests/map-links.browser.mjs checks the preview draws 188 marks and follows the radius before Apply, PMTiles in Configure… and the key by generation; tests/hagelloch-cluster-example.browser.mjs checks the replay plays, 32 cases on 21 November; tests/tile-import.browser.mjs checks the import from Configure…. Chromium. 0.23.1: tests/static-basemap.browser.mjs, basemap-reach, interactive-any-map, openfreemap-basemap and map-links repeated four times each on Chromium (48 of 48) and once on WebKit with tests/hagelloch-cluster-example.browser.mjs (13 of 13). 0.23.2: tests/hagelloch-cluster-example.browser.mjs (the key is shown beside the playback). 0.24.0: tests/map-config-groups.browser.mjs, tests/map-controls-contrast.browser.mjs (every map control at 4.5:1, light and dark), and the basemap, catchment and figure-section tests updated to the default. 0.27.0: tests/proportional-symbols.test.mjs (area in proportion; each layer its own largest value) and tests/snow-spot-map.browser.mjs (the key names DEATHS, 1 to 15); Chromium. 0.27.1: tests/snow-spot-map.browser.mjs (the pumps moved under the deaths and back in Manage layers, the marks redrawn in each order without a run); Chromium. tests/mers-from-scratch.browser.mjs (the hospitals, Point data from a table, sized by cases in Configure…); Chromium. tests/catchments.browser.mjs (a pump clicked over the deaths). 0.27.2: tests/snow-spot-map.browser.mjs, tests/map-*.browser.mjs and the figure tests; Chromium. 0.27.3: tsc; the existing map and catchment browser tests in the gate; Chromium. 0.28.0: tests/layer-symbols.test.mjs (one size, class colours, highest last, no value neutral); tests/mers-from-scratch.browser.mjs (MERS hospitals coloured by cases: Size by cleared, every mark one size, key \"coloured by cases: 1 (4)\"); Chromium. 0.28.1: Botswana's districts by hand, Chromium. 0.28.2: Botswana's districts by hand; tests/catchments.browser.mjs and tests/map-output.browser.mjs; Chromium. 0.29.0: tests/polygon-layers.test.mjs; tests/map-panels.browser.mjs; tests/population-example-opens.browser.mjs (Rwanda's four shares two by two, Gasabo one shade in three panels, the interactive panels moving together); tests/recreate-from-scratch.browser.mjs; tests/raster-panels.test.mjs and the population example's cells, static and interactive; Chromium. 0.29.1: tests/mers-from-scratch.browser.mjs (more than one class drawn); tests/raster-panels.test.mjs; tests/population-example-opens.browser.mjs (three outlines, static and interactive); Chromium. 0.29.2: tests/notes-*.browser.mjs and every browser test reading #map or Notes (134 passed); Chromium. 0.30.0: Experiment 202, the publication render; the practitioner, 2026-11-14, of Hagelloch's daily-scan map: \"we can leave it out of the notes\". tests/write-up-shapes.test.mjs, tests/publication.test.mjs. 0.30.1: The practitioner, 2026-11-14, of Botswana's side-by-side map in Notes: \"I am not sure why this map looks like this and what it's supposed to show.\" tests/map-layers.test.mjs; tests/population-example-opens.browser.mjs. 0.30.2: 0.30.1 counted a second polygon port twice (South London's Thames), found by the gate. tests/map-layers.test.mjs; tests/layer-dialog.browser.mjs. 0.31.0: Experiment 213; the practitioner, 2026-11-14: \"Build 213 now\". tests/map-inset.test.mjs. 0.31.1: MERS's hospitals, 2026-11-15: the first build shrank the inset's marks to a third. tests/map-inset.test.mjs; tests/mers-chains-inset.browser.mjs (four hospitals at Pyeongtaek at least 2.2 marks' widths apart); Chromium. 0.31.2: Gate 168, 2026-11-15: tests/results-fullscreen.browser.mjs measured the full-screen map at 547 px against 550. tests/mers-chains-inset.browser.mjs (picked on Hagelloch's map, interactive); Chromium. 0.31.3: Oswego, 2026-11-15: Lycoming, about 2 km across, was under a pixel in New York State. tests/map-inset.test.mjs; tests/mers-chains-inset.browser.mjs (Oswego's locator); Chromium. 0.31.4: tests/value-classes.test.mjs: Salmonella's 16 Länder (nine at 0) give edges 0, 1, 5, 11, counts 9, 2, 3, 2, labels 0, 1, 2 to 5, 6 to 11; ten untied decimals still give five classes. tests/salmonella-four.browser.mjs reads the key on Chromium: \"cases: 0\", \"1\", \"2 to 5\", \"6 to 11\", no \"0.00 to 0.00\". 0.32.0: tests/map-parts-table.test.mjs: one row per place for a place in two parts, columns in order, numbers sorted as numbers with an empty cell last. tests/map-parts-table.browser.mjs on Chromium, Salmonella's Länder: 16 rows, sorted by cases Baden-Württemberg 11 first, a row outlines its Land and a Land marks its row on the static figure, and a row opens its Land's popup on the interactive map. 0.32.1: tests/salmonella-four.browser.mjs on Chromium: the Länder figure carries one key band, with the ramp 0, 1, 2 to 5, 6 to 11 below Bavaria and Baden-Württemberg. 97 map, figure and table browser tests pass on Chromium. 0.33.0: tests/geotiff-sheet.browser.mjs on Chromium: two sheets under one map, both drawn and both listed. tests/cluster-rings.test.mjs: a one-place cluster drawn as a red ring, a secondary one blue, a cluster of places filled. 0.33.1: tests/map-inset.test.mjs (a locator names the whole, escaped, 15 units; an inset and a locator without a name do not); Oswego's Where was the church supper? opened in Chromium, the frame reading New York State. And tests/a-map-draws-every-layer-it-composed.test.mjs (the seventh: a wired area drawn first and framed; none wired, none drawn); seen in Chromium on Sierra Leone's scan before it was withdrawn. 0.33.2: Salmonella's states, South London's deaths per 1,000 and MERS's hospitals, each drawn in Results and in Notes and compared in Chromium; tests/figure-export, figure-key-agreement, a-drawn-figure-matches-its-claim, publication, write-up-is-the-projects, south-london-choropleth, mers-chains-inset and salmonella-four, 24 of 24. 0.36.1: tests/map-communication.test.mjs and tests/draft-attached-files.browser.mjs (the drafts of MERS and NYC print no pointer), Chromium and WebKit. 0.36.2: tests/cluster-rings.test.mjs, the key of the mix Hagelloch's cluster map holds, read by both maps from presentation.ts's groupedKey. 0.36.3: tests/static-map-large-outline.test.mjs (a 200,000-vertex outline's frame) and tests/large-study-area-map.browser.mjs (26 provinces, about 195,000 vertices, drawn with no error), Chromium and WebKit. 0.37.0: tests/measure-point-count.browser.mjs (Chromium, development Mac, 2026-11-19), 10,000 to 250,000 points; tests/gl-marks.browser.mjs (a click opens a mark's details, the layer list hides it, the static figure is one shape per style); tests/map-output.test.mjs; the Map browser tests, Chromium. 0.41.0: tests/study-areas-as-layer.browser.mjs (DRC unchecked, the map drawing South Sudan alone, both unchecked refused; the pin editor hiding an outline); Chromium and WebKit, 2026-11-22. tests/keyed-basemaps.browser.mjs (CARTO answering 403 with its refusal; the map saying so without the key); Chromium and WebKit, development Mac, 2026-11-22. The cause was found against CARTO itself with the practitioner's key: 403 from a local address, 200 from the published one. 0.44.0: tests/polygons-as-context.browser.mjs, both ways and the override; tests/map-layers.test.mjs holds the file layer's hues; Chromium, 2026-11-23 0.45.0: tests/layer-identity.test.mjs (a clipped layer listed as the input it came from, the smaller layer on top, every drawn mark findable in the list); the practitioner's bats-and-mines project replayed in Chromium, the pin at z 20,076 over the bats at 10,092 with no reordering, and Manage layers moving either way; tests/layer-dialog, snow-spot-map and map-layers, 10 of 10, Chromium, 2026-11-23. The panes: tests/snow-spot-map.browser.mjs (one pane per layer and no layer sharing; eight pumps over 250 deaths unasked; every pane between Leaflet's marker pane and its tooltips; moved in Manage layers, the marks change pane). The 2026-10-21 obstacle -- a pane broke the vector basemap's attribution -- was retested and does not hold for a pane nothing else draws into: tests/catchments.browser.mjs reads OpenTopoMap's attribution and clicks a site marker over the deaths, with keyed-basemaps, openfreemap-basemap, static-basemap, layer-dialog, map-layers, gl-marks and layer-marks, 29 of 29, Chromium, 2026-11-23. The practitioner's bats-and-mines project replayed: the pin's pane at 603 over the bats' at 602, and each marker's own z back to Leaflet's latitude value. 0.46.0: tests/record-popup-attributes.test.mjs (5 unit checks: the columns said, the name not repeated, source order kept, empty and NA left out, a wide list capped with the count, markup escaped). tests/map-layer-controls.browser.mjs (the clipped layer named Bats and not for the clip; a control keyed by the bats input and none by the clip; Species offered as its pin class). Confirmed on the practitioner's own project: a bat pin reading Species: Lavia frons. Chromium, 2026-11-23. 0.47.0: tests/layer-too-small.test.mjs (5 unit checks: a layer under a mark named with its width, one over it not remarked on, the threshold equal to a mark's width and exclusive, the note unchanged without measurements, two tiny layers both named). End to end at two scales, Chromium 2026-11-23: nothing said at 0.3 degrees where the area fills the figure, and \"drawn about 3 of the figure's 850 units across\" at 20 degrees. The widths are measured with the frame the figure will use -- polygonFrame where the map carries polygons, staticMapFrame otherwise -- which measuring with staticMapFrame alone got wrong. 0.48.0: tests/polygon-map-inset.browser.mjs (the polygons drawn twice with a locator and again with a focus inset, one key band in each, and a box outside the map leaving the figure as it was). Chromium, 2026-11-23.\n\nLINES AS A LAYER (2026-11-24). Unit tested: a polygon map draws its line layers and names them in the key; the polygon frame takes the lines in and spans the polygons alone without them; a drawn layer is marked with no setting at all and a file-sourced layer is not, 'all' marks the file layer and 'none' unmarks the drawn one, the head follows the line's direction when the line is reversed, and it is omitted where the last segment has no length; the lines port is drawable and sorts above the polygons in the layer list, named by its own step. Browser tested on Chromium: a route drawn by hand reaches the figure as two paths -- the line, and the arrowheads that carry the same layer key so a layer switched off takes them with it -- while the layer read from a GPX and the layer taken as a shared border are drawn with no arrowhead at all, which is the default rule exercised in the application rather than argued for. NOT established in a browser: the Manage layers row for a line layer, the Configure... control writing the three values, and the arrowhead as Leaflet draws it on the interactive map. 0.50.0: tests/walkthrough-scale-is-maps.test.mjs (Map’s static figure of Summarize’s and H3’s output keyed by class); Chromium, 2026-11-26. NOT established: WebKit, which CI runs; how existing workflows’ figures read now they are shaded."
+ }
+}

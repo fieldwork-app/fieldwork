@@ -11,7 +11,9 @@ import {MAX_BUFFER_M} from './area-buffer.js';
 import {clipPointsToArea} from './clip-points.js';
 import {clipPolygons,summarizePolygons} from './catchments.js';
 import {previewBuffers} from './buffer-point.js';
-import {previewDrawing,type PreviewShape} from './spatial-walkthroughs.js';
+import {previewDrawing,classedScale,type PreviewShape} from './spatial-walkthroughs.js';
+import {bandColour,BAND_OPACITY} from './presentation.js';
+import {pointRelation} from './spatial-predicates.js';
 import {bufferPointWalkthrough,measureAreaWalkthrough,clipPolygonsWalkthrough,clipPointsWalkthrough,summarizePointsWalkthrough} from './spatial-walkthroughs.js';
 import {areaUnitOptions} from './area-measurement.js';
 import {calculateArea,formatArea} from './area-computation.js';
@@ -273,7 +275,9 @@ const polygonsOn=(kit:AreaStepKit,nodeId:string,port='polygons'):import('./catch
     if(!layer?.features.length)return undefined;
     const polygons=layer.features.filter(f=>f.geometry.type==='Polygon'||f.geometry.type==='MultiPolygon');
     if(!polygons.length)return undefined;
-    return {features:polygons.map((f,i)=>({id:`${from}-${i+1}`,name:f.name||`${i+1}`,
+    // WHOLE, NOT ONLY ITS SHAPES (2026-11-27): an isochrone's bands carry their minutes, and a preview that kept only
+    // the outline could not tell the 1-minute band from the 15 (Clip polygons, on Snow's isochrone).
+    return {features:polygons.map((f,i)=>({...(f as object),id:`${from}-${i+1}`,name:f.name||`${i+1}`,
       geometry:f.geometry as unknown as import('./types.js').Boundary})) as unknown as import('./catchments.js').Catchment[],
       sites:[],method:'',crs:'CRS84',notes:[]};
   })();
@@ -315,15 +319,21 @@ function clipPolygonsPreview(kit:AreaStepKit,n:WorkflowNode):string{
     const area=(p:import('./catchments.js').Polygons)=>p.features.reduce((t,f)=>t+calculateArea(f.geometry,'km2').squareMetres,0);
     const said=(m2:number)=>`${new Intl.NumberFormat('en',{maximumSignificantDigits:4}).format(m2/1e6)} km\u00b2`;
     const parts=(g:Boundary)=>(g.type==='MultiPolygon'?g.coordinates:[g.coordinates]) as import('./types.js').Position[][][];
+    // BANDS SHADED AS MAP SHADES THEM (2026-11-27). The practitioner, of Snow's isochrone bands cut here: *"the isochrone
+    // bands are supposed to show 1, 5, 10, 15 but the layers are almost indistinguishable"*. One fill for nested bands
+    // is one blob; minutes have an order, so each band takes its step of the ramp Map uses, shortest first, keyed.
+    const times=[...new Set(cut.features.map(f=>f.minutes).filter((m):m is number=>m!==undefined))].sort((a,b)=>a-b);
+    const band=times.length?{fill:(f:{minutes?:number})=>bandColour(f.minutes!,times),
+      scale:{title:'Walking time',entries:times.map(m=>({label:`${m} min`,color:bandColour(m,times)}))}}:undefined;
     const shapes:PreviewShape[]=[
       ...polygons.features.map(f=>({kind:'input' as const,rings:parts(f.geometry as Boundary)})),
       // UNLABELLED: eight catchments' names piled on one another at their first corners; the shapes are what is previewed.
-      ...cut.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as Boundary)})),
+      ...cut.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as Boundary),...(band?{fill:band.fill(f),fillOpacity:BAND_OPACITY}:{})})),
       {kind:'area' as const,rings:parts(boundary)}];
     // THE COUNT STAYS IF THE DRAWING CANNOT BE MADE (review of #5): the drawing comes first on the page, and an error in
     // it had taken the count and the area with it.
     let drawing='';
-    try{drawing=previewDrawing(shapes,`The polygons before the cut, the study area, and what the cut keeps`);}
+    try{drawing=previewDrawing(shapes,`The polygons before the cut, the study area, and what the cut keeps`,band?.scale);}
     catch{drawing='<p>These polygons are too detailed to draw here. The count and area below are what the cut keeps.</p>';}
     return drawing
       +`<p class="standard-result"><strong>${after.toLocaleString('en')} of ${before.toLocaleString('en')} polygons kept.</strong> `
@@ -336,16 +346,34 @@ function clipPolygonsPreview(kit:AreaStepKit,n:WorkflowNode):string{
 function summarizePointsPreview(kit:AreaStepKit,n:WorkflowNode,params:{boundary:'include'|'exclude';valueField:string}):string{
   const polygons=polygonsOn(kit,n.id);
   if(!polygons)return waiting('The polygon layer');
+  // THE RECORDS WITH THEIR PROPERTIES, not the picker's trimmed features (2026-11-27). This read `pointChoices`, which
+  // keeps a name and a location, so a number to add up -- DEATHS in the Snow example -- was missing on every point and
+  // every total came to nothing. The sentence below counted points and could not show it; a drawing shaded by the
+  // total would have shaded every catchment alike. Reach's Preview met the same thing (metric-steps-ui.ts).
+  const records=kit.recordsOn(n.id,'points');
   const {features}=kit.pointChoices(n.id,'points');
-  if(!features.length)return waiting('The points');
-  const points={type:'FeatureCollection' as const,
+  if(!records?.features.length&&!features.length)return waiting('The points');
+  const points=records?.features.length?records:{type:'FeatureCollection' as const,
     features:features.map((f,i)=>({type:'Feature' as const,id:String(i),properties:{name:f.name},
       geometry:f.geometry as {type:'Point';coordinates:[number,number]}}))};
   try{
     const made=summarizePolygons(polygons,points as never,{label:'',...params} as never);
     const s=made.summary!;
     const n0=(v:number)=>v.toLocaleString('en');
-    return `<p class="standard-result"><strong>${n0(s.matched)} of ${n0(s.records)} points fall in a polygon.</strong> `
+    // DRAWN AS SHOW ME HOW ENDS (2026-11-27): each polygon shaded by what the step gives it, on the scale Map shades it
+    // with (`classedScale`), keyed beneath. The points that fall in none are drawn faint, which is what "left out" means
+    // in the key; the matched ones are what the shading already says, and 250 of them would cover it.
+    const scaled=classedScale(made.features);
+    const outside=points.features.filter(p=>p.geometry&&!made.features.some(f=>{
+      const r=pointRelation((p.geometry as {coordinates:import('./types.js').Position}).coordinates,f.geometry);
+      return r==='Inside'||params.boundary==='include'&&r==='Boundary';}));
+    const parts=(g:Boundary)=>(g.type==='MultiPolygon'?g.coordinates:[g.coordinates]) as import('./types.js').Position[][][];
+    const drawing=previewDrawing([
+      ...made.features.map(f=>({kind:'result' as const,rings:parts(f.geometry as Boundary),...(scaled?{fill:scaled.fill(f)}:{})})),
+      ...outside.map(p=>({kind:'gone' as const,point:(p.geometry as {coordinates:import('./types.js').Position}).coordinates}))],
+      'The polygons, shaded by what this step gives each',
+      scaled?{title:made.valueName??'Points inside',entries:scaled.scale}:undefined);
+    return drawing+`<p class="standard-result"><strong>${n0(s.matched)} of ${n0(s.records)} points fall in a polygon.</strong> `
       +`${n0(s.unmatched)} fall in none`
       +(s.missingLocation?`, ${n0(s.missingLocation)} have no usable location`:'')
       +(s.multiple?`, and ${n0(s.multiple)} fall in more than one, so the counts must not be added up`:'')
